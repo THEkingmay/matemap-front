@@ -1,10 +1,14 @@
+import React from 'react';
+
+
 import AuthProvider from './src/AuthProvider';
-import RootStack from './src/navigations/rootStack'; 
+import RouteProtect from './src/RouteProtect';
 
 export default function App() {
+ 
   return (
     <AuthProvider>
-      <RootStack/>
+      <RouteProtect/>
     </AuthProvider>
   );
 }

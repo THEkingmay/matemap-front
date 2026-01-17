@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "matemap-front",
+    "name": "Mate-map KUKPS",
     "slug": "matemap-front",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -27,7 +27,8 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-font"
     ]
   }
 }

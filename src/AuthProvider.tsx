@@ -1,95 +1,104 @@
-// หน้านี้จะจัดการเป็นตัวหุ่มดานการยืนยัน
-import React, { createContext , ReactNode, useContext, useEffect, useState } from "react";
-import * as SecureStore from 'expo-secure-store';
-import { View , Text} from "react-native";
-import { globalStyles } from "../globalStyle";
+import { createContext, ReactNode, useContext, useEffect, useState } from "react";
+import * as SecureStore from 'expo-secure-store'; // ต้อง Import แบบนี้สำหรับ Expo
+import type { User } from "../types/type";
+import Loading from "./components/loading";
 
-interface AuthType { 
-    id: string | null,
-    login : ()=>void ,
-    logout : ()=>void
+
+interface AuthContextType {
+  user: User | null;
+  login: (email: string, password: string) => Promise<void>; 
+  logout: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthType | null>(null)
+const AuthContext = createContext<AuthContextType>({
+  user: null,
+  login: async () => {},
+  logout: async () => {},
+});
 
-export function useAuth(){
-    return useContext(AuthContext)
-}
+const useAuth = () => {
+  return useContext(AuthContext);
+};
 
-export default function AuthProvider({children} : {children : ReactNode}){
-    const [loading ,setLoading] = useState<boolean>(false)
+export default function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true); 
 
-    const [id , setId] = useState<string|null>(null)
+  const login = async (email: string, password: string) => {
+    try {
+      const res = await fetch(`${process.env.EXPO_PUBLIC_BASE_API_URL}/api/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
 
-    const fetchUserId = async () => {
-        try {
-            setLoading(true);
+      const data = await res.json();
 
-            // 1. จำลอง Delay (ลบออกได้ตอน Production)
-            await new Promise((r) => setTimeout(r, 2000));
+      if (!res.ok) {
+        throw new Error(data.message || "Login failed");
+      }
+      await SecureStore.setItemAsync("token", data.token);
+      setUser(data.user);
 
-            // 2. ดึง Token
-            const token = await SecureStore.getItemAsync('token');
+    } catch (err) {
+      console.error("Login Error:", err);
+      throw err; 
+    }
+  };
 
-            // 3. เช็คดักไว้ก่อน: ถ้าไม่มี Token ให้จบการทำงานเลย
-            if (!token) {
-                setId(null);
-                return; 
-            }
+  const logout = async () => {
+    try {
+      await SecureStore.deleteItemAsync("token");
+      setUser(null);
+    } catch (error) {
+      console.error("Logout Error:", error);
+    } 
+  };
 
-            // 4. ถ้ามี Token ให้ยิงไปตรวจกับหลังบ้าน (ต้องแนบ Header)
-            const res = await fetch('YOUR_API_ENDPOINT/me', {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
+  const loginWithToken = async () => {
+    try {
+      const token = await SecureStore.getItemAsync("token");
+      
+      if (token) {
+        const res = await fetch(`${process.env.EXPO_PUBLIC_BASE_API_URL}/api/login-with-token`, {
+          method: "POST", 
+          headers: {
+            'Authorization': `Bearer ${token}`, 
+            'Content-Type': 'application/json'
+          }
+        });
 
-            if (!res.ok) {
-                throw new Error('Token expired or invalid');
-            }
-
-            const data = await res.json();
-            
-            if (data?.id) {
-                setId(data.id);
-            } else {
-                throw new Error('User ID not found');
-            }
-
-        } catch (err) {
-            console.log('Auth Error:', err);
-            setId(null);
-            await SecureStore.deleteItemAsync('token'); 
-        } finally {
-            setLoading(false);
+        if (res.ok) {
+          const data = await res.json();
+          setUser(data.user); // อัปเดตข้อมูล User ล่าสุดจาก Server
+        } else {
+          await logout();
         }
+      } else {
+        setUser(null)
+      }
+    } catch (err) {
+      console.error("Auto-login error:", (err as Error).message);
+    } finally {
+      setIsLoading(false);
     }
+  };
 
-    useEffect(()=>{
-        fetchUserId()
-    },[])
+  useEffect(() => {
+    loginWithToken();
+  }, []);
 
-    const login = async ()=>{
-        console.log('all API to Login here')
-    }
-    const logout= async ()=>{
-        console.log("logout")
-    }
-
-    if(loading){
-        return(
-            <View style={globalStyles.container}>
-                <Text>ยินดีต้อนรับ</Text>
-            </View>
-        )
-    }
-
+  if(isLoading){
     return(
-        <AuthContext.Provider value={{login , logout ,id }}>
-            {children}
-        </AuthContext.Provider>
+        <Loading/>
     )
+  }
 
+  return (
+    <AuthContext.Provider value={{ user, login, logout }}>
+      { children} 
+    </AuthContext.Provider>
+  );
 }
+
+export { useAuth };
