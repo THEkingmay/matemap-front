@@ -1,5 +1,5 @@
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
-import * as SecureStore from 'expo-secure-store'; // ต้อง Import แบบนี้สำหรับ Expo
+import * as SecureStore from 'expo-secure-store';
 import type { User } from "../types/type";
 import Loading from "./components/loading";
 
@@ -25,15 +25,16 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState<boolean>(true); 
 
   const login = async (email: string, password: string) => {
+
     try {
-      const res = await fetch(`${process.env.EXPO_PUBLIC_BASE_API_URL}/api/login`, {
+      // console.log("get email pass ", email , password)
+      const res = await fetch(`${process.env.EXPO_PUBLIC_BASE_API_URL}api/user/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
-
       const data = await res.json();
-
+      console.log("DATA from login " , data)
       if (!res.ok) {
         throw new Error(data.message || "Login failed");
       }
@@ -41,7 +42,6 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
       setUser(data.user);
 
     } catch (err) {
-      console.error("Login Error:", err);
       throw err; 
     }
   };
@@ -58,9 +58,9 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
   const loginWithToken = async () => {
     try {
       const token = await SecureStore.getItemAsync("token");
-      
+      console.log("TOKEN " , token)
       if (token) {
-        const res = await fetch(`${process.env.EXPO_PUBLIC_BASE_API_URL}/api/login-with-token`, {
+        const res = await fetch(`${process.env.EXPO_PUBLIC_BASE_API_URL}/api/user/login-with-token`, {
           method: "POST", 
           headers: {
             'Authorization': `Bearer ${token}`, 

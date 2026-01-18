@@ -10,6 +10,8 @@ interface CustomButtonProps {
     iconName: React.ComponentProps<typeof Ionicons>['name'];  
     theme: 'default' | 'danger' | 'warn';
     style?: ViewStyle; // เพิ่มเพื่อความยืดหยุ่นในการจัดวางภายนอก
+    isLoading? : boolean , 
+    loadingText? : string ,
 }
 
 // 2. กำหนดชุดสี (Color Palette) เพื่อให้ดูเป็นระบบ
@@ -24,7 +26,9 @@ export default function CustomButton({
     onPress, 
     iconName, 
     theme,
-    style 
+    style ,
+    isLoading , 
+    loadingText
 }: CustomButtonProps) {
     
     // เลือกสีตาม Theme ที่ส่งเข้ามา
@@ -37,6 +41,7 @@ export default function CustomButton({
                 { backgroundColor: activeTheme.bg },
                 style // override styles ถ้าจำเป็น
             ]} 
+            disabled={isLoading}
             onPress={onPress}
             activeOpacity={0.7} // ให้ feedback เวลา user กด
         >
@@ -49,11 +54,19 @@ export default function CustomButton({
             />
 
             {/* Title Section - Render เฉพาะเมื่อมี title ส่งมา */}
-            {title && (
+            {!isLoading && title && (
                 <Text style={[styles.text, { color: activeTheme.text }]}>
                     {title}
                 </Text>
             )}
+
+            {
+                isLoading &&  (
+                <Text style={[styles.text, { color: activeTheme.text }]}>
+                    {loadingText}
+                </Text>
+            )
+            }
         </TouchableOpacity>
     );
 }

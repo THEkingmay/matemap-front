@@ -11,13 +11,13 @@ import {
     TouchableOpacity,
     Image, // เพิ่ม Image
     ScrollView, // ใช้ ScrollView เผื่อหน้าจอเล็ก
-    Alert
 } from "react-native";
 import { FONT, KU_GREEN } from '../../../constant/theme'; 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import CustomButton from '../../components/ActionButton';
 import { Ionicons } from '@expo/vector-icons';
-
+import { Toast } from 'toastify-react-native';
+import { useAuth } from '../../AuthProvider';
 
 const logoImage = require('../../../assets/favicon.png')
 
@@ -26,18 +26,41 @@ type props = NativeStackScreenProps<AuthStackParamsList, 'login'>
 
 export default function LoginScreen({ navigation }: props) {
 
+    const {login} = useAuth()
+
     const [email, setEmail] = useState<string>('');
     const [password, setPassword] = useState<string>('');
 
-    const handleLogin = () => {
-       Alert.alert("สำเร็จ" , "เข้าสู่ระบบแล้ว")
+    const [loading , setLoading] = useState<boolean>(false)
+
+    const handleLogin = async () => {
+       try{
+        
+        if(!email || !password){
+            throw new Error("กรุณากรอดอีเมลและรหัสผ่าน")
+        }
+        if(!email.endsWith('@ku.th')){
+            throw new Error("ใช้อีเมล ku เท่านั้น")
+        }
+
+        setLoading(true)
+
+        await login(email , password)
+        Toast.success('เข้าสู่ระบบสำเร็จ' , 'top')
+
+       }catch(err){
+        // console.log((err as Error).message)
+        Toast.error((err as Error).message || 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ' , 'top')
+       }finally{
+        setLoading(false)
+       }
     }
 
     const navigateToRegister = () => {
         navigation.navigate('register'); 
     }
     const handleResetPassword = ()=>{
-        Alert.alert("ช้าก่อน" ,"การรีเซตรหัสผ่านยังใช้ไม่ได้")
+        Toast.warn("ขออภัย ยังรีเซตรรหัสผ่านไม่ได้ตอนนี้" , 'top')
     }
 
     return (
@@ -104,7 +127,8 @@ export default function LoginScreen({ navigation }: props) {
                                     onPress={handleLogin}
                                     iconName="log-in-outline" 
                                     theme="default"
-                                    // สมมติว่า CustomButton รองรับ style override เพื่อปรับให้เข้ากับธีม
+                                    isLoading={loading}
+                                    loadingText={'กำลังเข้าสู่ระบบ...'}
                                     style={styles.loginButton} 
                                 />
                             </View>
