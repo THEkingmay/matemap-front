@@ -58,7 +58,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
   const loginWithToken = async () => {
     try {
       const token = await SecureStore.getItemAsync("token");
-      console.log("TOKEN " , token)
+      // console.log("TOKEN " , token)
       if (token) {
         const res = await fetch(`${process.env.EXPO_PUBLIC_BASE_API_URL}/api/user/login-with-token`, {
           method: "POST", 
