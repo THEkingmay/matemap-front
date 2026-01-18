@@ -1,17 +1,67 @@
-import React from 'react';
+import React, { act } from 'react';
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { View } from 'react-native';
+import { View, Text } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import HomeScreen from "./screens/HomeScreen";
+import ChatScreen from './screens/ChatScreen';
+import ContractScreen from './screens/ContractScreen';
+import ProfileScreen from './screens/ProfileScreen';
+import ServiceScreen from './screens/ServiceScreen';
+import DormScreen from './screens/DormScreens';
 import SettingScreen from "./screens/Setting";
-import { KU_GREEN } from '../../constant/theme';
+
+import { activeColor, MainColor } from '../../constant/theme';
 
 export type UserTabsParamsList = {
-    home: undefined;
+    home: undefined; // explore screen
+    contract: undefined;
+    dorm: undefined;
+    chat: undefined;
+    service: undefined;
+    profile: undefined;
     setting: undefined;
 }
+
+const TAB_ICONS: Record<
+  string,
+  { active: keyof typeof Ionicons.glyphMap; inactive: keyof typeof Ionicons.glyphMap }
+> = {
+  home: {
+    active: 'search',
+    inactive: 'search-outline',
+  },
+  contract: {
+    active: 'megaphone',
+    inactive: 'megaphone-outline',
+  },
+  chat: {
+    active: 'chatbubble',
+    inactive: 'chatbubble-outline',
+  },
+  service: {
+    active: 'list',
+    inactive: 'list-outline',
+  },
+  dorm: {
+    active: 'business',
+    inactive: 'business-outline',
+  },
+  profile: {
+    active: 'person',
+    inactive: 'person-outline',
+  },
+};
+
+const TAB_LABELS: Record<string, string> = {
+  home: 'Explore',
+  chat: 'Chats',
+  contract: 'Contracts',
+  dorm: 'Dorms',
+  service: 'Services',
+  profile: 'Profile',
+};
 
 const Tabs = createBottomTabNavigator<UserTabsParamsList>();
 
@@ -24,8 +74,8 @@ export default function UserMainTabs() {
             screenOptions={({ route }) => ({
                 headerShown: false,
                 tabBarShowLabel: false,
-                tabBarActiveTintColor: KU_GREEN,
-                tabBarInactiveTintColor: '#9CA3AF',
+                tabBarActiveTintColor: activeColor,
+                tabBarInactiveTintColor: '#fff',
                 
                 tabBarStyle: {
                     position: 'absolute',
@@ -33,7 +83,8 @@ export default function UserMainTabs() {
                     bottom: insets.bottom, 
                     
                     paddingTop : 10,
-                    backgroundColor: '#ffffff',
+                    paddingInline: 5,
+                    backgroundColor: MainColor,
                     // borderRadius: 15,
                     height: 65, 
                     
@@ -51,15 +102,9 @@ export default function UserMainTabs() {
                 },
 
                 tabBarIcon: ({ focused, color, size }) => {
-                    let iconName: keyof typeof Ionicons.glyphMap;
-
-                    if (route.name === 'home') {
-                        iconName = focused ? 'home' : 'home-outline';
-                    } else if (route.name === 'setting') {
-                        iconName = focused ? 'settings' : 'settings-outline';
-                    } else {
-                        iconName = 'alert-circle';
-                    }
+                    const icon =
+                    TAB_ICONS[route.name]?.[focused ? 'active' : 'inactive'] ??
+                    'alert-circle';
 
                     return (
                         <View style={{
@@ -69,14 +114,28 @@ export default function UserMainTabs() {
                             height: '100%', // ให้ View เต็มความสูงของ Tab Bar
                             width: '100%',
                         }}>
-                            <Ionicons name={iconName} size={28} color={color} />
-                        </View>
+                        <Ionicons name={icon} size={28} color={color} />
+                        <Text
+                            style={{
+                                fontSize: 7,
+                                marginTop: 2,
+                                color,
+                            }}
+                            >
+                            {TAB_LABELS[route.name]}
+                        </Text>
+                    </View>
                     );
                 },
             })}
         >
             <Tabs.Screen name="home" component={HomeScreen} />
-            <Tabs.Screen name="setting" component={SettingScreen} />
+            <Tabs.Screen name="contract" component={ContractScreen} />
+            <Tabs.Screen name="chat" component={ChatScreen} />
+            <Tabs.Screen name="service" component={ServiceScreen} />
+            <Tabs.Screen name="dorm" component={DormScreen} />
+            <Tabs.Screen name="profile" component={ProfileScreen} />
+            {/* <Tabs.Screen name="setting" component={SettingScreen} /> */}
         </Tabs.Navigator>
     );
 }
