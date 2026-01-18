@@ -103,5 +103,6 @@ const styles = StyleSheet.create({
     },
     iconOnly: {
         marginRight: 0,
-    }
+    },
+
 });

@@ -31,7 +31,7 @@ export default function HomeScreen({navigation}: props) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Home Uer</Text>
+      <Text style={styles.text}>Home User</Text>
     </View>
   );
 }
