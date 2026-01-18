@@ -23,7 +23,7 @@ export default function RouteProtect(){
                    user.role == 'user' ? (
                          <RouteStack.Screen name="user" component={UserMainTabs}/>
                    ) : (
-                <RouteStack.Screen name="member" component={MemberMainTabs}/> 
+                        <RouteStack.Screen name="member" component={MemberMainTabs}/> 
                    )
                 )
             }

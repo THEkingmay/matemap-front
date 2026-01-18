@@ -34,7 +34,7 @@ export default function UserMainTabs() {
                     
                     paddingTop : 10,
                     backgroundColor: '#ffffff',
-                    borderRadius: 15,
+                    // borderRadius: 15,
                     height: 65, 
                     
                     elevation: 5,
