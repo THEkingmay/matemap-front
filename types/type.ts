@@ -6,10 +6,11 @@ interface User{
 interface UserCard {
   id: string;
   name: string;
-  age?: number;
+  bio :string ;
   faculty?: string;
   major?: string;
-  tags?: string[];
-  image_url?: string;
+  tag?: string[];
+  avatar_url?: string;
+  birth_year? : number
 }
 export type {User , UserCard}

@@ -12,7 +12,7 @@ import ServiceScreen from './screens/ServiceScreen';
 import DormScreen from './screens/DormScreens';
 import SettingScreen from "./screens/Setting";
 
-import { activeColor, MainColor } from '../../constant/theme';
+import { activeColor, FONT, MainColor } from '../../constant/theme';
 
 export type UserTabsParamsList = {
     home: undefined; // explore screen
@@ -55,12 +55,12 @@ const TAB_ICONS: Record<
 };
 
 const TAB_LABELS: Record<string, string> = {
-  home: 'Explore',
-  chat: 'Chats',
-  contract: 'Contracts',
-  dorm: 'Dorms',
-  service: 'Services',
-  profile: 'Profile',
+  home: 'รูมเมท',
+  chat: 'แชท',
+  contract: 'สัญญา',
+  dorm: 'หอพัก',
+  service: 'บริการ',
+  profile: 'โปรไฟล์',
 };
 
 const Tabs = createBottomTabNavigator<UserTabsParamsList>();
@@ -117,9 +117,10 @@ export default function UserMainTabs() {
                         <Ionicons name={icon} size={28} color={color} />
                         <Text
                             style={{
-                                fontSize: 7,
+                                fontSize: 10,
                                 marginTop: 2,
                                 color,
+                                fontFamily :FONT.REGULAR
                             }}
                             >
                             {TAB_LABELS[route.name]}

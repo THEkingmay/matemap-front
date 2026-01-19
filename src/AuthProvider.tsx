@@ -8,14 +8,16 @@ interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<void>; 
   logout: () => Promise<void>;
-  register : (user : User , token : string)=>Promise<void>
+  register : (user : User , token : string)=>Promise<void>;
+  token : string | null
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
   login: async () => {},
   logout: async () => {},
-  register : async ()=>{}
+  register : async ()=>{} ,
+  token:null
 });
 
 const useAuth = () => {
@@ -25,6 +27,7 @@ const useAuth = () => {
 export default function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true); 
+  const [token , setToken] = useState<string | null>(null)
 
   const login = async (email: string, password: string) => {
 
@@ -42,7 +45,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
       }
       await SecureStore.setItemAsync("token", data.token);
       setUser(data.user);
-
+      setToken(token)
     } catch (err) {
       throw err; 
     }
@@ -52,6 +55,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
    try{
     await SecureStore.setItemAsync("token", token);
     setUser(user);
+    setToken(token)
    }catch(err){
       throw err
    }
@@ -61,6 +65,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await SecureStore.deleteItemAsync("token");
       setUser(null);
+      setToken(null)
     } catch (error) {
       console.error("Logout Error:", error);
     } 
@@ -82,11 +87,13 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
         if (res.ok) {
           const data = await res.json();
           setUser(data.user); // อัปเดตข้อมูล User ล่าสุดจาก Server
+          setToken(token)
         } else {
           await logout();
         }
       } else {
         setUser(null)
+        setToken(null)
       }
     } catch (err) {
       console.error("Auto-login error:", (err as Error).message);
@@ -106,7 +113,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, login, logout , register }}>
+    <AuthContext.Provider value={{ user, login, logout , register , token }}>
       { children} 
     </AuthContext.Provider>
   );
