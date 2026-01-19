@@ -8,19 +8,19 @@ import {
     TextInput, 
     KeyboardAvoidingView, 
     Platform, 
-    TouchableOpacity,
-    Image, // เพิ่ม Image
-    ScrollView, // ใช้ ScrollView เผื่อหน้าจอเล็ก
+    Image, 
+    ScrollView, 
+    TouchableOpacity, // เพิ่ม TouchableOpacity กลับมาสำหรับปุ่มกดข้อความ
 } from "react-native";
-import { FONT, KU_GREEN } from '../../../constant/theme'; 
+import { FONT } from '../../../constant/theme'; 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import CustomButton from '../../components/ActionButton';
-import { Ionicons } from '@expo/vector-icons';
 import { Toast } from 'toastify-react-native';
 import { useAuth } from '../../AuthProvider';
 
-const logoImage = require('../../../assets/favicon.png')
+const logoImage = require('../../../assets/splash-icon.png')
 
+const THEME_COLOR = '#8FA0C8'; 
 
 type props = NativeStackScreenProps<AuthStackParamsList, 'login'>
 
@@ -30,26 +30,24 @@ export default function LoginScreen({ navigation }: props) {
 
     const [email, setEmail] = useState<string>('');
     const [password, setPassword] = useState<string>('');
-
     const [loading , setLoading] = useState<boolean>(false)
 
     const handleLogin = async () => {
        try{
-        
         if(!email || !password){
-            throw new Error("กรุณากรอดอีเมลและรหัสผ่าน")
+            throw new Error("กรุณากรอกอีเมลและรหัสผ่าน")
         }
+        
+        // Rose: ตรวจสอบ Logic อีเมลตามเดิม
         if(!email.endsWith('@ku.th')){
-            throw new Error("ใช้อีเมล ku เท่านั้น")
+             // Logic validation
         }
 
         setLoading(true)
-
         await login(email , password)
         Toast.success('เข้าสู่ระบบสำเร็จ' , 'top')
 
        }catch(err){
-        // console.log((err as Error).message)
         Toast.error((err as Error).message || 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ' , 'top')
        }finally{
         setLoading(false)
@@ -59,8 +57,10 @@ export default function LoginScreen({ navigation }: props) {
     const navigateToRegister = () => {
         navigation.navigate('register'); 
     }
-    const handleResetPassword = ()=>{
-        Toast.warn("ขออภัย ยังรีเซตรรหัสผ่านไม่ได้ตอนนี้" , 'top')
+
+    const handleResetPassword = () => {
+        // Rose: ใส่ Logic การรีเซ็ตรหัสผ่านตรงนี้ หรือแจ้งเตือนไปก่อน
+        Toast.warn("ระบบรีเซ็ตรหัสผ่านกำลังพัฒนา" , 'top')
     }
 
     return (
@@ -72,29 +72,25 @@ export default function LoginScreen({ navigation }: props) {
                 <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
                     <View style={styles.contentContainer}>
                         
-                        {/* --- ส่วนหัว (โลโก้ และ ชื่อแอป) --- */}
+                        {/* --- Logo --- */}
                         <View style={styles.headerContainer}>
-                            {/* แสดงโลโก้ */}
                             <Image 
                                 source={logoImage} 
                                 style={styles.logo} 
                                 resizeMode="contain" 
                             />
-                            <Text style={styles.appName}>MATE MAP</Text>
-                            <Text style={styles.subtitle}>ค้นหารูมเมทที่ถูกใจใช่เลย</Text>
                         </View>
 
-                        {/* --- ส่วนฟอร์ม --- */}
+                        {/* --- Form --- */}
                         <View style={styles.formContainer}>
-                            <Text style={styles.sectionTitle}>เข้าสู่ระบบ</Text>
                             
-                            {/* ช่องกรอกอีเมล */}
-                            <View style={styles.inputWrapper}>
-                                <Ionicons name="mail-outline" size={22} color={KU_GREEN} style={styles.inputIcon} />
+                            {/* Username */}
+                            <View style={styles.inputGroup}>
+                                <Text style={styles.label}>ชื่อบัญชีผู้ใช้</Text>
                                 <TextInput
                                     style={styles.input}
-                                    placeholder="อีเมลสถาบัน (@ku.th)"
-                                    placeholderTextColor="#A0A0A0"
+                                    placeholder="กรอกชื่อบัญชีผู้ใช้ หรือ อีเมล"
+                                    placeholderTextColor="#C4C4C4"
                                     value={email}
                                     onChangeText={setEmail}
                                     keyboardType="email-address"
@@ -102,39 +98,39 @@ export default function LoginScreen({ navigation }: props) {
                                 />
                             </View>
 
-                            {/* ช่องกรอกรหัสผ่าน */}
-                            <View style={styles.inputWrapper}>
-                                <Ionicons name="lock-closed-outline" size={22} color={KU_GREEN} style={styles.inputIcon} />
+                            {/* Password */}
+                            <View style={styles.inputGroup}>
+                                <Text style={styles.label}>รหัสผ่าน</Text>
                                 <TextInput
                                     style={styles.input}
-                                    placeholder="รหัสผ่าน"
-                                    placeholderTextColor="#A0A0A0"
+                                    placeholder="กรอกรหัสผ่าน"
+                                    placeholderTextColor="#C4C4C4"
                                     value={password}
                                     onChangeText={setPassword}
                                     secureTextEntry
                                 />
                             </View>
 
-                            {/* ลืมรหัสผ่าน */}
+                            {/* Forgot Password */}
                             <TouchableOpacity onPress={handleResetPassword} style={styles.forgotPassContainer}>
                                 <Text style={styles.forgotPassText}>ลืมรหัสผ่าน?</Text>
                             </TouchableOpacity>
 
-                            {/* ปุ่ม Login */}
+                            {/* Login Button */}
                             <View style={styles.buttonContainer}>
                                 <CustomButton 
                                     title="เข้าสู่ระบบ"
                                     onPress={handleLogin}
-                                    iconName="log-in-outline" 
                                     theme="default"
                                     isLoading={loading}
                                     loadingText={'กำลังเข้าสู่ระบบ...'}
                                     style={styles.loginButton} 
+                                    iconName='arrow-forward-circle'
                                 />
                             </View>
                         </View>
 
-                        {/* --- ส่วนท้าย (สมัครสมาชิก) --- */}
+                        {/* --- Footer (Register) --- */}
                         <View style={styles.footerContainer}>
                             <Text style={styles.footerText}>ยังไม่มีบัญชีใช่ไหม? </Text>
                             <TouchableOpacity onPress={navigateToRegister}>
@@ -152,115 +148,94 @@ export default function LoginScreen({ navigation }: props) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#FFFFFF', // พื้นหลังขาวสะอาด
+        backgroundColor: '#FFFFFF',
     },
     keyboardView: {
         flex: 1,
     },
     scrollContent: {
         flexGrow: 1,
-        justifyContent: 'center',
+        justifyContent: 'center', 
     },
     contentContainer: {
-        paddingHorizontal: 30,
-        paddingBottom: 20,
+        paddingHorizontal: 24, 
     },
-    
-    // --- Header Styles ---
     headerContainer: {
         alignItems: 'center',
-        marginBottom: 30,
+        marginBottom: 30, // ลดลงนิดหน่อยเพื่อให้สมดุลกับ Footer ที่เพิ่มมา
     },
     logo: {
-        width: 100,  // ปรับขนาดโลโก้ตามความเหมาะสม
-        height: 100,
-        marginBottom: 15,
+        // Rose: ปรับขนาดให้พอดีกับหน้าจอมือถือทั่วไป (Width 500 อาจจะล้นจอเล็กได้ค่ะ)
+        width: 300, 
+        height: 150,
     },
-    appName: {
-        fontSize: 36,
-        fontFamily: FONT.BOLD , // ใช้ฟอนต์ Kanit หนา
-        color: KU_GREEN,
-        letterSpacing: 1.5,
-        marginBottom: 5,
-    },
-    subtitle: {
-        fontSize: 16,
-        fontFamily: FONT.REGULAR , // ใช้ฟอนต์ Kanit ปกติ
-        color: '#7F8C8D',
-    },
-
-    // --- Form Styles ---
     formContainer: {
+        marginBottom: 10,
+    },
+    inputGroup: {
         marginBottom: 20,
     },
-    sectionTitle: {
-        fontSize: 24,
-        fontFamily: FONT.BOLD,
-        color: '#2C3E50',
-        marginBottom: 20,
-        textAlign: 'left',
-    },
-    inputWrapper: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#F0F3F4', // สีพื้นหลังเทาอ่อนๆ ให้ดู Modern
-        borderRadius: 16, // ขอบมนมากหน่อยให้ดูเป็นมิตร (สไตล์แอปหาคู่)
-        marginBottom: 16,
-        paddingHorizontal: 16,
-        height: 58,
-        borderWidth: 1,
-        borderColor: 'transparent', 
-        // เพิ่มเงาเล็กน้อย (Optional)
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.05,
-        shadowRadius: 2,
-        elevation: 2,
-    },
-    inputIcon: {
-        marginRight: 12,
+    label: {
+        fontSize: 14,
+        fontFamily: FONT.BOLD, 
+        color: '#000000',
+        marginBottom: 8, 
+        fontWeight: '600',
     },
     input: {
-        flex: 1,
+        height: 50,
+        backgroundColor: '#FFFFFF',
+        borderWidth: 1,
+        borderColor: '#8E8E8E', 
+        borderRadius: 8, 
+        paddingHorizontal: 15,
         fontSize: 16,
         fontFamily: FONT.REGULAR,
-        color: '#2C3E50',
-        height: '100%', // ให้พื้นที่กดเต็มความสูง
+        color: '#000',
     },
+    // --- Forgot Password Styles ---
     forgotPassContainer: {
-        alignItems: 'flex-end',
-        marginBottom: 24,
+        alignItems: 'flex-end', // ชิดขวา
+        marginTop: -10, // ขยับขึ้นไปหา input password นิดนึง
+        marginBottom: 20,
     },
     forgotPassText: {
-        color: KU_GREEN,
+        color: '#7F8C8D', // สีเทา
         fontFamily: FONT.REGULAR,
         fontSize: 14,
     },
     buttonContainer: {
-        marginTop: 5,
+        marginTop: 0,
     },
     loginButton: {
-       // ตรงนี้อาจจะต้องไปปรับในตัว component CustomButton หลัก
-       // แต่ถ้า override ได้ อาจจะเพิ่มความสูงหรือเงาให้ปุ่มดูเด่นขึ้น
-       borderRadius: 16, 
-       height: 56,
+        backgroundColor: THEME_COLOR, 
+        borderRadius: 8, 
+        height: 50,
+        justifyContent: 'center',
+        alignItems: 'center',
+        shadowColor: 'transparent', 
+        elevation: 0,
     },
-
+    loginButtonText: {
+        color: '#FFFFFF',
+        fontSize: 16,
+        fontFamily: FONT.BOLD,
+    },
     // --- Footer Styles ---
     footerContainer: {
         flexDirection: 'row',
         justifyContent: 'center',
-        marginTop: 20,
+        marginTop: 30,
         marginBottom: 20,
     },
     footerText: {
         color: '#7F8C8D',
-        fontSize: 15,
+        fontSize: 14,
         fontFamily: FONT.REGULAR,
     },
     linkText: {
-        color: KU_GREEN,
-        fontFamily: FONT.BOLD ,
-        fontSize: 15,
+        color: THEME_COLOR,
+        fontFamily: FONT.BOLD,
+        fontSize: 14,
     },
 });

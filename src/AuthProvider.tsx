@@ -8,12 +8,14 @@ interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<void>; 
   logout: () => Promise<void>;
+  register : (user : User , token : string)=>Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
   login: async () => {},
   logout: async () => {},
+  register : async ()=>{}
 });
 
 const useAuth = () => {
@@ -34,7 +36,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify({ email, password }),
       });
       const data = await res.json();
-      console.log("DATA from login " , data)
+      // console.log("DATA from login " , data)
       if (!res.ok) {
         throw new Error(data.message || "Login failed");
       }
@@ -45,6 +47,15 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
       throw err; 
     }
   };
+
+  const register = async (user: User , token : string) =>{
+   try{
+    await SecureStore.setItemAsync("token", token);
+    setUser(user);
+   }catch(err){
+      throw err
+   }
+  }
 
   const logout = async () => {
     try {
@@ -95,7 +106,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout , register }}>
       { children} 
     </AuthContext.Provider>
   );
