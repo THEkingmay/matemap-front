@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, Image, StyleSheet, Dimensions, Platform } from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { UserCard } from '../../../types/type';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -23,7 +24,10 @@ export default function RenderCardContent(card: UserCard | null){
         style={styles.cardImage}
         resizeMode="cover"
       />
-
+      <LinearGradient
+        colors={['transparent', 'rgba(0,0,0,0.6)', 'rgba(0,0,0,0.9)']}
+        style={styles.gradient}
+      />
 
       <View style={styles.cardContent}>
         {/* Name & Age */}
@@ -77,6 +81,13 @@ export default function RenderCardContent(card: UserCard | null){
 };
 
 const styles = StyleSheet.create({
+  gradient: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: '60%', // ให้เงากินพื้นที่สูงขึ้นมา 60% ของการ์ด
+  },
   cardContainer: {
     flex: 1,
     borderRadius: 24,

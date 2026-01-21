@@ -24,7 +24,7 @@ export default function RouteProtect(){
                          <RouteStack.Screen name="user" component={UserMainTabs}/>
                    ) : (
                         <RouteStack.Screen name="member" component={MemberMainTabs}/> 
-                   )
+                   ) 
                 )
             }
             </RouteStack.Navigator>
