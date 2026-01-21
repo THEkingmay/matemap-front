@@ -231,7 +231,7 @@ export default function ProfileScreen({ navigation }: props) {
 
       setUserProfile(formData); 
       setIsEditing(false); 
-      Toast.success("Success");
+      Toast.success("บันทึกสำเร็จ");
     } catch (error) {
         Toast.error("บันทึกไม่สำเร็จ");
     } finally {
