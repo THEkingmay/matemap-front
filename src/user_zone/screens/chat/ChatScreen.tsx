@@ -1,9 +1,9 @@
 import React from 'react';
 import { View, Text, StyleSheet, FlatList } from 'react-native';
-import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
-import type { UserTabsParamsList } from '../UserMainTabs';
+import { ChatStackParamsList } from './ChatStack';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-type props = BottomTabScreenProps<UserTabsParamsList, 'chat'>;
+type props = NativeStackScreenProps<ChatStackParamsList , 'chat'>
 
 const MOCK_CHATS = [
   {

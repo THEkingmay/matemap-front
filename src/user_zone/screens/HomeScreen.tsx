@@ -19,6 +19,7 @@ import type { UserCard } from '../../../types/type';
 import { FONT } from '../../../constant/theme';
 import { useAuth } from '../../AuthProvider';
 import RenderCardContent from '../component/RenderCard';
+import MatchModal from '../component/MatchModal';
 
 type Props = BottomTabScreenProps<UserTabsParamsList, 'home'>;
 
@@ -39,6 +40,26 @@ export default function HomeScreen({ navigation }: Props) {
 
   const position = useRef(new Animated.ValueXY()).current;
 
+
+      // State สำหรับ Modal
+    const [matchModalVisible, setMatchModalVisible] = useState<boolean>(false);
+    const [lastMatchData, setLastMatchData] = useState<{name: string , room_id : string} | null>(null);
+
+    // Function ปิด Modal
+    const handleCloseMatch = () => {
+      setMatchModalVisible(false);
+      setLastMatchData(null);
+    };
+
+    // Function ไปหน้าแชท (ต้องเชื่อมกับ Navigation ของจริง)
+    const handleGoToChat = () => {
+      setMatchModalVisible(false);
+      navigation.navigate('chat_stack', { 
+          screen: 'chat_select',
+          params: { room_id:lastMatchData?.room_id }
+      } as any);
+      // console.log("Go to chat with", lastMatchData?.name);
+    };
   // Sync ref with state whenever cards change
   useEffect(() => {
     cardsRef.current = cards;
@@ -128,9 +149,11 @@ export default function HomeScreen({ navigation }: Props) {
   };
 
   const onSwipeComplete = async (direction: 'right' | 'left') => {
+
+
     // 1. เก็บค่าของปัจจุบันไว้ก่อน เพราะเดี๋ยวเราจะลบออกจาก State
     const item = cardsRef.current[0];
-    const swipeAction = direction === 'left' ? 'pass' : 'like';
+    const swipeAction = direction === 'left' ? 'pass' : 'like'
 
     if (!item) return;
 
@@ -170,14 +193,18 @@ export default function HomeScreen({ navigation }: Props) {
       });
 
       const data = await res.json();
-      // console.log(data)
+      console.log(data)
       // ---------------------------------------------------------
       // ✅ STEP 3: HANDLE MATCH (ถ้าแมทช์ ค่อยเด้ง Modal)
       // ---------------------------------------------------------
       if (res.ok && data?.is_match) {
-        // ตรงนี้แนะนำให้ set state เพื่อเปิด Modal แสดงความยินดี
-        // setMatchData({ user: item, matchId: data.match_id });
-        Alert.alert("ดีใจด้วย" , `คุณแมทช์กับผู้ใช้ ${data.targetName}`)
+        const matchedUser = {
+            name: data.target_name||  "Someone", 
+            room_id: data.room_id || ''
+        };  
+
+        setLastMatchData(matchedUser);
+        setMatchModalVisible(true); // เปิด Modal แทน Alert
         console.log("It's a Match!"); 
       }
 
@@ -274,6 +301,12 @@ export default function HomeScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}> 
+      <MatchModal 
+          visible={matchModalVisible}
+          onClose={handleCloseMatch}
+          onChat={handleGoToChat}
+          matchedName={lastMatchData?.name || ''}
+      />
       <View style={styles.header}>
         <View style={{flexDirection:'row', alignItems:'center'}}>
             {/* Ensure path is correct for your assets */}

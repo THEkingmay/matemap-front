@@ -5,7 +5,7 @@ import { View, Text } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import HomeScreen from "./screens/HomeScreen";
-import ChatScreen from './screens/ChatScreen';
+import ChatStack from './screens/chat/ChatStack';
 import ContractScreen from './screens/ContractScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import ServiceScreen from './screens/ServiceScreen';
@@ -18,7 +18,7 @@ export type UserTabsParamsList = {
     home: undefined; // explore screen
     contract: undefined;
     dorm: undefined;
-    chat: undefined;
+    chat_stack: undefined;
     service: undefined;
     profile: undefined;
     setting: undefined;
@@ -36,7 +36,7 @@ const TAB_ICONS: Record<
     active: 'megaphone',
     inactive: 'megaphone-outline',
   },
-  chat: {
+  chat_stack: {
     active: 'chatbubble',
     inactive: 'chatbubble-outline',
   },
@@ -56,7 +56,7 @@ const TAB_ICONS: Record<
 
 const TAB_LABELS: Record<string, string> = {
   home: 'รูมเมท',
-  chat: 'แชท',
+  chat_stack: 'แชท',
   contract: 'สัญญา',
   dorm: 'หอพัก',
   service: 'บริการ',
@@ -132,7 +132,7 @@ export default function UserMainTabs() {
         >
             <Tabs.Screen name="home" component={HomeScreen} />
             <Tabs.Screen name="contract" component={ContractScreen} />
-            <Tabs.Screen name="chat" component={ChatScreen} />
+            <Tabs.Screen name="chat_stack" component={ChatStack} />
             <Tabs.Screen name="service" component={ServiceScreen} />
             <Tabs.Screen name="dorm" component={DormScreen} />
             <Tabs.Screen name="profile" component={ProfileScreen} />

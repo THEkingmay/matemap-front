@@ -1,6 +1,7 @@
 interface User{
     id : string , 
-    role : string
+    role : string ,
+    image_url : string
 }
 
 interface UserCard {
