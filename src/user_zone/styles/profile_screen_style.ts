@@ -2,6 +2,21 @@ import { StyleSheet } from "react-native";
 import { MainColor } from "../../../constant/theme";
 
 const styles = StyleSheet.create({
+  deleteBadge: {
+        position: 'absolute',
+        top: 0,            // ปรับตำแหน่งตามความเหมาะสม
+        right: 0,          // ปรับตำแหน่งตามความเหมาะสม
+        backgroundColor: '#FF3B30', // สีแดงเพื่อสื่อถึงการลบ (Danger color)
+        padding: 6,
+        borderRadius: 15,
+        borderWidth: 2,
+        borderColor: '#FFF',
+        elevation: 4,      // เงาสำหรับ Android
+        shadowColor: '#000', // เงาสำหรับ iOS
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 2,
+    },
   // เพิ่ม/แก้ไข Style สำหรับ Tags
   tagContainer: {
     flexDirection: 'row',

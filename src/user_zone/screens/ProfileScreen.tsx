@@ -11,7 +11,8 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
-  Dimensions
+  Dimensions,
+  Pressable
 } from 'react-native';
 import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import type { UserTabsParamsList } from '../UserMainTabs';
@@ -37,7 +38,7 @@ interface UserProfileType {
   name: string; 
   bio: string;
   tag: string[]; 
-  image_url: string; 
+  image_url: string | null; 
   faculty: string;
   major: string; 
   birth_year: number;
@@ -53,8 +54,27 @@ export default function ProfileScreen({ navigation }: props) {
   const [formData, setFormData] = useState<UserProfileType | null>(null);
 
   const [loading, setLoading] = useState<boolean>(true);
-  const [uploadingImage, setUploadingImage] = useState(false);
-    
+
+  const [uploadingImage, setUploadingImage] = useState<boolean>(false);
+  const [deletingImage, setDeletingImage] = useState<boolean>(false);  
+const confirmDeleteProfile = () => {
+    Alert.alert(
+      "ยืนยันการลบ",
+      "คุณแน่ใจหรือไม่ว่าต้องการลบรูปโปรไฟล์นี้? การกระทำนี้ไม่สามารถย้อนกลับได้",
+      [
+        {
+          text: "ยกเลิก",
+          style: "cancel"
+        },
+        {
+          text: "ลบรูปภาพ",
+          style: "destructive", 
+          onPress: deleteProfile
+        }
+      ]
+    );
+  };
+
   const [newTagInput, setNewTagInput] = useState('');
   // คำนวณอายุ
   const currentYear = new Date().getFullYear();
@@ -197,7 +217,7 @@ export default function ProfileScreen({ navigation }: props) {
       const newImageUrl = data.url || data.image_url; 
       
       if (newImageUrl) {
-
+        setIsEditing(false)
         setUserProfile((prev) => prev ? { ...prev, image_url: newImageUrl } : null);
         setFormData((prev) => prev ? { ...prev, image_url: newImageUrl } : null);
         Toast.success("อัปเดตรูปโปรไฟล์สำเร็จ");
@@ -210,8 +230,47 @@ export default function ProfileScreen({ navigation }: props) {
       setUploadingImage(false);
     }
   };
+  const deleteProfile = async () => {
+    if (deletingImage) return; // ป้องกันการกดซ้ำ
+
+    try {
+      setDeletingImage(true); // เริ่ม Loading
+
+      const res = await fetch(`${process.env.EXPO_PUBLIC_BASE_API_URL}/api/cloudinary/delete?userId=${user?.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}` 
+        }
+      });
+
+      const data = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(data.error || "ลบรูปไม่สำเร็จ");
+      }
+
+      // อัปเดต State หน้าจอให้รูปหายไปทันที
+      setUserProfile((prev) => prev ? { ...prev, image_url: null } : null);
+      setFormData((prev) => prev ? { ...prev, image_url: null } : null);
+      setIsEditing(false)
+      Toast.success("ลบรูปโปรไฟล์เรียบร้อยแล้ว");
+
+    } catch (err) {
+      console.error(err);
+      Toast.error((err as Error).message || "เกิดข้อผิดพลาดในการลบรูป");
+    } finally {
+      setDeletingImage(false); 
+    }
+  }
+
 
   const onSave = async () => {
+    if(!formData?.name){
+        return Toast.warn('ชื่อห้ามเป็นช่องว่าง')
+    }
+    if(formData?.birth_year < 1950){
+        return Toast.warn('นิสิตจริงหรือปล่าว?')
+    }
     try {
       setLoading(true);
       
@@ -295,6 +354,22 @@ export default function ProfileScreen({ navigation }: props) {
                             <Ionicons name="camera" size={16} color="#FFF" />
                         </View>
                     )}
+                   {isEditing && formData?.image_url && !uploadingImage && (
+                    <TouchableOpacity 
+                        onPress={confirmDeleteProfile} 
+                        disabled={deletingImage}   
+                        style={styles.deleteBadge}
+                        activeOpacity={0.7}
+                    >
+                        {deletingImage ? (
+                            // แสดง Loading ตัวเล็กๆ
+                            <ActivityIndicator size="small" color="#FFF" />
+                        ) : (
+                            // แสดงไอคอนถังขยะปกติ
+                            <Ionicons name="trash" size={16} color="#FFF" />
+                        )}
+                    </TouchableOpacity>
+                )}
                 </TouchableOpacity>
 
                 <View style={{ alignItems: 'center', marginTop: 10, width: '100%' }}>
