@@ -2,7 +2,7 @@ import React from 'react';
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 
 import HomeScreen from "./screens/HomeScreen";
-import SettingScreen from "./screens/Setting";
+import ProfileScreen from "./screens/ProfileScreen";
 import { Ionicons } from '@expo/vector-icons';
 import { KU_GREEN } from '../../constant/theme';
 import { View } from 'react-native';
@@ -11,7 +11,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export type MemberTabsParamsList = {
     home: undefined;
-    setting: undefined;
+    profile: undefined;
 };
 
 const Tabs = createBottomTabNavigator<MemberTabsParamsList>();
@@ -55,7 +55,7 @@ export default function MemberMainTabs() {
 
                     if (route.name === 'home') {
                         iconName = focused ? 'home' : 'home-outline';
-                    } else if (route.name === 'setting') {
+                    } else if (route.name === 'profile') {
                         iconName = focused ? 'settings' : 'settings-outline';
                     } else {
                         iconName = 'alert-circle';
@@ -76,7 +76,7 @@ export default function MemberMainTabs() {
             })}
         >
             <Tabs.Screen name="home" component={HomeScreen}/>
-            <Tabs.Screen name="setting" component={SettingScreen}/>
+            <Tabs.Screen name="profile" component={ProfileScreen}/>
         </Tabs.Navigator>
     );
 }
