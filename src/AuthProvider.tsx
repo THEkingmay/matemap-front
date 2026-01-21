@@ -45,7 +45,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
       }
       await SecureStore.setItemAsync("token", data.token);
       setUser(data.user);
-      setToken(token)
+      setToken(data.token)
     } catch (err) {
       throw err; 
     }
