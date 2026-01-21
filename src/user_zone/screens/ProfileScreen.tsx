@@ -378,11 +378,12 @@ const confirmDeleteProfile = () => {
                             style={styles.nameInput} 
                             value={formData?.name}
                             onChangeText={(text) => handleUpdate('name', text)}
-                            placeholder="ชื่อ-นามสกุล"
+                            placeholder="ระบุชื่อของคุณ..."
+                            placeholderTextColor="#A0AEC0"
                             textAlign="center"
                         />
                     ) : (
-                        <Text style={styles.nameText}>ชื่อ {userProfile?.name || 'Unknown User'}</Text>
+                        <Text style={styles.nameText}>{userProfile?.name || 'Unknown User'}</Text>
                     )}
 
                     {isEditing ? (
@@ -391,6 +392,7 @@ const confirmDeleteProfile = () => {
                             value={formData?.bio}
                             onChangeText={(text) => handleUpdate('bio', text)}
                             placeholder="เพิ่มคำอธิบายตัวตน..."
+                            placeholderTextColor="#A0AEC0"
                             multiline
                             textAlign="center"
                         />
@@ -466,6 +468,7 @@ const confirmDeleteProfile = () => {
                         <TextInput
                             style={styles.addTagInput}
                             placeholder="เพิ่มความสนใจ (เช่น Coding)"
+                            placeholderTextColor="#A0AEC0"
                             value={newTagInput}
                             onChangeText={setNewTagInput}
                             onSubmitEditing={handleAddTag} // กด Enter บนคีย์บอร์ดเพื่อเพิ่มได้เลย
@@ -588,6 +591,7 @@ const InfoRow = ({
                     value={value}
                     onChangeText={onChangeText}
                     placeholder={`ระบุ${label}`}
+                    placeholderTextColor="#A0AEC0"
                     keyboardType={keyboardType || 'default'}
                 />
             ) : (

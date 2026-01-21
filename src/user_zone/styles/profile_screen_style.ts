@@ -178,8 +178,8 @@ const styles = StyleSheet.create({
   bioInput: {
     fontFamily: 'Kanit_400Regular',
     fontSize: 14,
-    color: '#4A5568',
-    backgroundColor: '#F7FAFC',
+    color: '#5d5d5d',
+    backgroundColor: MainColor + '33', // สีพื้นหลังจางๆ
     borderRadius: 8,
     padding: 10,
     width: '100%',
