@@ -170,7 +170,7 @@ export default function HomeScreen({ navigation }: Props) {
       });
 
       const data = await res.json();
-      console.log(data)
+      // console.log(data)
       // ---------------------------------------------------------
       // ✅ STEP 3: HANDLE MATCH (ถ้าแมทช์ ค่อยเด้ง Modal)
       // ---------------------------------------------------------

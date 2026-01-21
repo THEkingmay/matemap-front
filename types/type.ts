@@ -10,7 +10,7 @@ interface UserCard {
   faculty?: string;
   major?: string;
   tag?: string[];
-  avatar_url?: string;
+  image_url?: string;
   birth_year? : number
 }
 export type {User , UserCard}

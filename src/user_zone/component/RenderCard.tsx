@@ -11,8 +11,8 @@ export default function RenderCardContent(card: UserCard | null){
   const currYear = new Date().getFullYear();
   const displayAge = card.birth_year ? currYear - card.birth_year : null;
   const displayName = card.name || 'ไม่ระบุชื่อ';
-  const avatarSource = card.avatar_url 
-    ? { uri: card.avatar_url } 
+  const avatarSource = card.image_url
+    ? { uri: card.image_url } 
     : require('../../../assets/no-profile.png');
 
   return (
