@@ -152,25 +152,29 @@ export default function HomeScreen({ navigation }: Props) {
     // ✅ STEP 2: API CALL (ทำเบื้องหลัง)
     // ---------------------------------------------------------
     try {
+
+      const dataBody = {
+        id: user?.id, // ID เรา
+        target_id: item.id, // ID คนที่เราปัด
+        action: swipeAction
+      }
+      // console.log(dataBody)
+
       const res = await fetch(`${process.env.EXPO_PUBLIC_BASE_API_URL}/api/swipe/update-swipe`, {
         method: 'POST', 
         headers: {
           'Authorization': `Bearer ${token}`, 
           'Content-Type': 'application/json'
         }, 
-        body: JSON.stringify({ // ต้องแปลงเป็น JSON string
-          id: user?.id, // ID เรา
-          target_id: item.id, // ID คนที่เราปัด
-          action: swipeAction
-        })
+        body: JSON.stringify(dataBody)
       });
 
       const data = await res.json();
-
+      console.log(data)
       // ---------------------------------------------------------
       // ✅ STEP 3: HANDLE MATCH (ถ้าแมทช์ ค่อยเด้ง Modal)
       // ---------------------------------------------------------
-      if (res.ok && data.is_match) {
+      if (res.ok && data?.is_match) {
         // ตรงนี้แนะนำให้ set state เพื่อเปิด Modal แสดงความยินดี
         // setMatchData({ user: item, matchId: data.match_id });
         Alert.alert("ดีใจด้วย" , `คุณแมทช์กับผู้ใช้ ${data.targetName}`)

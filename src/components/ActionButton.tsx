@@ -1,7 +1,7 @@
 import React from 'react';
 import { Text, TouchableOpacity, StyleSheet, ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { KU_GREEN } from '../../constant/theme';
+import { MainColor } from '../../constant/theme';
 
 // 1. ปรับปรุง Interface ให้รองรับ Type ที่ถูกต้อง
 interface CustomButtonProps {
@@ -16,7 +16,7 @@ interface CustomButtonProps {
 
 // 2. กำหนดชุดสี (Color Palette) เพื่อให้ดูเป็นระบบ
 const COLORS = {
-    default: { bg: KU_GREEN, text: '#FFFFFF' }, // สีน้ำเงิน Modern Blue
+    default: { bg: MainColor, text: '#FFFFFF' }, // สีน้ำเงิน Modern Blue
     danger: { bg: '#DC2626', text: '#FFFFFF' },  // สีแดงเข้ม
     warn: { bg: '#D97706', text: '#FFFFFF' },    // สีส้มอำพัน
 };
