@@ -4,27 +4,23 @@ import {
   Text, 
   StyleSheet, 
   Image, 
-  ScrollView, 
   ActivityIndicator, 
   Alert,
   TextInput,
   TouchableOpacity,
-  KeyboardAvoidingView,
-  Platform,
   Dimensions,
-  Pressable
+  StatusBar
 } from 'react-native';
 import type { ProfileStackParamsList } from './ProfileStack';
-import { MainColor } from '../../../../constant/theme'; 
+// ตรวจสอบ path ของ theme ให้ถูกต้องนะคะ
+import { MainColor, FONT } from '../../../../constant/theme'; 
 import { useAuth } from '../../../AuthProvider';
 import CustomButton from '../../../components/ActionButton';
 import { Ionicons } from '@expo/vector-icons';
-import { Toast } from 'toastify-react-native';
-import styles from '../../styles/profile_screen_style'
-
+import Toast from 'react-native-toast-message';
 import * as ImagePicker from 'expo-image-picker'; 
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 type props = NativeStackScreenProps<ProfileStackParamsList, 'profile'>
 
@@ -52,32 +48,11 @@ export default function ProfileScreen({ navigation }: props) {
   const [userProfile, setUserProfile] = useState<UserProfileType | null>(null);
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [formData, setFormData] = useState<UserProfileType | null>(null);
-
   const [loading, setLoading] = useState<boolean>(true);
-
   const [uploadingImage, setUploadingImage] = useState<boolean>(false);
-  const [deletingImage, setDeletingImage] = useState<boolean>(false);  
-
-const confirmDeleteProfile = () => {
-    Alert.alert(
-      "ยืนยันการลบ",
-      "คุณแน่ใจหรือไม่ว่าต้องการลบรูปโปรไฟล์นี้? การกระทำนี้ไม่สามารถย้อนกลับได้",
-      [
-        {
-          text: "ยกเลิก",
-          style: "cancel"
-        },
-        {
-          text: "ลบรูปภาพ",
-          style: "destructive", 
-          onPress: deleteProfile
-        }
-      ]
-    );
-  };
-
+  const [deletingImage, setDeletingImage] = useState<boolean>(false);   
   const [newTagInput, setNewTagInput] = useState('');
-  // คำนวณอายุ
+  
   const currentYear = new Date().getFullYear();
 
   useEffect(() => {
@@ -94,13 +69,10 @@ const confirmDeleteProfile = () => {
           'Authorization': `Bearer ${token}`
         }
       });
-
       if (!response.ok) throw new Error('Failed to fetch user data');
-
       const data = await response.json();
       setUserProfile(data);
       setFormData(data); 
-
     } catch (error) {
       console.error(error);
       Alert.alert('Error', 'ไม่สามารถดึงข้อมูลโปรไฟล์ได้');
@@ -116,28 +88,22 @@ const confirmDeleteProfile = () => {
   };
 
   const handleAddTag = () => {
-    if (!newTagInput.trim()) return; // ถ้าว่างเปล่าไม่ต้องทำอะไร
-
-    // ตรวจสอบว่ามี Tag นี้อยู่แล้วหรือยัง (ป้องกันซ้ำ)
+    if (!newTagInput.trim()) return;
     if (formData?.tag?.includes(newTagInput.trim())) {
        Alert.alert('ข้อมูลซ้ำ', 'คุณมี Tag นี้อยู่แล้วค่ะ');
        return;
     }
-
     if (formData && formData.tag) {
-        if (formData.tag.length >= 5) {
-            Alert.alert('จำกัดจำนวน', 'เพิ่มได้สูงสุด 5 แท็กเท่านั้นค่ะ');
+        if (formData.tag.length >= 10) {
+            Alert.alert('จำกัดจำนวน', 'เพิ่มได้สูงสุด 10 แท็กเท่านั้นค่ะ');
             return;
         }
-
-        // อัปเดต State โดยเพิ่ม Tag ใหม่เข้าไป
         setFormData({
             ...formData,
             tag: [...formData.tag, newTagInput.trim()]
         });
-        setNewTagInput(''); // เคลียร์ช่องพิมพ์
+        setNewTagInput('');
     } else if (formData) {
-        // กรณีเริ่มต้นยังไม่มี array tag เลย
         setFormData({
             ...formData,
             tag: [newTagInput.trim()]
@@ -146,7 +112,6 @@ const confirmDeleteProfile = () => {
     }
   };
 
-  // 2. ฟังก์ชันลบ Tag
   const handleRemoveTag = (tagToRemove: string) => {
     if (formData) {
         setFormData({
@@ -155,145 +120,122 @@ const confirmDeleteProfile = () => {
         });
     }
   };
+
   const handleYearUpdate = (text: string) => {
     const numericValue = text.replace(/[^0-9]/g, '');
     handleUpdate('birth_year', numericValue ? parseInt(numericValue) : 0);
   };
 
+  const confirmDeleteProfile = () => {
+    Alert.alert(
+      "ยืนยันการลบ",
+      "คุณแน่ใจหรือไม่ว่าต้องการลบรูปโปรไฟล์นี้?",
+      [
+        { text: "ยกเลิก", style: "cancel" },
+        { text: "ลบรูปภาพ", style: "destructive", onPress: deleteProfile }
+      ]
+    );
+  };
+
   const updateProfile = async () => {
-    // 1. Request Permission & Pick Image
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    
     if (status !== 'granted') {
-      Alert.alert('Permission Denied', 'ขออภัย เราต้องการสิทธิ์เข้าถึงรูปภาพเพื่อเปลี่ยนโปรไฟล์');
+      Alert.alert('Permission Denied', 'ขออภัย เราต้องการสิทธิ์เข้าถึงรูปภาพ');
       return;
     }
-
     const result = await ImagePicker.launchImageLibraryAsync({
-      allowsEditing: true, // Allow cropping
-      aspect: [1, 1],      // Square aspect ratio is best for avatars
-      quality: 0.8,        // Compress slightly to save bandwidth
+      allowsEditing: true, aspect: [1, 1], quality: 0.8,
     });
-
     if (result.canceled) return;
 
-    // 2. Prepare Data for Upload
     const localUri = result.assets[0].uri;
     const filename = localUri.split('/').pop();
-    
-    // Infer the type of the image
     const match = /\.(\w+)$/.exec(filename || '');
     const type = match ? `image/${match[1]}` : `image/jpeg`;
 
-    const fileToUpload: RNFile = {
-        uri: localUri,
-        name: filename || '',
-        type: type,
-      };
+    const fileToUpload: RNFile = { uri: localUri, name: filename || '', type: type };
     const formDataUpload = new FormData();
-    
-    // React Native expects this specific object structure for files
     formDataUpload.append('file', fileToUpload as unknown as Blob );
 
-    // 3. Upload to Backend
     try {
       setUploadingImage(true);
-      
       const apiUrl = `${process.env.EXPO_PUBLIC_BASE_API_URL}/api/cloudinary/upload/user-profile?userId=${user?.id}`;
-      
       const response = await fetch(apiUrl, {
         method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${token}`
-        },
+        headers: { 'Authorization': `Bearer ${token}` },
         body: formDataUpload
       });
-
       const data = await response.json();
-
       if (!response.ok) throw new Error(data.message || 'Upload failed');
 
-      // 4. Update State on Success
-      // Assuming your API returns { url: "..." } or similar
       const newImageUrl = data.url || data.image_url; 
-      
       if (newImageUrl) {
         setIsEditing(false)
         setUserProfile((prev) => prev ? { ...prev, image_url: newImageUrl } : null);
         setFormData((prev) => prev ? { ...prev, image_url: newImageUrl } : null);
-        Toast.success("อัปเดตรูปโปรไฟล์สำเร็จ");
+        Toast.show({
+          type:'success',
+          text1 : 'อับเดตรูปโปรไฟล์สำเร็จ'
+        })
       }
-
     } catch (error) {
-      console.error("Upload Error:", error);
-      Alert.alert('Upload Failed', 'ไม่สามารถอัปโหลดรูปภาพได้ กรุณาลองใหม่');
+      Alert.alert('Upload Failed', 'ไม่สามารถอัปโหลดรูปภาพได้');
     } finally {
       setUploadingImage(false);
     }
   };
+
   const deleteProfile = async () => {
-    if (deletingImage) return; // ป้องกันการกดซ้ำ
-
+    if (deletingImage) return;
     try {
-      setDeletingImage(true); // เริ่ม Loading
-
+      setDeletingImage(true);
       const res = await fetch(`${process.env.EXPO_PUBLIC_BASE_API_URL}/api/cloudinary/delete?userId=${user?.id}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}` 
-        }
+        headers: { 'Authorization': `Bearer ${token}` }
       });
-
       const data = await res.json();
-      
-      if (!res.ok) {
-        throw new Error(data.error || "ลบรูปไม่สำเร็จ");
-      }
+      if (!res.ok) throw new Error(data.error || "ลบรูปไม่สำเร็จ");
 
-      // อัปเดต State หน้าจอให้รูปหายไปทันที
       setUserProfile((prev) => prev ? { ...prev, image_url: null } : null);
       setFormData((prev) => prev ? { ...prev, image_url: null } : null);
       setIsEditing(false)
-      Toast.success("ลบรูปโปรไฟล์เรียบร้อยแล้ว");
-
+      Toast.show({
+          type:'success',
+          text1 : 'ลบรูปโปรไฟล์สำเร็จ'
+        })
     } catch (err) {
-      console.error(err);
-      Toast.error((err as Error).message || "เกิดข้อผิดพลาดในการลบรูป");
+      Toast.show({
+          type:'error',
+          text1 :(err as Error).message
+        })
     } finally {
       setDeletingImage(false); 
     }
   }
 
-
   const onSave = async () => {
-    if(!formData?.name){
-        return Toast.warn('ชื่อห้ามเป็นช่องว่าง')
-    }
-    if(formData?.birth_year < 1950){
-        return Toast.warn('นิสิตจริงหรือปล่าว?')
-    }
+    if(!formData?.name) return Toast.show({type: 'info' , text1 :"ชื่อห้ามเป็นช่องว่าง"})
+    if(formData?.birth_year < 1950) return Toast.show({type: 'info' , text1 :"ระบุปีเกิดให้ถูกต้อง"})
     try {
       setLoading(true);
-      
       const res = await fetch(`${process.env.EXPO_PUBLIC_BASE_API_URL}/api/user/${user?.id}` ,{
         method : 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        } , 
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, 
         body : JSON.stringify(formData)
       })
-
       const data = await res.json()
-    
       if(!res.ok) throw new Error(data.message)
-        
-
       setUserProfile(formData); 
       setIsEditing(false); 
-      Toast.success("บันทึกสำเร็จ");
+      Toast.show({
+          type:'success',
+          text1 : 'บันทึกสำเร็จ'
+        })
     } catch (error) {
-        Toast.error("บันทึกไม่สำเร็จ");
+        Toast.show({
+          type:'error',
+          text1 : 'บันทึกไม่สำเร็จ'
+        })
     } finally {
         setLoading(false);
     }
@@ -313,290 +255,210 @@ const confirmDeleteProfile = () => {
   }
 
   return (
-    
-    <KeyboardAvoidingView 
-      style={{ flex: 1, backgroundColor: '#F5F7FA' }} 
-     // 1. ปรับ behavior สำหรับ Android ให้ลองใช้ 'height' ดูค่ะ ถ้ายังเด้งแปลกๆ ให้เปลี่ยนเป็น undefined
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      // 2. เติม keyboardVerticalOffset (สำคัญมาก)
-      // ลองใส่สัก 100 (หรือประมาณความสูง Header + Status Bar ของเครื่อง)
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
-    >
-      <View style={{paddingTop : 50 , paddingBottom : 40}}>
-        <Text>โปรไฟล์</Text>
-        <Pressable onPress={()=>navigation.navigate('setting')}><Text>ตั้งค่า</Text></Pressable>
-      </View>
-      <ScrollView 
-        style={styles.scrollContainer} 
-        // Rose: เพิ่ม paddingBottom เยอะๆ ตรงนี้เพื่อให้พ้น Tab Bar ค่ะ
-        contentContainerStyle={styles.contentContainer}
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" />
+      
+      {/* Background Decor */}
+      <View style={styles.headerBackground} />
+
+      <KeyboardAwareScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        enableOnAndroid={true} // ให้ทำงานบน Android ด้วย
+        extraScrollHeight={100} // เลื่อนขึ้นไปเผื่อให้อีก 100px จะได้เห็นปุ่ม Submit ด้านล่างชัดๆ
+        keyboardShouldPersistTaps="handled" // เพื่อให้กดปุ่มได้แม้คีย์บอร์ดค้างอยู่
       >
-        
-        {/* --- Header Section (Profile Image & Bio) --- */}
-        <View style={styles.headerBackground}>
-            <View style={styles.headerContent}>
+            {/* --- Header & Avatar --- */}
+            <View style={styles.headerSection}>
                 <TouchableOpacity 
                     onPress={isEditing ? updateProfile : undefined} 
                     activeOpacity={0.8}
-                    style={styles.imageWrapper}
-                    disabled={uploadingImage} // Prevent double clicking
+                    style={styles.avatarWrapper}
+                    disabled={uploadingImage || !isEditing}
                 >
                     {uploadingImage ? (
-                        <View style={[styles.profileImage, { justifyContent: 'center', alignItems: 'center', backgroundColor: '#ddd' }]}>
-                            <ActivityIndicator color={MainColor} />
-                        </View>
+                        <ActivityIndicator color={MainColor} style={styles.avatarImage} />
                     ) : formData?.image_url ? (
-                        <Image source={{ uri: formData.image_url }} style={styles.profileImage} />
+                        <Image source={{ uri: formData.image_url }} style={styles.avatarImage} />
                     ) : (
-                        <View style={styles.placeholderImage}>
+                        <View style={[styles.avatarImage, styles.avatarPlaceholder]}>
                             <Ionicons name="person" size={50} color="#FFF" />
                         </View>
                     )}
                     
                     {isEditing && !uploadingImage && (
                         <View style={styles.editBadge}>
-                            <Ionicons name="camera" size={16} color="#FFF" />
+                            <Ionicons name="camera" size={14} color="#FFF" />
                         </View>
                     )}
-                   {isEditing && formData?.image_url && !uploadingImage && (
-                    <TouchableOpacity 
-                        onPress={confirmDeleteProfile} 
-                        disabled={deletingImage}   
-                        style={styles.deleteBadge}
-                        activeOpacity={0.7}
-                    >
-                        {deletingImage ? (
-                            // แสดง Loading ตัวเล็กๆ
-                            <ActivityIndicator size="small" color="#FFF" />
-                        ) : (
-                            // แสดงไอคอนถังขยะปกติ
-                            <Ionicons name="trash" size={16} color="#FFF" />
-                        )}
-                    </TouchableOpacity>
-                )}
+                    
+                    {isEditing && formData?.image_url && !uploadingImage && (
+                        <TouchableOpacity onPress={confirmDeleteProfile} style={styles.deleteBadge}>
+                            {deletingImage ? <ActivityIndicator size="small" color="#FFF" /> : <Ionicons name="trash" size={14} color="#FFF" />}
+                        </TouchableOpacity>
+                    )}
                 </TouchableOpacity>
 
-                <View style={{ alignItems: 'center', marginTop: 10, width: '100%' }}>
+                <View style={styles.nameSection}>
                     {isEditing ? (
                         <TextInput 
-                            style={styles.nameInput} 
+                            style={styles.nameInput}
                             value={formData?.name}
-                            onChangeText={(text) => handleUpdate('name', text)}
-                            placeholder="ระบุชื่อของคุณ..."
-                            placeholderTextColor="#A0AEC0"
-                            textAlign="center"
+                            onChangeText={(t) => handleUpdate('name', t)}
+                            placeholder="ชื่อของคุณ"
                         />
                     ) : (
-                        <Text style={styles.nameText}>{userProfile?.name || 'Unknown User'}</Text>
+                        <Text style={styles.nameText}>{userProfile?.name}</Text>
                     )}
 
-                    {isEditing ? (
-                        <TextInput 
-                            style={styles.bioInput} 
-                            value={formData?.bio}
-                            onChangeText={(text) => handleUpdate('bio', text)}
-                            placeholder="เพิ่มคำอธิบายตัวตน..."
-                            placeholderTextColor="#A0AEC0"
-                            multiline
-                            textAlign="center"
-                        />
-                    ) : (
-                        <Text style={styles.bioText}>{userProfile?.bio || '-'}</Text>
-                    )}
+                    <View style={styles.facultyBadge}>
+                         <Text style={styles.facultyText}>
+                             {isEditing 
+                                ? "กำลังแก้ไขข้อมูล..." 
+                                : `${userProfile?.faculty || 'ยังไม่ระบุคณะ'} | ${userProfile?.major || ''}`}
+                         </Text>
+                    </View>
                 </View>
             </View>
-        </View>
 
-        {/* --- Info Card Section --- */}
-        <View style={styles.cardContainer}>
-            <Text style={styles.sectionHeader}>ข้อมูลส่วนตัว</Text>
-            
-            <View style={styles.infoCard}>
+            {/* --- Bio Section --- */}
+            <View style={styles.card}>
+                <Text style={styles.cardTitle}>เกี่ยวกับฉัน</Text>
+                {isEditing ? (
+                    <TextInput 
+                        style={styles.bioInput} 
+                        value={formData?.bio}
+                        onChangeText={(t) => handleUpdate('bio', t)}
+                        placeholder="แนะนำตัวเองให้เพื่อนๆ รู้จัก..."
+                        multiline
+                    />
+                ) : (
+                    <Text style={styles.bioText}>{userProfile?.bio || "ยังไม่มีคำแนะนำตัว"}</Text>
+                )}
+            </View>
+
+            {/* --- Personal Info --- */}
+            <View style={styles.card}>
+                <Text style={styles.cardTitle}>ข้อมูลส่วนตัว</Text>
                 <InfoRow 
-                    icon="school-outline" 
-                    label="คณะ" 
-                    value={isEditing ? formData?.faculty : userProfile?.faculty} 
-                    isEditing={isEditing}
-                    onChangeText={(text) => handleUpdate('faculty', text)}
+                    icon="school-outline" label="คณะ" 
+                    value={formData?.faculty} isEditing={isEditing} 
+                    onChangeText={(t : string) => handleUpdate('faculty', t)} 
                 />
-                <View style={styles.divider} />
+                <Divider />
                 <InfoRow 
-                    icon="book-outline" 
-                    label="สาขา" 
-                    value={isEditing ? formData?.major : userProfile?.major} 
-                    isEditing={isEditing}
-                    onChangeText={(text) => handleUpdate('major', text)}
+                    icon="book-outline" label="สาขา" 
+                    value={formData?.major} isEditing={isEditing} 
+                    onChangeText={(t : string) => handleUpdate('major', t)} 
                 />
-                <View style={styles.divider} />
+                <Divider />
                 <InfoRow 
                     icon="calendar-outline" 
                     label={isEditing ? "ปีเกิด (ค.ศ.)" : "อายุ"} 
-                    value={
-                        isEditing 
-                        ? formData?.birth_year?.toString() 
-                        : `${userProfile ? (currentYear - userProfile.birth_year) : 0} ปี`
-                    } 
-                    isEditing={isEditing}
+                    value={isEditing ? formData?.birth_year?.toString() : `${userProfile ? (currentYear - userProfile.birth_year) : 0} ปี`}
+                    isEditing={isEditing} 
                     onChangeText={handleYearUpdate} 
                     keyboardType="phone-pad"
                 />
-                <View style={styles.divider} />
+                <Divider />
                 <InfoRow 
-                    icon="call-outline" 
-                    label="เบอร์โทร" 
-                    value={isEditing ? formData?.tel : userProfile?.tel} 
-                    isEditing={isEditing}
-                    onChangeText={(text) => handleUpdate('tel', text)}
+                    icon="call-outline" label="เบอร์โทร" 
+                    value={formData?.tel} isEditing={isEditing} 
+                    onChangeText={(t : string) => handleUpdate('tel', t)}
                     keyboardType="phone-pad"
                 />
             </View>
-        </View>
 
-        {/* --- Tags Section (Updated) --- */}
-        <View style={styles.cardContainer}>
-             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                <Text style={styles.sectionHeader}>ความสนใจ (Tags)</Text>
-                {/* แสดงตัวนับจำนวน Tag ในโหมดแก้ไข */}
-                {isEditing && formData?.tag && (
-                    <Text style={{ fontFamily: 'Kanit_400Regular', color: formData.tag.length >= 5 ? 'red' : '#888', fontSize: 12 }}>
-                        {formData.tag.length}/5
-                    </Text>
-                )}
-             </View>
-             
-             <View style={[styles.infoCard, { paddingVertical: 15, paddingHorizontal: 15 }]}>
-                
-                {/* ส่วน Input สำหรับเพิ่ม Tag (แสดงเฉพาะตอนแก้ไข และ Tag ยังไม่ครบ 5) */}
-                {isEditing && (!formData?.tag || formData.tag.length < 5) && (
-                    <View style={styles.addTagContainer}>
-                        <TextInput
+             {/* --- Interests / Tags --- */}
+             <View style={styles.card}>
+                <View style={styles.cardHeaderRow}>
+                    <Text style={styles.cardTitle}>ความสนใจ (Tags)</Text>
+                    {isEditing && <Text style={styles.counterText}>{formData?.tag?.length || 0}/10</Text>}
+                </View>
+
+                {isEditing && (
+                    <View style={styles.addTagRow}>
+                        <TextInput 
                             style={styles.addTagInput}
-                            placeholder="เพิ่มความสนใจ (เช่น Coding)"
-                            placeholderTextColor="#A0AEC0"
+                            placeholder="+ เพิ่มสิ่งที่สนใจ"
                             value={newTagInput}
                             onChangeText={setNewTagInput}
-                            onSubmitEditing={handleAddTag} // กด Enter บนคีย์บอร์ดเพื่อเพิ่มได้เลย
-                            blurOnSubmit={false}
+                            onSubmitEditing={handleAddTag}
                         />
-                        <TouchableOpacity onPress={handleAddTag} style={styles.addTagButton}>
-                            <Ionicons name="add" size={20} color="#FFF" />
+                        <TouchableOpacity onPress={handleAddTag} style={styles.addTagBtn}>
+                            <Ionicons name="arrow-up" size={18} color="#FFF" />
                         </TouchableOpacity>
                     </View>
                 )}
 
-                {/* รายการ Tags */}
-                <View style={styles.tagContainer}>
-                    {formData?.tag && formData.tag.length > 0 ? (
-                        formData.tag.map((tag, index) => (
-                            <View key={index} style={[
-                                styles.tagBadge, 
-                                isEditing && styles.tagBadgeEditing // เปลี่ยนสีตอนแก้ไขให้ดูรู้ว่าลบได้
-                            ]}>
-                                <Text style={[
-                                    styles.tagText,
-                                    isEditing && { color: '#555' }
-                                ]}>#{tag}</Text>
-                                
-                                {/* ปุ่มลบ (X) แสดงเฉพาะตอนแก้ไข */}
-                                {isEditing && (
-                                    <TouchableOpacity 
-                                        onPress={() => handleRemoveTag(tag)}
-                                        style={styles.removeTagButton}
-                                    >
-                                        <Ionicons name="close-circle" size={16} color="#FF6B6B" />
-                                    </TouchableOpacity>
-                                )}
-                            </View>
-                        ))
-                    ) : (
-                        !isEditing && <Text style={styles.emptyText}>ยังไม่ได้ระบุความสนใจ</Text>
-                    )}
-                    
-                    {/* ข้อความแนะนำตอน Tag ว่างในโหมดแก้ไข */}
-                    {isEditing && (!formData?.tag || formData.tag.length === 0) && (
-                         <Text style={styles.hintText}>พิมพ์ด้านบนแล้วกด + เพื่อเพิ่ม</Text>
+                <View style={styles.tagsContainer}>
+                    {formData?.tag?.map((tag, i) => (
+                        <View key={i} style={styles.tagPill}>
+                            <Text style={styles.tagText}>#{tag}</Text>
+                            {isEditing && (
+                                <TouchableOpacity onPress={() => handleRemoveTag(tag)} style={styles.removeTagBtn}>
+                                    <Ionicons name="close" size={12} color="#FFF" />
+                                </TouchableOpacity>
+                            )}
+                        </View>
+                    ))}
+                    {(!formData?.tag || formData.tag.length === 0) && !isEditing && (
+                        <Text style={styles.emptyText}>ยังไม่ระบุความสนใจ</Text>
                     )}
                 </View>
              </View>
-        </View>
 
-        {/* --- Action Buttons --- */}
-        <View style={styles.actionSection}>
-          {isEditing ? (
-            <View style={styles.buttonRow}>
-                <View style={{ flex: 1 }}>
-                    <CustomButton 
-                        title='บันทึก' 
-                        theme='default' 
-                        iconName='checkmark-circle-outline'
-                        onPress={onSave} 
-                        isLoading={loading}
-                        loadingText='กำลังบันทึก...'
-                    />
-                </View>
-                <View style={{ width: 10 }} />
-                <View style={{ flex: 1 }}>
-                    <CustomButton 
-                        title='ยกเลิก' 
-                        theme='danger' // เปลี่ยนเป็นสี danger ตอนยกเลิกเพื่อให้ชัดเจน
-                        iconName='close-circle-outline'
-                        onPress={onCancel}
-                    />
-                </View>
-            </View>
-          ) : (
-            <View style={styles.buttonStack}>
-               <CustomButton 
-                    title='แก้ไขโปรไฟล์' 
-                    theme='default'
-                    iconName='create-outline' 
-                    onPress={() => setIsEditing(true)}
-                />
-               <CustomButton 
-                    title='ออกจากระบบ' 
-                    theme='danger' 
-                    iconName='log-out-outline' 
-                    onPress={logout}
-                />
-            </View>
-          )}
-        </View>
-
-      </ScrollView>
-    </KeyboardAvoidingView>
+             {/* --- Action Buttons --- */}
+             <View style={styles.actionContainer}>
+                {isEditing ? (
+                    <View style={styles.editActions}>
+                         <CustomButton 
+                            title='ยกเลิก' theme='danger' iconName='close' 
+                            onPress={onCancel} 
+                            style={{ flex: 1, marginRight: 10 }}
+                         />
+                         <CustomButton 
+                            title='บันทึก' theme='default' iconName='checkmark' 
+                            onPress={onSave} isLoading={loading}
+                            style={{ flex: 1 }}
+                         />
+                    </View>
+                ) : (
+                    <>
+                        <CustomButton 
+                            title='แก้ไขโปรไฟล์' theme='default' iconName='create-outline' 
+                            onPress={() => setIsEditing(true)} 
+                        />
+                        <View style={{ height: 12 }} />
+                        <CustomButton 
+                            title='ตั้งค่าระบบ' theme='warn' iconName='settings-outline' 
+                            onPress={()=>navigation.navigate('setting')} 
+                        />
+                    </>
+                )}
+             </View>
+      </KeyboardAwareScrollView>
+    </View>
   );
 }
 
-// Sub-component ที่ปรับแต่ง UI ให้สะอาดขึ้น
-const InfoRow = ({ 
-    icon, 
-    label, 
-    value, 
-    isEditing, 
-    onChangeText,
-    keyboardType 
-}: { 
-    icon: any, 
-    label: string, 
-    value?: string, 
-    isEditing?: boolean,
-    onChangeText?: (text: string) => void,
-    keyboardType?: 'default' | 'phone-pad'
-}) => (
-    <View style={styles.infoRowContainer}>
-        <View style={styles.iconBox}>
-            <Ionicons name={icon} size={22} color={MainColor} />
+/* --- Components --- */
+const Divider = () => <View style={styles.divider} />;
+
+const InfoRow = ({ icon, label, value, isEditing, onChangeText, keyboardType }: any) => (
+    <View style={styles.infoRow}>
+        <View style={styles.iconCircle}>
+            <Ionicons name={icon} size={18} color={MainColor} />
         </View>
         <View style={styles.infoContent}>
             <Text style={styles.infoLabel}>{label}</Text>
-            {isEditing && onChangeText ? (
+            {isEditing ? (
                 <TextInput 
-                    style={styles.editingInput}
-                    value={value}
+                    style={styles.inlineInput} 
+                    value={value} 
                     onChangeText={onChangeText}
                     placeholder={`ระบุ${label}`}
-                    placeholderTextColor="#A0AEC0"
                     keyboardType={keyboardType || 'default'}
                 />
             ) : (
@@ -606,3 +468,247 @@ const InfoRow = ({
     </View>
 );
 
+/* --- Styles --- */
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: '#F7F8FA', // พื้นหลังสีเทาอ่อน สบายตา
+    },
+    center: {
+        justifyContent: 'center', 
+        alignItems: 'center'
+    },
+    headerBackground: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        height: 300,
+        backgroundColor: MainColor,
+        borderBottomLeftRadius: 30,
+        borderBottomRightRadius: 30,
+    },
+    scrollContent: {
+        paddingBottom: 40,
+        paddingTop: 60, // ดันเนื้อหาลงมาให้พ้น Status Bar
+    },
+    /* Header Profile */
+    headerSection: {
+        alignItems: 'center',
+        marginBottom: 20,
+    },
+    avatarWrapper: {
+        position: 'relative',
+        marginBottom: 12,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 5,
+        elevation: 6,
+    },
+    avatarImage: {
+        width: 110,
+        height: 110,
+        borderRadius: 55,
+        borderWidth: 4,
+        borderColor: '#FFF',
+        backgroundColor: '#DDD',
+    },
+    avatarPlaceholder: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#BDBDBD'
+    },
+    editBadge: {
+        position: 'absolute', bottom: 0, right: 0,
+        backgroundColor: '#333', padding: 8, borderRadius: 20,
+        borderWidth: 2, borderColor: '#FFF'
+    },
+    deleteBadge: {
+        position: 'absolute', top: 0, right: 0,
+        backgroundColor: '#FF3B30', padding: 8, borderRadius: 20,
+        borderWidth: 2, borderColor: '#FFF'
+    },
+    nameSection: {
+        alignItems: 'center',
+    },
+    nameText: {
+        fontSize: 24,
+        color: '#FFF',
+        fontFamily: FONT.BOLD,
+        marginBottom: 4,
+        textShadowColor: 'rgba(0, 0, 0, 0.1)',
+        textShadowOffset: {width: 0, height: 1},
+        textShadowRadius: 2,
+    },
+    nameInput: {
+        fontSize: 24,
+        color: '#FFF',
+        fontFamily: FONT.BOLD,
+        borderBottomWidth: 1,
+        borderBottomColor: 'rgba(255,255,255,0.5)',
+        textAlign: 'center',
+        minWidth: 150,
+        marginBottom: 5,
+    },
+    facultyBadge: {
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        paddingHorizontal: 12,
+        paddingVertical: 4,
+        borderRadius: 12,
+    },
+    facultyText: {
+        color: '#FFF',
+        fontSize: 12,
+        fontFamily: FONT.REGULAR,
+    },
+    /* Cards */
+    card: {
+        backgroundColor: '#FFF',
+        marginHorizontal: 20,
+        marginBottom: 16,
+        borderRadius: 16,
+        padding: 16,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 5,
+        elevation: 2,
+    },
+    cardTitle: {
+        fontSize: 16,
+        fontFamily: FONT.BOLD,
+        color: '#333',
+        marginBottom: 12,
+    },
+    cardHeaderRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 12,
+    },
+    counterText: {
+        fontSize: 12,
+        color: '#999',
+    },
+    /* Bio */
+    bioText: {
+        fontSize: 14,
+        color: '#555',
+        lineHeight: 22,
+        fontFamily: FONT.REGULAR,
+    },
+    bioInput: {
+        fontSize: 14,
+        color: '#333',
+        backgroundColor: '#F9F9F9',
+        borderRadius: 8,
+        padding: 10,
+        minHeight: 80,
+        textAlignVertical: 'top',
+        fontFamily: FONT.REGULAR,
+    },
+    /* Info Row */
+    infoRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 10,
+    },
+    iconCircle: {
+        width: 36, height: 36,
+        borderRadius: 18,
+        backgroundColor: '#F0F9F4', // สีเขียวอ่อนๆ จางๆ
+        justifyContent: 'center', alignItems: 'center',
+        marginRight: 12,
+    },
+    infoContent: {
+        flex: 1,
+    },
+    infoLabel: {
+        fontSize: 12,
+        color: '#888',
+        marginBottom: 2,
+        fontFamily: FONT.REGULAR,
+    },
+    infoValue: {
+        fontSize: 15,
+        color: '#333',
+        fontFamily: FONT.REGULAR,
+    },
+    inlineInput: {
+        fontSize: 15,
+        color: '#333',
+        borderBottomWidth: 1,
+        borderBottomColor: '#EEE',
+        paddingVertical: 2,
+        fontFamily: FONT.REGULAR,
+    },
+    divider: {
+        height: 1,
+        backgroundColor: '#F0F0F0',
+        marginLeft: 48, // เว้นช่อง icon ไว้
+    },
+    /* Tags */
+    tagsContainer: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+    },
+    tagPill: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#E8F5E9', // เขียวอ่อนมากๆ
+        paddingVertical: 6,
+        paddingHorizontal: 12,
+        borderRadius: 20,
+        marginRight: 8,
+        marginBottom: 8,
+    },
+    tagText: {
+        color:MainColor,
+        fontSize: 13,
+        fontFamily: FONT.REGULAR,
+        marginRight: 2,
+    },
+    removeTagBtn: {
+        backgroundColor: '#FFCDD2',
+        borderRadius: 10,
+        width: 16, height: 16,
+        justifyContent: 'center', alignItems: 'center',
+        marginLeft: 6,
+    },
+    addTagRow: {
+        flexDirection: 'row',
+        marginBottom: 10,
+    },
+    addTagInput: {
+        flex: 1,
+        backgroundColor: '#F5F5F5',
+        borderRadius: 8,
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        fontFamily: FONT.REGULAR,
+        fontSize: 13,
+    },
+    addTagBtn: {
+        backgroundColor:MainColor,
+        width: 40,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 8,
+        marginLeft: 8,
+    },
+    emptyText: {
+        color: '#CCC',
+        fontStyle: 'italic',
+        fontSize: 13,
+    },
+    /* Action Buttons */
+    actionContainer: {
+        paddingHorizontal: 20,
+        marginTop: 10,
+        marginBottom: 30,
+    },
+    editActions: {
+        flexDirection: 'row',
+    }
+});

@@ -1,4 +1,4 @@
-const KU_GREEN = '#005C42';
+// const KU_GREEN = '#005C42';
 const MainColor = '#8C9CCE';
 const activeColor = '#42357C'
 
@@ -7,4 +7,4 @@ const FONT = {
     REGULAR : 'Kanit_400Regular'
 }
 
-export {KU_GREEN , FONT, MainColor , activeColor};
+export { FONT, MainColor , activeColor};

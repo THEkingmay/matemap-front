@@ -4,7 +4,7 @@ import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 
 import type { MemberTabsParamsList } from '../MemberMainTabs';
-import { KU_GREEN } from '../../../constant/theme';
+import { MainColor } from '../../../constant/theme';
 
 type Props = BottomTabScreenProps<MemberTabsParamsList, 'home'>;
 
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
   totalPost: {
     marginTop: 8,
     fontSize: 13,
-    color: KU_GREEN,
+    color: MainColor,
   },
   card: {
     backgroundColor: '#fff',

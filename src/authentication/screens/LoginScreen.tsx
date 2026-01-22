@@ -10,13 +10,13 @@ import {
     Platform, 
     Image, 
     ScrollView, 
-    TouchableOpacity, // เพิ่ม TouchableOpacity กลับมาสำหรับปุ่มกดข้อความ
+    TouchableOpacity, 
 } from "react-native";
 import { FONT } from '../../../constant/theme'; 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import CustomButton from '../../components/ActionButton';
-import { Toast } from 'toastify-react-native';
 import { useAuth } from '../../AuthProvider';
+import Toast from 'react-native-toast-message'; // Import ปกติ
 
 const logoImage = require('../../../assets/splash-icon.png')
 
@@ -26,16 +26,23 @@ type props = NativeStackScreenProps<AuthStackParamsList, 'login'>
 
 export default function LoginScreen({ navigation }: props) {
 
-    const {login} = useAuth()
+    const { login } = useAuth()
 
     const [email, setEmail] = useState<string>('');
     const [password, setPassword] = useState<string>('');
     const [loading , setLoading] = useState<boolean>(false)
 
     const handleLogin = async () => {
-       try{
+       try {
         if(!email || !password){
-            throw new Error("กรุณากรอกอีเมลและรหัสผ่าน")
+            // Rose: ใช้ Toast แทนการ throw error เพื่อให้ UX นุ่มนวลขึ้น
+            Toast.show({
+                type: 'error',
+                text1: 'ข้อมูลไม่ครบถ้วน',
+                text2: 'กรุณากรอกอีเมลและรหัสผ่าน',
+                position: 'top'
+            });
+            return; 
         }
         
         // Rose: ตรวจสอบ Logic อีเมลตามเดิม
@@ -45,11 +52,23 @@ export default function LoginScreen({ navigation }: props) {
 
         setLoading(true)
         await login(email , password)
-        Toast.success('เข้าสู่ระบบสำเร็จ' , 'top')
+        
+        Toast.show({
+            type: 'success', 
+            text1: 'เข้าสู่ระบบสำเร็จ',
+            text2: 'ยินดีต้อนรับกลับมาค่ะ',
+            position: 'top'
+        });
 
-       }catch(err){
-        Toast.error((err as Error).message || 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ' , 'top')
-       }finally{
+       } catch(err) {
+        // Rose: แก้ไข Toast.error เป็น Toast.show type: error
+        Toast.show({
+            type: 'error',
+            text1: 'เข้าสู่ระบบไม่สำเร็จ',
+            text2: (err as Error).message || 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ',
+            position: 'top'
+        });
+       } finally {
         setLoading(false)
        }
     }
@@ -59,8 +78,14 @@ export default function LoginScreen({ navigation }: props) {
     }
 
     const handleResetPassword = () => {
-        // Rose: ใส่ Logic การรีเซ็ตรหัสผ่านตรงนี้ หรือแจ้งเตือนไปก่อน
-        Toast.warn("ระบบรีเซ็ตรหัสผ่านกำลังพัฒนา" , 'top')
+        // Rose: แก้ไข Toast.warn เป็น type: info (สำหรับแจ้งข่าวสาร) หรือ error
+        Toast.show({
+            type: 'info',
+            text1: 'กำลังดำเนินการ',
+            text2: 'ระบบรีเซ็ตรหัสผ่านกำลังพัฒนา',
+            position: 'top',
+            visibilityTime: 2000,
+        });
     }
 
     return (
@@ -162,10 +187,9 @@ const styles = StyleSheet.create({
     },
     headerContainer: {
         alignItems: 'center',
-        marginBottom: 30, // ลดลงนิดหน่อยเพื่อให้สมดุลกับ Footer ที่เพิ่มมา
+        marginBottom: 30, 
     },
     logo: {
-        // Rose: ปรับขนาดให้พอดีกับหน้าจอมือถือทั่วไป (Width 500 อาจจะล้นจอเล็กได้ค่ะ)
         width: 300, 
         height: 150,
     },
@@ -195,12 +219,12 @@ const styles = StyleSheet.create({
     },
     // --- Forgot Password Styles ---
     forgotPassContainer: {
-        alignItems: 'flex-end', // ชิดขวา
-        marginTop: -10, // ขยับขึ้นไปหา input password นิดนึง
+        alignItems: 'flex-end', 
+        marginTop: -10, 
         marginBottom: 20,
     },
     forgotPassText: {
-        color: '#7F8C8D', // สีเทา
+        color: '#7F8C8D', 
         fontFamily: FONT.REGULAR,
         fontSize: 14,
     },

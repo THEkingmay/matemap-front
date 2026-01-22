@@ -1,6 +1,6 @@
 import { createContext , ReactNode, useContext, useEffect, useState } from "react";
 import { useAuth } from "./AuthProvider";
-import { Toast } from "toastify-react-native";
+import Toast from "react-native-toast-message";
 import LoadingCheckIsExpired from "./components/loadingIsExpired";
 import ExpiredScreen from "./components/ExpiredScreen";
 
@@ -34,7 +34,10 @@ export default function SubscriptionProvider({children} :{children : ReactNode})
                 setIsExpried(data.is_expired)
 
             }catch(err){
-                Toast.error((err as Error).message)
+                Toast.show({
+                    type :'error' ,
+                    text1 : (err as Error).message
+                })
             }finally{
                 setIsLoading(false)
             }

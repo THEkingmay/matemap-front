@@ -11,13 +11,13 @@ import {
     TouchableOpacity,
     Image, 
     ScrollView, 
-    ActivityIndicator // เพิ่ม ActivityIndicator สำหรับปุ่ม OTP
+    ActivityIndicator 
 } from "react-native";
 import { FONT, MainColor } from '../../../constant/theme'; 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import CustomButton from '../../components/ActionButton';
-import { Toast } from 'toastify-react-native';
 import { useAuth } from '../../AuthProvider';
+import Toast from 'react-native-toast-message'; // Import ปกติ
 
 const logoImage = require('../../../assets/splash-icon.png')
 
@@ -26,8 +26,8 @@ const THEME_COLOR = MainColor
 type props = NativeStackScreenProps<AuthStackParamsList, 'register'>
 
 export default function RegisterScreen({ navigation }: props) {
-    const {register}= useAuth()
-    // Rose: Initialize state
+    const { register } = useAuth()
+    
     const [loadingReOTP, setLoadingReOTP] = useState<boolean>(false);
     const [loadingRegister, setLoadingRegister] = useState<boolean>(false);
 
@@ -56,16 +56,27 @@ export default function RegisterScreen({ navigation }: props) {
     const handleRequestOTP = async () => {
        try {
             if (!email) {
-                Toast.warn("กรุณากรอกอีเมลก่อนขอรหัส OTP", 'top');
+                // Rose: ปรับการเรียกใช้ Toast ให้ถูกต้อง
+                Toast.show({
+                    type: 'error',
+                    text1: 'กรุณากรอกอีเมล',
+                    text2: 'ต้องกรอกอีเมลก่อนขอรหัส OTP',
+                    position: 'top'
+                });
                 return;
             }
 
             if(!email.endsWith('@ku.th')){
-                Toast.warn("กรุณาใช้อีเมลของมหาวิทยาลัย (@ku.th)", 'top');
+                Toast.show({
+                    type: 'error',
+                    text1: 'อีเมลไม่ถูกต้อง',
+                    text2: 'กรุณาใช้อีเมลของมหาวิทยาลัย (@ku.th)',
+                    position: 'top'
+                });
                 return;
             }
 
-            setLoadingReOTP(true); // เริ่ม Loading
+            setLoadingReOTP(true);
 
             const res = await fetch(`${process.env.EXPO_PUBLIC_BASE_API_URL}/api/user/get-otp`, {
                 method: 'POST',
@@ -80,7 +91,13 @@ export default function RegisterScreen({ navigation }: props) {
             if(!res.ok) throw new Error(data.message || "เกิดข้อผิดพลาดในการส่ง OTP")
 
             setTimeLeft(300); 
-            Toast.success("ส่งรหัส OTP ไปยังอีเมลเรียบร้อยแล้ว", 'top');
+            
+            Toast.show({
+                type: 'success',
+                text1: 'ส่งรหัสสำเร็จ',
+                text2: 'ส่งรหัส OTP ไปยังอีเมลเรียบร้อยแล้ว',
+                position: 'top'
+            });
 
             if (timerRef.current) clearInterval(timerRef.current);
             
@@ -95,32 +112,51 @@ export default function RegisterScreen({ navigation }: props) {
             }, 1000);
 
        } catch(err) {
-            Toast.error((err as Error).message, 'top')
+           Toast.show({
+               type: 'error',
+               text1: 'เกิดข้อผิดพลาด',
+               text2: (err as Error).message,
+               position: 'top'
+           });
        } finally {
-            setLoadingReOTP(false); // หยุด Loading เสมอไม่ว่าจะสำเร็จหรือล้มเหลว
+            setLoadingReOTP(false);
        }
     }
 
     const handleRegister = async () => {
        try {
             if (!email || !password || !confirmPassword || !otp) {
-                Toast.warn("กรุณากรอกข้อมูลให้ครบ", "top");
+                Toast.show({
+                    type: 'error',
+                    text1: 'ข้อมูลไม่ครบถ้วน',
+                    text2: 'กรุณากรอกข้อมูลให้ครบทุกช่อง',
+                    position: 'top'
+                });
                 return;
             }
 
             if (password !== confirmPassword) {
-                Toast.warn("รหัสผ่านไม่ตรงกัน", "top");
+                Toast.show({
+                    type: 'error',
+                    text1: 'รหัสผ่านไม่ตรงกัน',
+                    text2: 'กรุณาตรวจสอบรหัสผ่านอีกครั้ง',
+                    position: 'top'
+                });
                 return;
             }
 
             if (otp.length !== 6) {
-                Toast.warn("OTP ต้องมี 6 หลัก", 'top');
+                Toast.show({
+                    type: 'error',
+                    text1: 'OTP ไม่ถูกต้อง',
+                    text2: 'รหัส OTP ต้องมี 6 หลัก',
+                    position: 'top'
+                });
                 return;
             }
 
             setLoadingRegister(true);
 
-            // Rose: แก้ไขการส่ง Body ให้เป็น JSON Stringify และแก้คำผิด passord -> password
             const res = await fetch(`${process.env.EXPO_PUBLIC_BASE_API_URL}/api/user/register`, {
                 method: 'POST',
                 headers: {
@@ -137,14 +173,23 @@ export default function RegisterScreen({ navigation }: props) {
             
             if(!res.ok) throw new Error(data.message || "การลงทะเบียนล้มเหลว")
 
-            Toast.success("ลงทะเบียนเรียบร้อยแล้ว", 'top');
+            Toast.show({
+                type: 'success',
+                text1: 'ลงทะเบียนสำเร็จ',
+                text2: 'ยินดีต้อนรับเข้าสู่ระบบ',
+                position: 'top'
+            });
             
             await register(data.user , data.token)
-            // Optional: ถ้าสมัครเสร็จแล้วอยากให้เด้งไปหน้า Login เลย ให้เปิดบรรทัดล่างนี้ค่ะ
             // navigation.replace('login'); 
 
        } catch(err) {
-            Toast.error((err as Error).message, 'top')
+           Toast.show({
+               type: 'error',
+               text1: 'ลงทะเบียนไม่สำเร็จ',
+               text2: (err as Error).message,
+               position: 'top'
+           });
        } finally {
             setLoadingRegister(false);
        }
@@ -259,7 +304,7 @@ export default function RegisterScreen({ navigation }: props) {
                                     iconName="person-add-outline" 
                                     theme="default"
                                     style={styles.registerButton}
-                                    isLoading={loadingRegister} // ส่ง loading state ไปที่ปุ่ม
+                                    isLoading={loadingRegister}
                                     loadingText="กำลังสมัคร..."
                                 />
                             </View>

@@ -29,7 +29,6 @@ const MOCK_CHATS = [
 export default function ChatScreen({ navigation }: props) {
   return (
     <View style={styles.container}>
-
       {/* Search bar */}
       <View style={styles.searchBar}>
         <Text style={styles.searchText}>ค้นหาการสนทนา...</Text>

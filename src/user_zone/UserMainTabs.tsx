@@ -67,7 +67,7 @@ export default function UserMainTabs() {
                 tabBarStyle: {
                     position: 'absolute',
                     bottom: insets.bottom, 
-                    paddingTop : 10,
+                    paddingTop : 15,
                     paddingHorizontal: 5, // แนะนำใช้ paddingHorizontal แทน paddingInline ในบางเวอร์ชันเพื่อความชัวร์
                     backgroundColor: MainColor,
                     height: 65, 

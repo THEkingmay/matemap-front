@@ -4,12 +4,12 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import HomeScreen from "./screens/HomeScreen";
 import ProfileScreen from "./screens/ProfileScreen";
 import { Ionicons } from '@expo/vector-icons';
-import { KU_GREEN } from '../../constant/theme';
 import { View } from 'react-native';
 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import SubscriptionProvider from '../SubscriptionProvider';
+import { MainColor } from '../../constant/theme';
 
 export type MemberTabsParamsList = {
     home: undefined;
@@ -27,7 +27,7 @@ export default function MemberMainTabs() {
             screenOptions={({ route }) => ({
                 headerShown: false,
                 tabBarShowLabel: false,
-                tabBarActiveTintColor: KU_GREEN,
+                tabBarActiveTintColor:MainColor,
                 tabBarInactiveTintColor: '#9CA3AF',
                 
                 tabBarStyle: {

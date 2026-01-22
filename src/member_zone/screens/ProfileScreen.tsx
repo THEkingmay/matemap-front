@@ -4,7 +4,6 @@ import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 
 import type { MemberTabsParamsList } from '../MemberMainTabs';
-import { KU_GREEN } from '../../../constant/theme';
 import CustomButton from '../../components/ActionButton';
 import { useAuth } from '../../AuthProvider';
 

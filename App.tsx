@@ -1,6 +1,5 @@
 import React, { useCallback } from 'react';
 import { View } from 'react-native'; // 1. ต้อง import View มาใช้ครอบ
-import ToastManager from 'toastify-react-native';
 import * as SplashScreen from 'expo-splash-screen';
 import { 
   useFonts, 
@@ -10,7 +9,7 @@ import {
 
 import AuthProvider from './src/AuthProvider';
 import RouteProtect from './src/RouteProtect';
-import { FONT } from './constant/theme';
+import Toast from 'react-native-toast-message';
 
 // 2. สั่งค้าง Splash Screen ไว้ก่อน
 SplashScreen.preventAutoHideAsync();
@@ -38,8 +37,8 @@ export default function App() {
     <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
       <AuthProvider>
         <RouteProtect/>
-        <ToastManager />
       </AuthProvider>
+      <Toast/>
     </View>
   );
 }

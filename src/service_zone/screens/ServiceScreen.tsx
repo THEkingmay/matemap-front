@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
-import { KU_GREEN } from '../../../constant/theme';
 import { ServiceTabsParamsList } from '../ServiceMainTabs';
+import { MainColor } from '../../../constant/theme';
 
 type props = BottomTabScreenProps<ServiceTabsParamsList , 'service'>
 
@@ -24,6 +24,6 @@ const styles = StyleSheet.create({
   text: {
     fontFamily: 'Kanit_700Bold', 
     fontSize: 24,
-    color: KU_GREEN, 
+    color: MainColor, 
   }
 });

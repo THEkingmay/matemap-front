@@ -1,8 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated, Easing, ActivityIndicator, Dimensions } from 'react-native';
+import { MainColor } from '../../constant/theme';
 
 const { width } = Dimensions.get('window');
-const KU_GREEN = '#005C42';
 
 export default function Loading() {
   const scaleAnim = useRef(new Animated.Value(1)).current;
@@ -51,7 +51,7 @@ export default function Loading() {
         <Text style={styles.subtitle}>ระบบจัดหารูมเมทเพื่อนิสิต</Text>
 
         <View style={styles.loaderContainer}>
-          <ActivityIndicator size="small" color={KU_GREEN} />
+          <ActivityIndicator size="small" color={MainColor} />
           <Text style={styles.loadingText}>กำลังเชื่อมต่อข้อมูล...</Text>
         </View>
       </Animated.View>
@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 36,
-    color: KU_GREEN,
+    color:MainColor,
     letterSpacing: 1,
     marginBottom: 8, 
     fontFamily : 'Kanit_700Bold'
