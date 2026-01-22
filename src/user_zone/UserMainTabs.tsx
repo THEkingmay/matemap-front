@@ -11,6 +11,8 @@ import ProfileStack from './screens/profile/ProfileStack';
 
 import { activeColor, FONT, MainColor } from '../../constant/theme';
 
+import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
+
 export type UserTabsParamsList = {
     home: undefined; // explore screen
     chat_stack: undefined;
@@ -58,61 +60,68 @@ export default function UserMainTabs() {
 
     return (
         <Tabs.Navigator
-            screenOptions={({ route }) => ({
-                headerShown: false,
-                tabBarShowLabel: false,
-                tabBarActiveTintColor: activeColor,
-                tabBarInactiveTintColor: '#fff',
+            screenOptions={({ route }) => {
+
+                const routeName = getFocusedRouteNameFromRoute(route) ?? "";
                 
-                tabBarStyle: {
-                    position: 'absolute',
-                    bottom: insets.bottom, 
-                    paddingTop : 15,
-                    paddingHorizontal: 5, // แนะนำใช้ paddingHorizontal แทน paddingInline ในบางเวอร์ชันเพื่อความชัวร์
-                    backgroundColor: MainColor,
-                    height: 65, 
-                    elevation: 5,
-                    shadowColor: '#000',
-                    shadowOffset: {
-                        width: 0,
-                        height: 5,
-                    },
-                    shadowOpacity: 0.15,
-                    shadowRadius: 3.5,
-                    paddingBottom: 0, 
-                    borderTopWidth: 0, 
-                },
+                // เช็คว่าถ้าเป็น stack ของแชท และเข้าไปหน้า chat_select แล้ว ให้ซ่อน
+                let tabDisplay: 'flex' | 'none' = 'flex';
+                if (route.name === 'chat_stack' && routeName === 'chat_select') {
+                    tabDisplay = 'none';
+                }
+                // ----------------------------------------------------
 
-                tabBarIcon: ({ focused, color }) => {
-                    // ใช้ ?. เพื่อป้องกันกรณี route.name ไม่ตรง (จะ return undefined แล้วไปใช้ default)
-                    const iconConfig = TAB_ICONS[route.name];
-                    const iconName = iconConfig ? (focused ? iconConfig.active : iconConfig.inactive) : 'alert-circle';
+                return {
+                    headerShown: false,
+                    tabBarShowLabel: false,
+                    tabBarActiveTintColor: activeColor,
+                    tabBarInactiveTintColor: '#fff',
                     
-                    // ดึง Label ตาม route name
-                    const label = TAB_LABELS[route.name] || route.name;
+                    tabBarStyle: {
+                        display: tabDisplay, // นำค่าที่เช็คมาใช้ตรงนี้
+                        position: 'absolute',
+                        bottom: insets.bottom, 
+                        paddingTop : 15,
+                        paddingHorizontal: 5,
+                        backgroundColor: MainColor,
+                        height: 65, 
+                        elevation: 5,
+                        shadowColor: '#000',
+                        shadowOffset: { width: 0, height: 5 },
+                        shadowOpacity: 0.15,
+                        shadowRadius: 3.5,
+                        paddingBottom: 0, 
+                        borderTopWidth: 0, 
+                    },
 
-                    return (
-                        <View style={{
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            height: '100%',
-                            width: '100%',
-                        }}>
-                            <Ionicons name={iconName} size={28} color={color} />
-                            <Text
-                                style={{
-                                    fontSize: 10,
-                                    marginTop: 2,
-                                    color,
-                                    fontFamily : FONT.REGULAR
-                                }}
-                            >
-                                {label}
-                            </Text>
-                        </View>
-                    );
-                },
-            })}
+                    tabBarIcon: ({ focused, color }) => {
+                        const iconConfig = TAB_ICONS[route.name];
+                        const iconName = iconConfig ? (focused ? iconConfig.active : iconConfig.inactive) : 'alert-circle';
+                        const label = TAB_LABELS[route.name] || route.name;
+
+                        return (
+                            <View style={{
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                height: '100%',
+                                width: '100%',
+                            }}>
+                                <Ionicons name={iconName} size={28} color={color} />
+                                <Text
+                                    style={{
+                                        fontSize: 10,
+                                        marginTop: 2,
+                                        color,
+                                        fontFamily : FONT.REGULAR
+                                    }}
+                                >
+                                    {label}
+                                </Text>
+                            </View>
+                        );
+                    },
+                };
+            }}
         >
             <Tabs.Screen name="home" component={HomeScreen} />
             <Tabs.Screen name="chat_stack" component={ChatStack} />

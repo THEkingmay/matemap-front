@@ -5,7 +5,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export type ChatStackParamsList = {
     chat : undefined , 
-    chat_select: {room_id : string}
+    chat_select: {room_id : string , target_name: string}
 }
 const Stack = createNativeStackNavigator<ChatStackParamsList>()
 

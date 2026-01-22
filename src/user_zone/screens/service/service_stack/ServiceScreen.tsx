@@ -7,6 +7,7 @@ export default function ServiceScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.text}>Service User</Text>
+      <Text>แสดงทุกบริการที่มี</Text>
     </View>
   );
 }
