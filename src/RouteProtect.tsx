@@ -17,19 +17,19 @@ export default function RouteProtect(){
         <NavigationContainer>
             <RouteStack.Navigator screenOptions={{headerShown : false}}>
                 {!user && (
-                    <RouteStack.Screen name="auth" component={AuthStack} />
+                    <RouteStack.Screen name="auth_stack" component={AuthStack} />
                 )}
 
                 {user?.role === 'user' && (
-                    <RouteStack.Screen name="user" component={UserMainTabs} />
+                    <RouteStack.Screen name="user_main_tabs" component={UserMainTabs} />
                 )}
 
                 {user?.role === 'member' && (
-                    <RouteStack.Screen name="member" component={MemberMainTabs} />
+                    <RouteStack.Screen name="member_main_tabs" component={MemberMainTabs} />
                 )}
 
                 {user?.role === 'service' && (
-                    <RouteStack.Screen name="service" component={ServiceMainTabs} />
+                    <RouteStack.Screen name="service_main_tabs" component={ServiceMainTabs} />
                 )}
             </RouteStack.Navigator>
         </NavigationContainer>

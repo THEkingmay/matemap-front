@@ -9,6 +9,8 @@ import { View } from 'react-native';
 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import SubscriptionProvider from '../SubscriptionProvider';
+
 export type MemberTabsParamsList = {
     home: undefined;
     profile: undefined;
@@ -19,6 +21,7 @@ const Tabs = createBottomTabNavigator<MemberTabsParamsList>();
 export default function MemberMainTabs() {
     const insets = useSafeAreaInsets()
     return (
+        <SubscriptionProvider>
         <Tabs.Navigator 
             initialRouteName="home"
             screenOptions={({ route }) => ({
@@ -78,5 +81,6 @@ export default function MemberMainTabs() {
             <Tabs.Screen name="home" component={HomeScreen}/>
             <Tabs.Screen name="profile" component={ProfileScreen}/>
         </Tabs.Navigator>
+        </SubscriptionProvider>
     );
 }

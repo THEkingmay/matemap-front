@@ -11,6 +11,9 @@ import ServiceScreen from './screens/ServiceScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import SettingScreen from './screens/ProfileScreen';
 
+import SubscriptionProvider from '../SubscriptionProvider';
+
+
 export type ServiceTabsParamsList = {
     home: undefined; 
     chat: undefined;
@@ -55,8 +58,9 @@ export default function ServiceMainTabs() {
     const insets = useSafeAreaInsets();
 
     return (
-        <Tabs.Navigator
-            screenOptions={({ route }) => ({
+        <SubscriptionProvider>
+            <Tabs.Navigator
+                screenOptions={({ route }) => ({
                 headerShown: false,
                 tabBarShowLabel: false,
                 tabBarActiveTintColor: activeColor,
@@ -120,5 +124,6 @@ export default function ServiceMainTabs() {
             <Tabs.Screen name="service" component={ServiceScreen} />
             <Tabs.Screen name="profile" component={ProfileScreen} />
         </Tabs.Navigator>
+        </SubscriptionProvider>
     );
 }
