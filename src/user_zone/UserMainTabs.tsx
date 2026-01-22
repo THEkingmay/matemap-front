@@ -1,4 +1,4 @@
-import React, { act } from 'react';
+import React from 'react';
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { View, Text } from 'react-native';
@@ -6,24 +6,19 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import HomeScreen from "./screens/HomeScreen";
 import ChatStack from './screens/chat/ChatStack';
-import ContractScreen from './screens/ContractScreen';
-import ProfileScreen from './screens/ProfileScreen';
-import ServiceScreen from './screens/ServiceScreen';
-import DormScreen from './screens/DormScreens';
-import SettingScreen from "./screens/Setting";
+import ServiceTopTabs from './screens/service/ServiceTopTab';
+import ProfileStack from './screens/profile/ProfileStack';
 
 import { activeColor, FONT, MainColor } from '../../constant/theme';
 
 export type UserTabsParamsList = {
     home: undefined; // explore screen
-    contract: undefined;
-    dorm: undefined;
     chat_stack: undefined;
-    service: undefined;
-    profile: undefined;
-    setting: undefined;
+    service_toptab : undefined; 
+    profile_stack : undefined;
 }
 
+// แก้ไข Key ให้ตรงกับ name ใน Tabs.Screen
 const TAB_ICONS: Record<
   string,
   { active: keyof typeof Ionicons.glyphMap; inactive: keyof typeof Ionicons.glyphMap }
@@ -32,41 +27,33 @@ const TAB_ICONS: Record<
     active: 'search',
     inactive: 'search-outline',
   },
-  contract: {
-    active: 'megaphone',
-    inactive: 'megaphone-outline',
-  },
   chat_stack: {
     active: 'chatbubble',
     inactive: 'chatbubble-outline',
   },
-  service: {
+  // แก้จาก 'service' เป็น 'service_toptab'
+  service_toptab: {
     active: 'list',
     inactive: 'list-outline',
   },
-  dorm: {
-    active: 'business',
-    inactive: 'business-outline',
-  },
-  profile: {
+  // แก้จาก 'profile' เป็น 'profile_stack'
+  profile_stack: {
     active: 'person',
     inactive: 'person-outline',
   },
 };
 
+// แก้ไข Key ให้ตรงกับ name ใน Tabs.Screen เช่นกัน
 const TAB_LABELS: Record<string, string> = {
   home: 'รูมเมท',
   chat_stack: 'แชท',
-  contract: 'สัญญา',
-  dorm: 'หอพัก',
-  service: 'บริการ',
-  profile: 'โปรไฟล์',
+  service_toptab: 'บริการ', // แก้ชื่อ Key
+  profile_stack: 'โปรไฟล์', // แก้ชื่อ Key
 };
 
 const Tabs = createBottomTabNavigator<UserTabsParamsList>();
 
 export default function UserMainTabs() {
-    // 2. เรียกใช้ hook เพื่อดึงค่าระยะขอบของเครื่องนั้นๆ
     const insets = useSafeAreaInsets();
 
     return (
@@ -79,15 +66,11 @@ export default function UserMainTabs() {
                 
                 tabBarStyle: {
                     position: 'absolute',
-                    //  คำนวณระยะจากด้านล่าง: เอาพื้นที่ Safe Area บวกเพิ่มอีก 15 (หรือค่าที่คุณชอบ)
                     bottom: insets.bottom, 
-                    
                     paddingTop : 10,
-                    paddingInline: 5,
+                    paddingHorizontal: 5, // แนะนำใช้ paddingHorizontal แทน paddingInline ในบางเวอร์ชันเพื่อความชัวร์
                     backgroundColor: MainColor,
-                    // borderRadius: 15,
                     height: 65, 
-                    
                     elevation: 5,
                     shadowColor: '#000',
                     shadowOffset: {
@@ -96,47 +79,45 @@ export default function UserMainTabs() {
                     },
                     shadowOpacity: 0.15,
                     shadowRadius: 3.5,
-                
                     paddingBottom: 0, 
                     borderTopWidth: 0, 
                 },
 
-                tabBarIcon: ({ focused, color, size }) => {
-                    const icon =
-                    TAB_ICONS[route.name]?.[focused ? 'active' : 'inactive'] ??
-                    'alert-circle';
+                tabBarIcon: ({ focused, color }) => {
+                    // ใช้ ?. เพื่อป้องกันกรณี route.name ไม่ตรง (จะ return undefined แล้วไปใช้ default)
+                    const iconConfig = TAB_ICONS[route.name];
+                    const iconName = iconConfig ? (focused ? iconConfig.active : iconConfig.inactive) : 'alert-circle';
+                    
+                    // ดึง Label ตาม route name
+                    const label = TAB_LABELS[route.name] || route.name;
 
                     return (
                         <View style={{
-                            // 5. ใช้ Flexbox จัดกึ่งกลางแทนการดัน Top
                             justifyContent: 'center',
                             alignItems: 'center',
-                            height: '100%', // ให้ View เต็มความสูงของ Tab Bar
+                            height: '100%',
                             width: '100%',
                         }}>
-                        <Ionicons name={icon} size={28} color={color} />
-                        <Text
-                            style={{
-                                fontSize: 10,
-                                marginTop: 2,
-                                color,
-                                fontFamily :FONT.REGULAR
-                            }}
+                            <Ionicons name={iconName} size={28} color={color} />
+                            <Text
+                                style={{
+                                    fontSize: 10,
+                                    marginTop: 2,
+                                    color,
+                                    fontFamily : FONT.REGULAR
+                                }}
                             >
-                            {TAB_LABELS[route.name]}
-                        </Text>
-                    </View>
+                                {label}
+                            </Text>
+                        </View>
                     );
                 },
             })}
         >
             <Tabs.Screen name="home" component={HomeScreen} />
-            <Tabs.Screen name="contract" component={ContractScreen} />
             <Tabs.Screen name="chat_stack" component={ChatStack} />
-            <Tabs.Screen name="service" component={ServiceScreen} />
-            <Tabs.Screen name="dorm" component={DormScreen} />
-            <Tabs.Screen name="profile" component={ProfileScreen} />
-            {/* <Tabs.Screen name="setting" component={SettingScreen} /> */}
+            <Tabs.Screen name='service_toptab' component={ServiceTopTabs} />
+            <Tabs.Screen name="profile_stack" component={ProfileStack} />
         </Tabs.Navigator>
     );
 }

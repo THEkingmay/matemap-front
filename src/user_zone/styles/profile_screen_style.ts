@@ -98,7 +98,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   contentContainer: {
-    // Rose: Key Point คือตรงนี้ค่ะ เพิ่ม padding ด้านล่างเยอะๆ
     paddingBottom: 120, 
   },
   

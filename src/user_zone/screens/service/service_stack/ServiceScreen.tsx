@@ -1,15 +1,12 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
-import type { UserTabsParamsList } from '../UserMainTabs';
-import { KU_GREEN } from '../../../constant/theme';
+import { KU_GREEN } from '../../../../../constant/theme';
 
-type props = BottomTabScreenProps<UserTabsParamsList , 'contract'>
 
-export default function ContractScreen({navigation} : props) {
+export default function ServiceScreen() {
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Contract User</Text>
+      <Text style={styles.text}>Service User</Text>
     </View>
   );
 }

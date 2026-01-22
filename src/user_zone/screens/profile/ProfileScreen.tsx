@@ -14,19 +14,19 @@ import {
   Dimensions,
   Pressable
 } from 'react-native';
-import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
-import type { UserTabsParamsList } from '../UserMainTabs';
-import { MainColor } from '../../../constant/theme'; 
-import { useAuth } from '../../AuthProvider';
-import CustomButton from '../../components/ActionButton';
+import type { ProfileStackParamsList } from './ProfileStack';
+import { MainColor } from '../../../../constant/theme'; 
+import { useAuth } from '../../../AuthProvider';
+import CustomButton from '../../../components/ActionButton';
 import { Ionicons } from '@expo/vector-icons';
 import { Toast } from 'toastify-react-native';
-import styles from '../styles/profile_screen_style'
+import styles from '../../styles/profile_screen_style'
 
 import * as ImagePicker from 'expo-image-picker'; 
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 
-type props = BottomTabScreenProps<UserTabsParamsList, 'profile'>
+type props = NativeStackScreenProps<ProfileStackParamsList, 'profile'>
 
 interface RNFile {
   uri: string;
@@ -57,6 +57,7 @@ export default function ProfileScreen({ navigation }: props) {
 
   const [uploadingImage, setUploadingImage] = useState<boolean>(false);
   const [deletingImage, setDeletingImage] = useState<boolean>(false);  
+
 const confirmDeleteProfile = () => {
     Alert.alert(
       "ยืนยันการลบ",
@@ -321,6 +322,10 @@ const confirmDeleteProfile = () => {
       // ลองใส่สัก 100 (หรือประมาณความสูง Header + Status Bar ของเครื่อง)
       keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
     >
+      <View style={{paddingTop : 50 , paddingBottom : 40}}>
+        <Text>โปรไฟล์</Text>
+        <Pressable onPress={()=>navigation.navigate('setting')}><Text>ตั้งค่า</Text></Pressable>
+      </View>
       <ScrollView 
         style={styles.scrollContainer} 
         // Rose: เพิ่ม paddingBottom เยอะๆ ตรงนี้เพื่อให้พ้น Tab Bar ค่ะ

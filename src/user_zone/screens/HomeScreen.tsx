@@ -99,9 +99,7 @@ export default function HomeScreen({ navigation }: Props) {
 
       if (data.data && Array.isArray(data.data) && data.data.length > 0) {
         setCards(prev => [...prev, ...data.data]);
-      } else {
-        console.log("No new users found.");
-      }
+      } 
 
     } catch (err) {
       console.error("Error fetching cards:", err);
@@ -193,7 +191,6 @@ export default function HomeScreen({ navigation }: Props) {
       });
 
       const data = await res.json();
-      console.log(data)
       // ---------------------------------------------------------
       // ✅ STEP 3: HANDLE MATCH (ถ้าแมทช์ ค่อยเด้ง Modal)
       // ---------------------------------------------------------
@@ -342,7 +339,7 @@ const styles = StyleSheet.create({
   headerTitle: { fontSize: 24, color: '#4834D4', fontWeight: 'bold', fontFamily: FONT.BOLD }, // Ensure Font is loaded
   cardContainer: {
     position: 'absolute',
-    height: SCREEN_HEIGHT * 0.72,
+    height: SCREEN_HEIGHT * 0.7,
     width: SCREEN_WIDTH - 20,
     borderRadius: 20,
     backgroundColor: '#ffffff',
@@ -367,7 +364,13 @@ const styles = StyleSheet.create({
   actionRowOverlay: { flexDirection: 'row', flexWrap:'wrap', marginTop: 10 },
   overlayButton: { backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 6, marginRight: 8, marginBottom: 5 },
   overlayButtonText: { color: '#FFF', fontSize: 12, fontWeight: 'bold' },
-  buttonsContainer: { flexDirection: 'row', justifyContent: 'space-evenly', alignItems: 'center', paddingBottom: 20, position: 'absolute', bottom: 20, left: 0, right: 0 },
+  buttonsContainer: { 
+  flexDirection: 'row', 
+  justifyContent: 'space-evenly', 
+  alignItems: 'center' ,
+  bottom: 120, 
+  elevation: 10,
+  } ,
   circleButton: { width: 60, height: 60, borderRadius: 30, backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: '#F0F0F0' },
   shadow: { shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 5 },
   likeLabel: { borderWidth: 3, borderColor: '#4CD964', color: '#4CD964', fontSize: 32, fontWeight: '800', padding: 10, borderRadius: 10 },

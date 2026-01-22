@@ -1,11 +1,10 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
-import type { UserTabsParamsList } from '../UserMainTabs';
-import { KU_GREEN } from '../../../constant/theme';
-;
+import { KU_GREEN } from '../../../../constant/theme';
+import type { ProfileStackParamsList } from './ProfileStack';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-type props = BottomTabScreenProps<UserTabsParamsList , 'setting'>
+type props = NativeStackScreenProps<ProfileStackParamsList , 'setting'>
 
 export default function SettingScreen({navigation} : props) {
 
