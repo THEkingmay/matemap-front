@@ -8,6 +8,48 @@ import { MainColor } from '../../../constant/theme';
 
 type Props = BottomTabScreenProps<MemberTabsParamsList, 'home'>;
 
+/* ================= MOCK DATA ================= */
+const MOCK_POSTS = [
+  {
+    id: '1',
+    title: 'หอพักสบายใจ',
+    location: 'ใกล้มหาวิทยาลัยเกษตรศาสตร์',
+    price: 'ห้องเดี่ยว • 3,500 บาท/เดือน',
+    owner: 'คุณสมชาย',
+    phone: '081-234-5678',
+    imagesCount: 3,
+    tags: ['Wi-Fi', 'เครื่องปรับอากาศ', 'เครื่องทำน้ำอุ่น', 'ที่จอดรถ'],
+    desc:
+      'ห้องสะอาด กว้างขวาง เครื่องปรับอากาศ เครื่องทำน้ำอุ่น Wi-Fi ความเร็วสูง พร้อมอยู่ทันที',
+    updatedAt: '15 มกราคม 2569',
+  },
+  {
+    id: '2',
+    title: 'บ้านเช่าร่มเย็น',
+    location: 'หลังมหาวิทยาลัย',
+    price: 'ห้องแอร์ • 4,200 บาท/เดือน',
+    owner: 'คุณสมหญิง',
+    phone: '089-888-9999',
+    imagesCount: 5,
+    tags: ['Wi-Fi', 'ตู้เย็น', 'เครื่องซักผ้า'],
+    desc: 'บรรยากาศเงียบสงบ เหมาะสำหรับนักศึกษา เดินทางสะดวก',
+    updatedAt: '10 มกราคม 2569',
+  },
+  {
+    id: '3',
+    title: 'อพาร์ทเมนท์ใกล้ BTS',
+    location: 'ใกล้สถานีรถไฟฟ้า',
+    price: 'สตูดิโอ • 6,000 บาท/เดือน',
+    owner: 'คุณวัฒนา',
+    phone: '092-123-4567',
+    imagesCount: 8,
+    tags: ['Wi-Fi', 'ฟิตเนส', 'ลิฟต์', 'ที่จอดรถ'],
+    desc: 'ห้องใหม่ เฟอร์ครบ ใกล้รถไฟฟ้าและห้างสรรพสินค้า',
+    updatedAt: '5 มกราคม 2569',
+  },
+];
+
+/* ================= SCREEN ================= */
 export default function HomeScreen({ navigation }: Props) {
   return (
     <ScrollView style={styles.container}>
@@ -16,50 +58,50 @@ export default function HomeScreen({ navigation }: Props) {
         <Text style={styles.title}>โพสต์ของฉัน</Text>
         <Text style={styles.subTitle}>จัดการโพสต์ห้องว่างทั้งหมดของคุณ</Text>
 
-        <Text style={styles.totalPost}>ทั้งหมด 3 โพสต์</Text>
+        <Text style={styles.totalPost}>
+          ทั้งหมด {MOCK_POSTS.length} โพสต์
+        </Text>
       </View>
 
-      {/* Post Card */}
-      <PostCard />
-      <PostCard />
-      <PostCard />
+      {/* Post List */}
+      {MOCK_POSTS.map(post => (
+        <PostCard key={post.id} post={post} />
+      ))}
     </ScrollView>
   );
 }
 
-/* ---------- Post Card ---------- */
-function PostCard() {
+/* ================= COMPONENTS ================= */
+function PostCard({ post }: { post: typeof MOCK_POSTS[0] }) {
   return (
     <View style={styles.card}>
-      {/* Image Placeholder */}
+      {/* Image */}
       <View style={styles.imagePlaceholder}>
-        <Text style={styles.imageText}>3 รูป</Text>
+        <Text style={styles.imageText}>{post.imagesCount} รูป</Text>
       </View>
 
       {/* Content */}
       <View style={styles.content}>
-        <Text style={styles.postTitle}>หอพักสบายใจ</Text>
+        <Text style={styles.postTitle}>{post.title}</Text>
 
-        <InfoRow icon="location-outline" text="ใกล้มหาวิทยาลัยเกษตรศาสตร์" />
-        <InfoRow icon="cash-outline" text="ห้องเดี่ยว • 3,500 บาท/เดือน" />
-        <InfoRow icon="person-outline" text="คุณสมชาย" />
-        <InfoRow icon="call-outline" text="081-234-5678" />
+        <InfoRow icon="location-outline" text={post.location} />
+        <InfoRow icon="cash-outline" text={post.price} />
+        <InfoRow icon="person-outline" text={post.owner} />
+        <InfoRow icon="call-outline" text={post.phone} />
 
         {/* Tags */}
         <View style={styles.tags}>
-          <Tag text="Wi-Fi" />
-          <Tag text="เครื่องปรับอากาศ" />
-          <Tag text="เครื่องทำน้ำอุ่น" />
-          <Tag text="ที่จอดรถ" />
-          <Tag text="+1 อื่นๆ" />
+          {post.tags.slice(0, 4).map((tag, index) => (
+            <Tag key={index} text={tag} />
+          ))}
+          {post.tags.length > 4 && (
+            <Tag text={`+${post.tags.length - 4} อื่นๆ`} />
+          )}
         </View>
 
-        <Text style={styles.desc}>
-          ห้องสะอาด กว้างขวาง เครื่องปรับอากาศ เครื่องทำน้ำอุ่น Wi-Fi ความเร็วสูง
-          พร้อมอยู่ทันที ใกล้ร้านสะดวกซื้อ ร้านอาหาร และโรงพยาบาล
-        </Text>
+        <Text style={styles.desc}>{post.desc}</Text>
 
-        <Text style={styles.date}>อัปเดตล่าสุด 15 มกราคม 2569</Text>
+        <Text style={styles.date}>อัปเดตล่าสุด {post.updatedAt}</Text>
 
         {/* Actions */}
         <View style={styles.actions}>
@@ -78,7 +120,6 @@ function PostCard() {
   );
 }
 
-/* ---------- Reusable ---------- */
 function InfoRow({ icon, text }: { icon: any; text: string }) {
   return (
     <View style={styles.infoRow}>
@@ -95,8 +136,7 @@ function Tag({ text }: { text: string }) {
     </View>
   );
 }
-
-/* ---------- Styles ---------- */
+/* ================= STYLES ================= */
 const styles = StyleSheet.create({
   container: {
     flex: 1,

@@ -1,86 +1,93 @@
 import React from 'react';
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import HomeScreen from "./screens/HomeScreen";
 import ProfileScreen from "./screens/ProfileScreen";
-import { Ionicons } from '@expo/vector-icons';
-import { View } from 'react-native';
-
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import CreatePost from "./screens/CreatePost";
+import ChatMember from './screens/ChatMember';
 
 import SubscriptionProvider from '../SubscriptionProvider';
 import { MainColor } from '../../constant/theme';
 
 export type MemberTabsParamsList = {
-    home: undefined;
-    profile: undefined;
+  home: undefined;
+  create: undefined;
+  chat: undefined;
+  profile: undefined;
 };
 
 const Tabs = createBottomTabNavigator<MemberTabsParamsList>();
 
 export default function MemberMainTabs() {
-    const insets = useSafeAreaInsets()
-    return (
-        <SubscriptionProvider>
-        <Tabs.Navigator 
-            initialRouteName="home"
-            screenOptions={({ route }) => ({
-                headerShown: false,
-                tabBarShowLabel: false,
-                tabBarActiveTintColor:MainColor,
-                tabBarInactiveTintColor: '#9CA3AF',
-                
-                tabBarStyle: {
-                    position: 'absolute',
-                    //  คำนวณระยะจากด้านล่าง: เอาพื้นที่ Safe Area บวกเพิ่มอีก 15 (หรือค่าที่คุณชอบ)
-                    bottom: insets.bottom, 
-                    
-                    paddingTop : 10,
-                    backgroundColor: '#ffffff',
-                    borderRadius: 15,
-                    height: 65, 
-                    
-                    elevation: 5,
-                    shadowColor: '#000',
-                    shadowOffset: {
-                        width: 0,
-                        height: 5,
-                    },
-                    shadowOpacity: 0.15,
-                    shadowRadius: 3.5,
-                
-                    paddingBottom: 0, 
-                    borderTopWidth: 0, 
-                },
+  const insets = useSafeAreaInsets();
 
-                tabBarIcon: ({ focused, color, size }) => {
-                    let iconName: keyof typeof Ionicons.glyphMap;
+  return (
+    <SubscriptionProvider>
+      <Tabs.Navigator
+        initialRouteName="home"
+        screenOptions={({ route }) => ({
+          headerShown: false,
+          tabBarShowLabel: false,
+          tabBarActiveTintColor: MainColor,
+          tabBarInactiveTintColor: '#9CA3AF',
 
-                    if (route.name === 'home') {
-                        iconName = focused ? 'home' : 'home-outline';
-                    } else if (route.name === 'profile') {
-                        iconName = focused ? 'settings' : 'settings-outline';
-                    } else {
-                        iconName = 'alert-circle';
-                    }
+          tabBarStyle: {
+            paddingTop: 10,
+            backgroundColor: '#ffffff',
+            height: 65 + insets.bottom,
+            elevation: 5,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 5 },
+            shadowOpacity: 0.15,
+            shadowRadius: 3.5,
+            borderTopWidth: 0,
+          },
 
-                    return (
-                        <View style={{
-                            // 5. ใช้ Flexbox จัดกึ่งกลางแทนการดัน Top
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            height: '100%', // ให้ View เต็มความสูงของ Tab Bar
-                            width: '100%',
-                        }}>
-                            <Ionicons name={iconName} size={28} color={color} />
-                        </View>
-                    );
-                },
-            })}
-        >
-            <Tabs.Screen name="home" component={HomeScreen}/>
-            <Tabs.Screen name="profile" component={ProfileScreen}/>
-        </Tabs.Navigator>
-        </SubscriptionProvider>
-    );
+          tabBarIcon: ({ focused, color }) => {
+
+            /* ---------- CREATE (+) ---------- */
+            if (route.name === 'create') {
+              return (
+                <View
+                  style={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: 24,
+                    backgroundColor: MainColor,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}
+                >
+                  <Ionicons name="add" size={26} color="#fff" />
+                </View>
+              );
+            }
+
+            /* ---------- ICON MAPPING ---------- */
+            let iconName: keyof typeof Ionicons.glyphMap;
+
+            if (route.name === 'home') {
+              iconName = focused ? 'home' : 'home-outline';
+            } else if (route.name === 'chat') {
+              iconName = focused ? 'chatbubble' : 'chatbubble-outline';
+            } else {
+              iconName = focused ? 'person' : 'person-outline';
+            }
+
+            return (
+              <Ionicons name={iconName} size={26} color={color} />
+            );
+          },
+        })}
+      >
+        <Tabs.Screen name="home" component={HomeScreen} />
+        <Tabs.Screen name="chat" component={ChatMember} />
+        <Tabs.Screen name="create" component={CreatePost} />
+        <Tabs.Screen name="profile" component={ProfileScreen} />
+      </Tabs.Navigator>
+    </SubscriptionProvider>
+  );
 }
