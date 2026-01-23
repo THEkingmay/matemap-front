@@ -13,6 +13,7 @@ import { ContractStackParamList } from "./ContractStack";
 import { useNavigation } from "@react-navigation/native";
 import { TouchableOpacity } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { getContractPostById } from "./contractPost.service";
 
 type Props = {
   route: RouteProp<ContractStackParamList, "contractDetail">;
@@ -34,7 +35,9 @@ export default function ContractDetail({ route }: Props) {
   const navigation = useNavigation();
 
   useEffect(() => {
-    // 👉 ใช้ mock ก่อน (ลบอันนี้ทิ้งได้เมื่อ backend สมบูรณ์)
+    if (!id) return;
+
+    // #### MOCK DATA ####
     const datamock: ContractPost[] = [
         {
             "id": "eb418dc7-fa65-4937-a6d8-4bdfea0197ab",
@@ -62,18 +65,27 @@ export default function ContractDetail({ route }: Props) {
         }
     ];
 
-    setPost(datamock.find((p) => p.id === id) || null);
-    setLoading(false);
+    const mockPost = datamock.find((p) => p.id === id) || null;
+    setPost(mockPost);
+    setLoading(false); 
+    // ###################
 
-    // 👉 ถ้าจะใช้ API จริง ให้ใช้แทน mock
+    // // FETCH API (เบื้องหลัง) # รอใช้ข้อมูลจริง
     /*
-    fetch(`${process.env.EXPO_PUBLIC_BASE_API_URL}/api/contract-posts/${id}`)
-      .then((res) => res.json())
-      .then((data) => setPost(data))
-      .catch(console.error)
-      .finally(() => setLoading(false));
+    getContractPostById(id)
+        .then((data) => {
+        // ถ้า backend พร้อม → เอาของจริงมาแทน
+            if (data) {
+                setPost(data);
+                setLoading(false);
+            }
+        })
+        .catch((err) => {
+            console.error("API not ready, using mock:", err);
+        });
     */
-  }, [id]);
+    }, [id]);
+
 
   if (loading) {
     return (
