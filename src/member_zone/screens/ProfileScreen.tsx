@@ -1,5 +1,12 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Image,
+} from 'react-native';
 import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -8,6 +15,7 @@ import CustomButton from '../../components/ActionButton';
 import { useAuth } from '../../AuthProvider';
 
 type Props = BottomTabScreenProps<MemberTabsParamsList, 'profile'>;
+
 /* ================= MOCK DATA ================= */
 const MOCK_PROFILE = {
   firstName: 'สมชาย',
@@ -19,6 +27,7 @@ const MOCK_PROFILE = {
   email: 'somchai@example.com',
   lineId: '@somchai',
   facebook: 'facebook.com/somchai',
+  // dormImage: 'https://example.com/dorm.jpg'
 };
 
 export default function ProfileScreen({ navigation }: Props) {
@@ -41,9 +50,7 @@ export default function ProfileScreen({ navigation }: Props) {
       <View style={styles.card}>
         <View style={styles.profileRow}>
           <View style={styles.avatar}>
-            <Text style={styles.avatarText}>
-              {profile.firstName.charAt(0)}
-            </Text>
+            <Ionicons name="person" size={28} color="#fff" />
           </View>
 
           <View style={{ flex: 1 }}>
@@ -64,11 +71,25 @@ export default function ProfileScreen({ navigation }: Props) {
           label="ชื่อ-นามสกุล"
           value={fullName}
         />
+
         <ProfileItem
           icon="business-outline"
           label="ชื่อธุรกิจ/หอพัก"
           value={profile.businessName}
         />
+
+        {/* ====== ที่ใส่รูปหอพัก ====== */}
+        <View style={styles.dormImageSection}>
+          <Text style={styles.dormImageLabel}>รูปหอพัก</Text>
+
+          <View style={styles.dormImagePlaceholder}>
+            {/* ถ้ามีรูป ให้ใช้ Image */}
+            {/* <Image source={{ uri: profile.dormImage }} style={styles.dormImage} /> */}
+            <Ionicons name="image-outline" size={32} color="#999" />
+            <Text style={styles.dormImageText}>ยังไม่มีรูปหอพัก</Text>
+          </View>
+        </View>
+
         <ProfileItem
           icon="location-outline"
           label="ที่ตั้ง"
@@ -108,7 +129,6 @@ export default function ProfileScreen({ navigation }: Props) {
     </ScrollView>
   );
 }
-
 
 /* ---------- reusable item ---------- */
 function ProfileItem({
@@ -169,11 +189,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: 12,
   },
-  avatarText: {
-    color: '#fff',
-    fontSize: 22,
-    fontFamily: 'Kanit_700Bold',
-  },
   name: {
     fontSize: 18,
     fontFamily: 'Kanit_600SemiBold',
@@ -212,6 +227,30 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#000',
   },
+
+  /* ===== รูปหอพัก ===== */
+  dormImageSection: {
+    marginBottom: 16,
+    marginLeft: 30,
+  },
+  dormImageLabel: {
+    fontSize: 12,
+    color: '#888',
+    marginBottom: 6,
+  },
+  dormImagePlaceholder: {
+    height: 120,
+    borderRadius: 10,
+    backgroundColor: '#F1F1F1',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  dormImageText: {
+    marginTop: 6,
+    fontSize: 12,
+    color: '#999',
+  },
+
   logoutSection: {
     marginTop: 24,
     marginHorizontal: 16,
