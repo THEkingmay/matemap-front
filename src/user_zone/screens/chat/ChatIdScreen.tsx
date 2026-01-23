@@ -18,6 +18,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MainColor } from "../../../../constant/theme";
 
+import { supabase } from "../../../../configs/supabase";
+
 type Props = NativeStackScreenProps<ChatStackParamsList, 'chat_select'>
 
 interface MessageDetail { 
@@ -79,6 +81,31 @@ export default function ChatSelectId({ navigation, route }: Props) {
 
     useEffect(() => { 
         fetchMessagesRoom(); 
+ 
+        //realtime chat
+        const channel = supabase.channel(`chat-${room_id}`)
+            .on(
+                'postgres_changes',
+                {
+                    event: '*',
+                    schema: 'public',
+                    table: 'chat_message',
+                    filter: `room_chat_id=eq.${room_id}`
+                },
+                (payload) => {  
+                    console.log('Change received!', payload);
+            
+                    const newMessage = payload.new as MessageDetail; 
+                    
+                    setMessages(prev => [...prev, newMessage]);
+                }
+            )
+            .subscribe();
+
+        return () => {
+            channel.unsubscribe();
+        };
+
     }, [room_id]);
 
     const formatTime = (dateString: string) => {
