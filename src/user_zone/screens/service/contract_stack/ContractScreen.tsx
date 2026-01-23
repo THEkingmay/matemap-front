@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -9,18 +9,10 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { MainColor } from '../../../../../constant/theme';
-import { getContractPosts } from '../contractPost.service';
-
-type ContractPost = {
-  id: string;
-  title: string;
-  price: number;
-  image_url: string | null;
-  province: string;
-  city: string;
-  created_at: string;
-};
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { MainColor } from "../../../../../constant/theme";
+import { getContractPosts } from "../contractPost.service";
+import { ContractStackParamList } from "./ContractStack";
 
 const datamock: ContractPost[] = [
   {
@@ -52,19 +44,30 @@ const datamock: ContractPost[] = [
     }
 ];
 
+type NavigationProp = NativeStackNavigationProp<
+  ContractStackParamList,
+  "contractScreen"
+>;
+
+type ContractPost = {
+  id: string;
+  title: string;
+  price: number;
+  image_url: string | null;
+  province: string;
+  city: string;
+  created_at: string;
+};
+
 export default function ContractScreen() {
-  const navigation = useNavigation<any>();
+  const navigation = useNavigation<NavigationProp>();
   const [posts, setPosts] = useState<ContractPost[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     getContractPosts()
-      .then((data) => {
-        setPosts(data);
-      })
-      .catch((err) => {
-        console.error("FETCH ERROR:", err);
-      })
+      .then(setPosts)
+      .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
 
@@ -82,34 +85,27 @@ export default function ContractScreen() {
         data={datamock} // mock data
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ padding: 16 }}
-        showsVerticalScrollIndicator={false}
         renderItem={({ item }) => (
           <TouchableOpacity
-            activeOpacity={0.85}
             style={styles.card}
+            activeOpacity={0.85}
             onPress={() =>
-              navigation.push("contractDetail", {
-                id: item.id,
-              })
+              navigation.push("contractDetail", { id: item.id })
             }
           >
-            {/* Image */}
             {item.image_url ? (
               <Image source={{ uri: item.image_url }} style={styles.image} />
             ) : (
               <View style={styles.imagePlaceholder} />
             )}
 
-            {/* Content */}
             <View style={styles.content}>
               <Text style={styles.title} numberOfLines={2}>
                 {item.title}
               </Text>
-
               <Text style={styles.price}>
                 ฿ {item.price.toLocaleString()}
               </Text>
-
               <Text style={styles.location}>
                 {item.city} • {item.province}
               </Text>
@@ -118,71 +114,28 @@ export default function ContractScreen() {
         )}
       />
     </View>
-
   );
 }
 
-
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#F6F7FB",
-  },
-
-  loading: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#F6F7FB",
-  },
-
+  container: { flex: 1, backgroundColor: "#F6F7FB" },
+  loading: { flex: 1, justifyContent: "center", alignItems: "center" },
   card: {
     backgroundColor: "#fff",
     borderRadius: 18,
     marginBottom: 18,
     overflow: "hidden",
-
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
     elevation: 4,
   },
-
-  image: {
-    width: "100%",
-    height: 170,
-    backgroundColor: "#eee",
-  },
-
-  imagePlaceholder: {
-    width: "100%",
-    height: 170,
-    backgroundColor: "#E5E7EB",
-  },
-
-  content: {
-    padding: 14,
-  },
-
-  title: {
-    fontSize: 16,
-    fontFamily: "Kanit_600SemiBold",
-    color: "#111",
-    marginBottom: 6,
-  },
-
-  price: {
-    fontSize: 18,
-    fontFamily: "Kanit_700Bold",
-    color: MainColor,
-    marginBottom: 4,
-  },
-
-  location: {
-    fontSize: 13,
-    fontFamily: "Kanit_400Regular",
-    color: "#6B7280",
-  },
+  image: { width: "100%", height: 170 },
+  imagePlaceholder: { width: "100%", height: 170, backgroundColor: "#E5E7EB" },
+  content: { padding: 14 },
+  title: { fontSize: 16, fontFamily: "Kanit_600SemiBold" },
+  price: { fontSize: 18, fontFamily: "Kanit_700Bold", color: MainColor },
+  location: { fontSize: 13, color: "#6B7280" },
 });
+
+
+
+
 
