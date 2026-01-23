@@ -2,7 +2,7 @@ import React from 'react';
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 
 // Imports: จัดกลุ่มให้ชัดเจน
-import ContractScreen from "./ContractScreen";
+import ContractScreen from "./contract_stack/ContractScreen";
 import DormScreen from "./DormScreens";
 import ServiceStack from "./service_stack/ServiceStack";
 import { FONT, MainColor } from '../../../../constant/theme';
