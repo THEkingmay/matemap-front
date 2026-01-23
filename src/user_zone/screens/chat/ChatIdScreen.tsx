@@ -37,7 +37,7 @@ export default function ChatSelectId({ navigation, route }: Props) {
     const [text, setText] = useState("");
     const [loading, setLoading] = useState(false);
     
-    const flatListRef = useRef<FlatList>(null);
+    const [isSending, setIsSending] = useState<boolean>(false);
 
     const fetchMessagesRoom = async () => {
         setLoading(true);
@@ -68,14 +68,44 @@ export default function ChatSelectId({ navigation, route }: Props) {
 
     const handleAdd = async () => {
         if (!text.trim()) return;
-        
+        let tempId = `temp-id-${Date.now()}`;
         try{
+            let newMessage = text.trim();
+           
+            setIsSending(true);
+            setMessages(prev => [...prev, {
+                id: tempId,
+                room_chat_id: room_id,
+                message: text.trim(),
+                uid: user?.id || "" ,
+                created_at: new Date().toISOString()
+            }]);    
             setText("");
-        }catch(err){
 
+            const res = await fetch(`${process.env.EXPO_PUBLIC_BASE_API_URL}/api/message?userId=${user?.id}&&roomId=${room_id}`, {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}` 
+                },
+                body: JSON.stringify({  
+                    message: newMessage
+                })
+            });
+            if (!res.ok) throw new Error("Failed to send message");
+
+            setText("");
+         }catch(err){
+            // ลบข้อความชั่วคราวที่ส่งไม่สำเร็จ
+            setMessages(prev => prev.filter(msg => msg.id !== tempId));
+            console.error(err);
+            Toast.show({
+                type: "error",
+                text1: 'เกิดข้อผิดพลาดในการส่งข้อความ'
+            });
         }finally{
-            
-        }
+            setIsSending(false);
+        }   
         
     }
 
@@ -92,10 +122,11 @@ export default function ChatSelectId({ navigation, route }: Props) {
                     table: 'chat_message',
                     filter: `room_chat_id=eq.${room_id}`
                 },
-                (payload) => {  
-                    console.log('Change received!', payload);
-            
+                (payload) => {              
                     const newMessage = payload.new as MessageDetail; 
+                     
+                    //ถ้า uid ของข้อความใหม่ตรงกับ user ปัจจุบัน แสดงว่าเราเพิ่งส่งไปแล้ว ไม่ต้องเพิ่มซ้ำ
+                    if(newMessage.uid === user?.id) return;
                     
                     setMessages(prev => [...prev, newMessage]);
                 }
@@ -109,11 +140,28 @@ export default function ChatSelectId({ navigation, route }: Props) {
     }, [room_id]);
 
     const formatTime = (dateString: string) => {
-        if (!dateString) return "";
-        const date = new Date(dateString);
-        return date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
-    };
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    const now = new Date();
 
+    // เปรียบเทียบว่าเป็นวันเดียวกันหรือไม่ (ตัดเรื่องเวลาออก ดูแค่วัน เดือน ปี)
+    const isSameDay = date.toDateString() === now.toDateString();
+
+    if (isSameDay) {
+        // กรณี: วันนี้ -> แสดงเวลา (เช่น 14:30)
+        return date.toLocaleTimeString('th-TH', { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+        });
+    } else {
+        // กรณี: เกิน 1 วัน (คนละวัน) -> แสดงวันที่ (เช่น 23 ม.ค. 67)
+        return date.toLocaleDateString('th-TH', { 
+            day: 'numeric', 
+            month: 'short', 
+            year: '2-digit' // หรือตัดออกถ้าไม่อยากให้แสดงปี
+        });
+    }
+};
     const renderItem = ({ item }: { item: MessageDetail }) => {
         const isMyMessage = item.uid === user?.id;
 
@@ -122,12 +170,6 @@ export default function ChatSelectId({ navigation, route }: Props) {
                 styles.messageRow, 
                 isMyMessage ? styles.myMessageRow : styles.otherMessageRow
             ]}>
-                {!isMyMessage && (
-                    <View style={styles.avatarPlaceholder}>
-                        <Ionicons name="person" size={16} color="#fff" />
-                    </View>
-                )}
-                
                 <View style={[
                     styles.bubble, 
                     isMyMessage ? styles.myBubble : styles.otherBubble
@@ -156,18 +198,18 @@ export default function ChatSelectId({ navigation, route }: Props) {
             {/* Header: อยู่นอก KeyboardAvoidingView เพื่อให้ตรึงอยู่กับที่ */}
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                    <Ionicons name="chevron-back" size={28} color={MainColor} />
+                    <Ionicons name="chevron-back" size={28} color={'#ffffff'} />
                 </TouchableOpacity>
                 <View>
-                    <Text style={styles.headerTitle}>ห้องสนทนา {target_name}</Text>
+                    <Text style={styles.headerTitle}>ข้อความของ {target_name}</Text>
                 </View>
             </View>
 
             {/* KeyboardAvoidingView: คลุมทั้ง List และ Input */}
             <KeyboardAvoidingView 
                 style={styles.keyboardView}
-                behavior={Platform.OS === "ios" ? "padding" : undefined} 
-                keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
+                keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 20}
             >
                 {loading && messages.length === 0 ? (
                     <View style={styles.centerLoader}>
@@ -175,14 +217,11 @@ export default function ChatSelectId({ navigation, route }: Props) {
                     </View>
                 ) : (
                     <FlatList
-                        ref={flatListRef}
-                        data={messages}
+                        inverted
+                        data={[...messages].reverse()}
                         renderItem={renderItem}
                         keyExtractor={(item) => item.id}
                         contentContainerStyle={styles.listContent}
-                        // เมื่อคีย์บอร์ดขึ้น ขนาด list เปลี่ยน มันจะเลื่อนลงล่างให้อัตโนมัติ
-                        onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
-                        onLayout={() => flatListRef.current?.scrollToEnd({ animated: true })}
                     />
                 )}
 
@@ -194,13 +233,14 @@ export default function ChatSelectId({ navigation, route }: Props) {
                         placeholder="พิมพ์ข้อความ..."
                         placeholderTextColor="#999"
                         multiline // รองรับการพิมพ์หลายบรรทัด
+                        editable={!isSending}
                     />
                     <TouchableOpacity 
                         onPress={handleAdd} 
                         style={[styles.sendButton, { opacity: text.trim() ? 1 : 0.5 }]}
-                        disabled={!text.trim()}
+                        disabled={!text.trim() || isSending}
                     >
-                        <Ionicons name="send" size={20} color="#fff" />
+                        <Ionicons name={"send"} size={20} color="#fff" />
                     </TouchableOpacity>
                 </View>
             </KeyboardAvoidingView>
@@ -211,7 +251,7 @@ export default function ChatSelectId({ navigation, route }: Props) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F5F5F5',
+        backgroundColor: '#ffffff',
     },
     keyboardView: {
         flex: 1,
@@ -221,9 +261,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingHorizontal: 16,
         paddingVertical: 12,
-        backgroundColor: '#fff',
+        backgroundColor: MainColor,
         borderBottomWidth: 1,
-        borderBottomColor: '#E0E0E0',
+        borderBottomColor: '#ffffff',
         elevation: 2,
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 1 },
@@ -237,11 +277,11 @@ const styles = StyleSheet.create({
     headerTitle: {
         fontSize: 16,
         fontWeight: 'bold',
-        color: '#333',
+        color: '#ffffff',
     },
     headerSubTitle: {
         fontSize: 12,
-        color: '#666',
+        color: '#ffffff',
     },
     centerLoader: {
         flex: 1,
@@ -249,6 +289,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     listContent: {
+        paddingBottom: 10,
         paddingVertical: 16,
         paddingHorizontal: 12,
         flexGrow: 1,

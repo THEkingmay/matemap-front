@@ -5,7 +5,7 @@ import { ChatStackParamsList } from './ChatStack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../../AuthProvider';
 import Toast from 'react-native-toast-message';
-import { MainColor } from '../../../../constant/theme';
+import { FONT, MainColor } from '../../../../constant/theme';
 
 // Import รูปภาพ Default
 const DEFAULT_PROFILE = require('../../../../assets/no-profile.png');
@@ -204,9 +204,9 @@ export default function ChatScreen({ navigation }: props) {
             <View style={styles.center}>
                 <Image 
                   source={DEFAULT_PROFILE} 
-                  style={{ width: 80, height: 80, opacity: 0.3, marginBottom: 10 }} 
+                  style={{ width:100, height:100, opacity: 0.3, marginBottom: 10  , borderRadius : 40}} 
                 />
-                <Text style={{color: '#999', fontSize: 16}}>ไม่พบบทสนทนา</Text>
+                <Text style={{color: '#999', fontSize:20 , fontFamily : FONT.BOLD}}>ไม่พบบทสนทนา</Text>
             </View>
           }
           renderItem={renderItem}
