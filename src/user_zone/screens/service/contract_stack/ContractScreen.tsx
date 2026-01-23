@@ -11,7 +11,7 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { MainColor } from "../../../../../constant/theme";
-import { getContractPosts } from "../contractPost.service";
+import { getContractPosts } from "./contractPost.service";
 import { ContractStackParamList } from "./ContractStack";
 
 const datamock: ContractPost[] = [
