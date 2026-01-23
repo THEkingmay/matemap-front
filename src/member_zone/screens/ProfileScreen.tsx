@@ -8,28 +8,47 @@ import CustomButton from '../../components/ActionButton';
 import { useAuth } from '../../AuthProvider';
 
 type Props = BottomTabScreenProps<MemberTabsParamsList, 'profile'>;
+/* ================= MOCK DATA ================= */
+const MOCK_PROFILE = {
+  firstName: 'สมชาย',
+  lastName: 'ใจดี',
+  role: 'เจ้าของหอพัก',
+  businessName: 'หอพักสบายใจ',
+  location: 'ใกล้มหาวิทยาลัยเกษตรศาสตร์',
+  phone: '081-234-5678',
+  email: 'somchai@example.com',
+  lineId: '@somchai',
+  facebook: 'facebook.com/somchai',
+};
 
 export default function ProfileScreen({ navigation }: Props) {
   const { logout } = useAuth();
+
+  const profile = MOCK_PROFILE;
+  const fullName = `${profile.firstName} ${profile.lastName}`;
 
   return (
     <ScrollView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>โปรไฟล์ของฉัน</Text>
-        <Text style={styles.headerSub}>จัดการข้อมูลส่วนตัวและช่องทางการติดต่อ</Text>
+        <Text style={styles.headerSub}>
+          จัดการข้อมูลส่วนตัวและช่องทางการติดต่อ
+        </Text>
       </View>
 
       {/* Profile Card */}
       <View style={styles.card}>
         <View style={styles.profileRow}>
           <View style={styles.avatar}>
-            <Text style={styles.avatarText}>ส</Text>
+            <Text style={styles.avatarText}>
+              {profile.firstName.charAt(0)}
+            </Text>
           </View>
 
           <View style={{ flex: 1 }}>
-            <Text style={styles.name}>สมชาย ใจดี</Text>
-            <Text style={styles.role}>เจ้าของหอพัก</Text>
+            <Text style={styles.name}>{fullName}</Text>
+            <Text style={styles.role}>{profile.role}</Text>
           </View>
 
           <TouchableOpacity style={styles.editBtn}>
@@ -40,13 +59,41 @@ export default function ProfileScreen({ navigation }: Props) {
 
         <View style={styles.divider} />
 
-        <ProfileItem icon="person-outline" label="ชื่อ-นามสกุล" value="สมชาย ใจดี" />
-        <ProfileItem icon="business-outline" label="ชื่อธุรกิจ/หอพัก" value="หอพักสบายใจ" />
-        <ProfileItem icon="location-outline" label="ที่ตั้ง" value="ใกล้มหาวิทยาลัยเกษตรศาสตร์" />
-        <ProfileItem icon="call-outline" label="เบอร์โทรศัพท์" value="081-234-5678" />
-        <ProfileItem icon="mail-outline" label="อีเมล" value="somchai@example.com" />
-        <ProfileItem icon="chatbubble-outline" label="LINE ID" value="@somchai" />
-        <ProfileItem icon="logo-facebook" label="Facebook" value="facebook.com/somchai" />
+        <ProfileItem
+          icon="person-outline"
+          label="ชื่อ-นามสกุล"
+          value={fullName}
+        />
+        <ProfileItem
+          icon="business-outline"
+          label="ชื่อธุรกิจ/หอพัก"
+          value={profile.businessName}
+        />
+        <ProfileItem
+          icon="location-outline"
+          label="ที่ตั้ง"
+          value={profile.location}
+        />
+        <ProfileItem
+          icon="call-outline"
+          label="เบอร์โทรศัพท์"
+          value={profile.phone}
+        />
+        <ProfileItem
+          icon="mail-outline"
+          label="อีเมล"
+          value={profile.email}
+        />
+        <ProfileItem
+          icon="chatbubble-outline"
+          label="LINE ID"
+          value={profile.lineId}
+        />
+        <ProfileItem
+          icon="logo-facebook"
+          label="Facebook"
+          value={profile.facebook}
+        />
       </View>
 
       {/* Logout */}
@@ -61,6 +108,7 @@ export default function ProfileScreen({ navigation }: Props) {
     </ScrollView>
   );
 }
+
 
 /* ---------- reusable item ---------- */
 function ProfileItem({
