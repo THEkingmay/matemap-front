@@ -14,7 +14,6 @@ import { useNavigation } from "@react-navigation/native";
 import { TouchableOpacity } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 
-
 type Props = {
   route: RouteProp<ContractStackParamList, "contractDetail">;
 };
@@ -36,17 +35,34 @@ export default function ContractDetail({ route }: Props) {
 
   useEffect(() => {
     // 👉 ใช้ mock ก่อน (ลบอันนี้ทิ้งได้เมื่อ backend สมบูรณ์)
-    const mockPost: ContractPost = {
-      id,
-      title: "ขายสัญญาหอ ใกล้ ม.ธรรมศาสตร์",
-      price: 7500,
-      province: "ปทุมธานี",
-      city: "คลองหลวง",
-      image_url:
-        "https://res.cloudinary.com/dcr8iggld/image/upload/v1769190427/matemap/contract-posts/eb418dc7-fa65-4937-a6d8-4bdfea0197ab/y7ecmwvhjzqtdzq7nsgq.webp",
-    };
+    const datamock: ContractPost[] = [
+        {
+            "id": "eb418dc7-fa65-4937-a6d8-4bdfea0197ab",
+            "title": "ขายสัญญาหอ ใกล้ ม.ธรรมศาสตร์",
+            "price": 7500,
+            "image_url": "https://res.cloudinary.com/dcr8iggld/image/upload/v1769190427/matemap/contract-posts/eb418dc7-fa65-4937-a6d8-4bdfea0197ab/y7ecmwvhjzqtdzq7nsgq.webp",
+            "province": "ปทุมธานี",
+            "city": "คลองหลวง",
+        },
+        {
+            "id": "d3f3f3e1-1e2b-4f4c-9f4e-2b2c2d2e2f2a",
+            "title": "ขายสัญญาหอพัก ใกล้ ม.รังสิต",
+            "price": 6800,
+            "image_url": "https://bcdn.renthub.in.th/listing_picture/202009/20200910/cuuGKkZCoZZTUYGDBFqL.jpg?class=lthumbnail",
+            "province": "ปทุมธานี",
+            "city": "ธัญบุรี",
+        },
+        {
+            "id": "a1b2c3d4-e5f6-7g8h-9i0j-k1l2m3n4o5p6",
+            "title": "ขายสัญญาหอพัก ใกล้ ม.กรุงเทพ",
+            "price": 7200,
+            "image_url": "https://assets.baanfinder.com/ll3uaqfgiynuu55p88ka2d7ku0uvde51at9ziqz7dffe39274xv6azo8gmzxs7g8tte8fnjk7m4keut1yfr5fqu5vki2ljf1269w8n5ytxct4zktvwht82cygdvjaqq9.jpg",
+            "province": "นนทบุรี",
+            "city": "เมืองนนทบุรี",
+        }
+    ];
 
-    setPost(mockPost);
+    setPost(datamock.find((p) => p.id === id) || null);
     setLoading(false);
 
     // 👉 ถ้าจะใช้ API จริง ให้ใช้แทน mock
