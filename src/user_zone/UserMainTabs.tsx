@@ -12,6 +12,7 @@ import ProfileStack from './screens/profile/ProfileStack';
 import { activeColor, FONT, MainColor } from '../../constant/theme';
 
 import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
+import ContractStack from './screens/service/contract_stack/ContractStack';
 
 export type UserTabsParamsList = {
     home: undefined; // explore screen
@@ -127,6 +128,7 @@ export default function UserMainTabs() {
             <Tabs.Screen name="chat_stack" component={ChatStack} />
             <Tabs.Screen name='service_toptab' component={ServiceTopTabs} />
             <Tabs.Screen name="profile_stack" component={ProfileStack} />
+
         </Tabs.Navigator>
     );
 }

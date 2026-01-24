@@ -2,11 +2,11 @@ import React from 'react';
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 
 // Imports: จัดกลุ่มให้ชัดเจน
-import ContractScreen from "./ContractScreen";
 import DormScreen from "./DormScreens";
 import ServiceStack from "./service_stack/ServiceStack";
 import { FONT, MainColor } from '../../../../constant/theme';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import ContractStack from './contract_stack/ContractStack';
 
 // Types: ใช้ PascalCase ตาม Convention สากล
 export type ServiceTabParamList = {
@@ -46,7 +46,7 @@ export default function ServiceTopTabs() {
     >
       <Tab.Screen 
         name="Contract" 
-        component={ContractScreen} 
+        component={ContractStack} 
         options={{ tabBarLabel: 'สัญญา' }} 
       />
       <Tab.Screen 
