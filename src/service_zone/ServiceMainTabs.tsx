@@ -6,10 +6,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { activeColor, FONT, MainColor } from '../../constant/theme';
 import SubscriptionProvider from '../SubscriptionProvider';
 
-import ChatScreen from './screens/ChatScreen';
-import ScheduleScreen from './screens/ScheduleScreen';
-import ProfileScreen from './screens/ProfileScreen';
-import WorkScreen from './screens/WorkScreen';
+import ChatScreen from './screens/chat/ChatScreen';
+import ScheduleScreen from './screens/schedule/ScheduleScreen';
+import ProfileScreen from './screens/profile/ProfileScreen';
+import WorkScreen from './screens/work/WorkScreen';
 
 
 export type ServiceTabsParamsList = {
