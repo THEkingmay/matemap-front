@@ -2,18 +2,16 @@ import React, { useState } from "react";
 import {
   View,
   Text,
-  StyleSheet,
   ScrollView,
   Image,
   TouchableOpacity,
-  SafeAreaView,
   TextInput,
   Alert,
 } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import LogoutButton from "../../components/LogoutButton";
 import { useAuth } from "../../../AuthProvider";
-
+import { styles } from "../../styles/profile.styles";
 
 export default function ProfileScreen() {
   const [isEdit, setIsEdit] = useState(false);
@@ -40,16 +38,16 @@ export default function ProfileScreen() {
   };
 
   return (
-    <SafeAreaView style={s.safe}>
+    <View style={styles.container}>
       <ScrollView
-        contentContainerStyle={s.content}
+        contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
         {/* ===== Header ===== */}
-        <View style={s.headerRow}>
+        <View style={styles.headerRow}>
           {isEdit ? (
             <TouchableOpacity onPress={() => setIsEdit(false)}>
-              <Text style={s.cancel}>ยกเลิก</Text>
+              <Text style={styles.cancel}>ยกเลิก</Text>
             </TouchableOpacity>
           ) : (
             <View />
@@ -57,20 +55,20 @@ export default function ProfileScreen() {
 
           {!isEdit && (
             <TouchableOpacity
-              style={s.editBtn}
+              style={styles.editBtn}
               onPress={() => setIsEdit(true)}
             >
               <Ionicons name="create-outline" size={18} color="#2563EB" />
-              <Text style={s.editText}>แก้ไข</Text>
+              <Text style={styles.editText}>แก้ไข</Text>
             </TouchableOpacity>
           )}
         </View>
 
         {/* ===== Avatar ===== */}
-        <View style={s.avatarWrapper}>
-          <Image source={{ uri: user.avatar }} style={s.avatar} />
+        <View style={styles.avatarWrapper}>
+          <Image source={{ uri: user.avatar }} style={styles.avatar} />
           {isEdit && (
-            <TouchableOpacity style={s.camera}>
+            <TouchableOpacity style={styles.camera}>
               <Ionicons name="camera" size={16} color="#fff" />
             </TouchableOpacity>
           )}
@@ -79,40 +77,40 @@ export default function ProfileScreen() {
         {/* ===== VIEW MODE ===== */}
         {!isEdit && (
           <>
-            <Text style={s.name}>{user.name}</Text>
+            <Text style={styles.name}>{user.name}</Text>
 
-            <View style={s.ratingRow}>
+            <View style={styles.ratingRow}>
               <Ionicons name="star" size={18} color="#F59E0B" />
-              <Text style={s.ratingText}>{user.rating.toFixed(1)}</Text>
+              <Text style={styles.ratingText}>{user.rating.toFixed(1)}</Text>
             </View>
 
             {/* ===== Vehicle Plate ===== */}
-            <View style={s.vehicleRow}>
+            <View style={styles.vehicleRow}>
               <Ionicons name="car-outline" size={16} color="#6B7280" />
-              <Text style={s.vehicleText}>{user.vehicle}</Text>
+              <Text style={styles.vehicleText}>{user.vehicle}</Text>
             </View>
 
-            <View style={s.statRow}>
+            <View style={styles.statRow}>
               <StatBox title="งานที่รับ" value="5" />
               <StatBox title="งานสำเร็จ" value="5" />
             </View>
 
-            <View style={s.reviewCard}>
-              <Text style={s.reviewTitle}>รีวิวจากผู้จ้าง (1)</Text>
+            <View style={styles.reviewCard}>
+              <Text style={styles.reviewTitle}>รีวิวจากผู้จ้าง (1)</Text>
 
-              <View style={s.reviewItem}>
+              <View style={styles.reviewItem}>
                 <Image
                   source={{
                     uri: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRSKdMDtiohdnWlMxTRrz5Ghpcqk5IXJVS8RQ&s",
                   }}
-                  style={s.reviewAvatar}
+                  style={styles.reviewAvatar}
                 />
                 <View>
-                  <Text style={s.reviewName}>Rose</Text>
-                  <Text style={s.reviewText}>
+                  <Text style={styles.reviewName}>Rose</Text>
+                  <Text style={styles.reviewText}>
                     ขนย้ายของอย่างระมัดระวัง ตรงต่อเวลา
                   </Text>
-                  <Text style={s.reviewStar}>★★★★★</Text>
+                  <Text style={styles.reviewStar}>★★★★★</Text>
                 </View>
               </View>
             </View>
@@ -122,18 +120,18 @@ export default function ProfileScreen() {
 
         {/* ===== EDIT MODE ===== */}
         {isEdit && (
-          <View style={s.form}>
+          <View style={styles.form}>
             <Label title="ชื่อผู้ใช้งาน" />
             <TextInput
               value={user.name}
-              style={s.input}
+              style={styles.input}
               onChangeText={(t) => setUser({ ...user, name: t })}
             />
 
             <Label title="เบอร์โทร" />
             <TextInput
               value={user.phone}
-              style={s.input}
+              style={styles.input}
               keyboardType="phone-pad"
               onChangeText={(t) => setUser({ ...user, phone: t })}
             />
@@ -141,7 +139,7 @@ export default function ProfileScreen() {
             <Label title="ทะเบียนรถ" />
             <TextInput
               value={user.vehicle}
-              style={s.input}
+              style={styles.input}
               onChangeText={(t) => setUser({ ...user, vehicle: t })}
             />
 
@@ -162,30 +160,30 @@ export default function ProfileScreen() {
             />
 
             <TouchableOpacity
-              style={s.saveBtn}
+              style={styles.saveBtn}
               onPress={() => setIsEdit(false)}
             >
-              <Text style={s.saveText}>บันทึก</Text>
+              <Text style={styles.saveText}>บันทึก</Text>
             </TouchableOpacity>
           </View>
         )}
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 /* ================== COMPONENTS ================== */
 function StatBox({ title, value }: { title: string; value: string }) {
   return (
-    <View style={s.statBox}>
-      <Text style={s.statValue}>{value}</Text>
-      <Text style={s.statTitle}>{title}</Text>
+    <View style={styles.statBox}>
+      <Text style={styles.statValue}>{value}</Text>
+      <Text style={styles.statTitle}>{title}</Text>
     </View>
   );
 }
 
 function Label({ title }: { title: string }) {
-  return <Text style={s.label}>{title}</Text>;
+  return <Text style={styles.label}>{title}</Text>;
 }
 
 function Radio({
@@ -198,217 +196,14 @@ function Radio({
   onPress: () => void;
 }) {
   return (
-    <TouchableOpacity style={s.radioRow} onPress={onPress}>
+    <TouchableOpacity style={styles.radioRow} onPress={onPress}>
       <Ionicons
         name={active ? "radio-button-on" : "radio-button-off"}
         size={18}
         color="#2563EB"
       />
-      <Text style={s.radioText}>{label}</Text>
+      <Text style={styles.radioText}>{label}</Text>
     </TouchableOpacity>
   );
 }
 
-/* ================== STYLES ================== */
-const s = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: "#F7F8FA",
-  },
-
-  content: {
-    padding: 20,
-    paddingBottom: 120,
-  },
-
-  headerRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-
-  cancel: {
-    fontSize: 14,
-    color: "#2563EB",
-    fontWeight: "500",
-  },
-
-  editBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-  },
-
-  editText: {
-    fontSize: 14,
-    color: "#2563EB",
-    fontWeight: "500",
-  },
-
-  avatarWrapper: {
-    alignItems: "center",
-    marginBottom: 12,
-  },
-
-  avatar: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-  },
-
-  camera: {
-    position: "absolute",
-    bottom: 6,
-    right: 6,
-    backgroundColor: "#2563EB",
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-
-  name: {
-    fontSize: 20,
-    fontWeight: "700",
-    textAlign: "center",
-    marginTop: 8,
-  },
-
-  ratingRow: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 6,
-    marginVertical: 6,
-  },
-
-  ratingText: {
-    fontSize: 16,
-    fontWeight: "600",
-  },
-
-  vehicleRow: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 6,
-    marginBottom: 8,
-  },
-
-  vehicleText: {
-    fontSize: 14,
-    color: "#6B7280",
-  },
-
-  statRow: {
-    flexDirection: "row",
-    marginVertical: 16,
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: "#E5E7EB",
-  },
-
-  statBox: {
-    flex: 1,
-    alignItems: "center",
-    paddingVertical: 12,
-  },
-
-  statValue: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: "#2563EB",
-  },
-
-  statTitle: {
-    fontSize: 13,
-    color: "#6B7280",
-    marginTop: 4,
-  },
-
-  reviewCard: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 16,
-    padding: 16,
-    marginTop: 16,
-  },
-
-  reviewTitle: {
-    fontSize: 16,
-    fontWeight: "700",
-    marginBottom: 12,
-  },
-
-  reviewItem: {
-    flexDirection: "row",
-    gap: 12,
-  },
-
-  reviewAvatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-  },
-
-  reviewName: {
-    fontWeight: "600",
-  },
-
-  reviewText: {
-    fontSize: 13,
-    color: "#374151",
-    marginVertical: 2,
-  },
-
-  reviewStar: {
-    color: "#F59E0B",
-    fontSize: 14,
-  },
-
-  form: {
-    marginTop: 16,
-  },
-
-  label: {
-    fontSize: 14,
-    color: "#374151",
-    marginBottom: 6,
-    marginTop: 12,
-  },
-
-  input: {
-    height: 46,
-    borderRadius: 12,
-    backgroundColor: "#F3F4F6",
-    paddingHorizontal: 14,
-    fontSize: 15,
-  },
-
-  radioRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    marginVertical: 6,
-  },
-
-  radioText: {
-    fontSize: 14,
-    color: "#111827",
-  },
-
-  saveBtn: {
-    backgroundColor: "#2563EB",
-    paddingVertical: 14,
-    borderRadius: 14,
-    alignItems: "center",
-    marginTop: 24,
-  },
-
-  saveText: {
-    color: "#FFFFFF",
-    fontWeight: "700",
-    fontSize: 16,
-  },
-});
