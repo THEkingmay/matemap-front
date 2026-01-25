@@ -36,45 +36,9 @@ export default function ContractDetail({ route }: Props) {
 
   useEffect(() => {
     if (!id) return;
-
-    // #### MOCK DATA ####
-    const datamock: ContractPost[] = [
-        {
-            "id": "eb418dc7-fa65-4937-a6d8-4bdfea0197ab",
-            "title": "ขายสัญญาหอ ใกล้ ม.ธรรมศาสตร์",
-            "price": 7500,
-            "image_url": "https://res.cloudinary.com/dcr8iggld/image/upload/v1769190427/matemap/contract-posts/eb418dc7-fa65-4937-a6d8-4bdfea0197ab/y7ecmwvhjzqtdzq7nsgq.webp",
-            "province": "ปทุมธานี",
-            "city": "คลองหลวง",
-        },
-        {
-            "id": "d3f3f3e1-1e2b-4f4c-9f4e-2b2c2d2e2f2a",
-            "title": "ขายสัญญาหอพัก ใกล้ ม.รังสิต",
-            "price": 6800,
-            "image_url": "https://bcdn.renthub.in.th/listing_picture/202009/20200910/cuuGKkZCoZZTUYGDBFqL.jpg?class=lthumbnail",
-            "province": "ปทุมธานี",
-            "city": "ธัญบุรี",
-        },
-        {
-            "id": "a1b2c3d4-e5f6-7g8h-9i0j-k1l2m3n4o5p6",
-            "title": "ขายสัญญาหอพัก ใกล้ ม.กรุงเทพ",
-            "price": 7200,
-            "image_url": "https://assets.baanfinder.com/ll3uaqfgiynuu55p88ka2d7ku0uvde51at9ziqz7dffe39274xv6azo8gmzxs7g8tte8fnjk7m4keut1yfr5fqu5vki2ljf1269w8n5ytxct4zktvwht82cygdvjaqq9.jpg",
-            "province": "นนทบุรี",
-            "city": "เมืองนนทบุรี",
-        }
-    ];
-
-    const mockPost = datamock.find((p) => p.id === id) || null;
-    setPost(mockPost);
-    setLoading(false); 
-    // ###################
-
-    // // FETCH API (เบื้องหลัง) # รอใช้ข้อมูลจริง
-    /*
+    
     getContractPostById(id)
         .then((data) => {
-        // ถ้า backend พร้อม → เอาของจริงมาแทน
             if (data) {
                 setPost(data);
                 setLoading(false);
@@ -83,7 +47,7 @@ export default function ContractDetail({ route }: Props) {
         .catch((err) => {
             console.error("API not ready, using mock:", err);
         });
-    */
+    
     }, [id]);
 
 
