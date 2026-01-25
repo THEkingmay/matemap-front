@@ -93,14 +93,15 @@ export default function ProfileScreen() {
               <Text style={styles.vehicleText}>{user.vehicle}</Text>
             </View>
 
+            {/* ===== Job Type ===== */}
             <View style={styles.statRow}>
               <StatBox title="งานที่รับ" value="5" />
               <StatBox title="งานสำเร็จ" value="5" />
             </View>
 
+            {/* ===== Reviews ===== */}
             <View style={styles.reviewCard}>
               <Text style={styles.reviewTitle}>รีวิวจากผู้จ้าง (1)</Text>
-
               <View style={styles.reviewItem}>
                 <Image
                   source={{
