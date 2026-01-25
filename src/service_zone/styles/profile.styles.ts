@@ -1,4 +1,5 @@
 import { StyleSheet } from "react-native";
+import { FONT, MainColor } from "../../../constant/theme";
 
 export const styles = StyleSheet.create({
   container: {
@@ -12,6 +13,7 @@ export const styles = StyleSheet.create({
   },
 
   headerRow: {
+    fontFamily: FONT.REGULAR,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -21,8 +23,8 @@ export const styles = StyleSheet.create({
 
   cancel: {
     fontSize: 14,
-    color: "#2563EB",
-    fontWeight: "500",
+    color: MainColor,
+    fontFamily: FONT.REGULAR,
   },
 
   editBtn: {
@@ -32,9 +34,9 @@ export const styles = StyleSheet.create({
   },
 
   editText: {
+    fontFamily: FONT.REGULAR,
     fontSize: 14,
-    color: "#2563EB",
-    fontWeight: "500",
+    color: MainColor,
   },
 
   avatarWrapper: {
@@ -52,7 +54,7 @@ export const styles = StyleSheet.create({
     position: "absolute",
     bottom: 6,
     right: 6,
-    backgroundColor: "#2563EB",
+    backgroundColor: MainColor,
     width: 32,
     height: 32,
     borderRadius: 16,
@@ -61,8 +63,8 @@ export const styles = StyleSheet.create({
   },
 
   name: {
+    fontFamily: FONT.BOLD,
     fontSize: 20,
-    fontWeight: "700",
     textAlign: "center",
     marginTop: 8,
   },
@@ -76,8 +78,8 @@ export const styles = StyleSheet.create({
   },
 
   ratingText: {
+    fontFamily: FONT.BOLD,
     fontSize: 16,
-    fontWeight: "600",
   },
 
   vehicleRow: {
@@ -89,6 +91,7 @@ export const styles = StyleSheet.create({
   },
 
   vehicleText: {
+    fontFamily: FONT.REGULAR,
     fontSize: 14,
     color: "#6B7280",
   },
@@ -108,12 +111,13 @@ export const styles = StyleSheet.create({
   },
 
   statValue: {
+    fontFamily: FONT.BOLD,
     fontSize: 18,
-    fontWeight: "700",
-    color: "#2563EB",
+    color: MainColor,
   },
 
   statTitle: {
+    fontFamily: FONT.REGULAR,
     fontSize: 13,
     color: "#6B7280",
     marginTop: 4,
@@ -127,8 +131,8 @@ export const styles = StyleSheet.create({
   },
 
   reviewTitle: {
+    fontFamily: FONT.BOLD,
     fontSize: 16,
-    fontWeight: "700",
     marginBottom: 12,
   },
 
@@ -144,10 +148,11 @@ export const styles = StyleSheet.create({
   },
 
   reviewName: {
-    fontWeight: "600",
+    fontFamily: FONT.BOLD,
   },
 
   reviewText: {
+    fontFamily: FONT.REGULAR,
     fontSize: 13,
     color: "#374151",
     marginVertical: 2,
@@ -163,6 +168,7 @@ export const styles = StyleSheet.create({
   },
 
   label: {
+    fontFamily: FONT.REGULAR,
     fontSize: 14,
     color: "#374151",
     marginBottom: 6,
@@ -175,6 +181,7 @@ export const styles = StyleSheet.create({
     backgroundColor: "#F3F4F6",
     paddingHorizontal: 14,
     fontSize: 15,
+    fontFamily: FONT.REGULAR,
   },
 
   radioRow: {
@@ -185,12 +192,13 @@ export const styles = StyleSheet.create({
   },
 
   radioText: {
+    fontFamily: FONT.REGULAR,
     fontSize: 14,
     color: "#111827",
   },
 
   saveBtn: {
-    backgroundColor: "#2563EB",
+    backgroundColor: MainColor,
     paddingVertical: 14,
     borderRadius: 14,
     alignItems: "center",
@@ -198,8 +206,8 @@ export const styles = StyleSheet.create({
   },
 
   saveText: {
+    fontFamily: FONT.BOLD,
     color: "#FFFFFF",
-    fontWeight: "700",
     fontSize: 16,
   },
 });

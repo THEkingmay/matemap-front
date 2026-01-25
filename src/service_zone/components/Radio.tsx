@@ -1,6 +1,7 @@
 import { Text, TouchableOpacity } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { styles } from "../styles/profile.styles";
+import { activeColor } from "../../../constant/theme";
 
 export default function Radio({
   label,
@@ -16,7 +17,7 @@ export default function Radio({
       <Ionicons
         name={active ? "radio-button-on" : "radio-button-off"}
         size={18}
-        color="#2563EB"
+        color={active ? activeColor : "#A1A1AA"}
       />
       <Text style={styles.radioText}>{label}</Text>
     </TouchableOpacity>

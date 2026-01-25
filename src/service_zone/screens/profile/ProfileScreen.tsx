@@ -15,6 +15,7 @@ import { styles } from "../../styles/profile.styles";
 import Radio from "../../components/Radio";
 import Label from "../../components/Label";
 import StatBox from "../../components/StatBox";
+import { MainColor } from "../../../../constant/theme";
 
 export default function ProfileScreen() {
   const [isEdit, setIsEdit] = useState(false);
@@ -61,7 +62,7 @@ export default function ProfileScreen() {
               style={styles.editBtn}
               onPress={() => setIsEdit(true)}
             >
-              <Ionicons name="create-outline" size={18} color="#2563EB" />
+              <Ionicons name="create-outline" size={18} color={MainColor} />
               <Text style={styles.editText}>แก้ไข</Text>
             </TouchableOpacity>
           )}
