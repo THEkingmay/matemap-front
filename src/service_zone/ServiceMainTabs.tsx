@@ -14,7 +14,7 @@ import WorkScreen from './screens/work/WorkScreen';
 
 export type ServiceTabsParamsList = {
   chat: undefined;
-  work: undefined;      // ← ใช้เป็น “ประวัติงาน”
+  work: undefined;
   schedule: undefined;
   profile: undefined;
 };
@@ -29,7 +29,7 @@ const TAB_ICONS: Record<
   },
   work: {
     active: 'time',
-    inactive: 'time-outline', // ← เหมาะกับประวัติงาน
+    inactive: 'time-outline',
   },
   schedule: {
     active: 'calendar',
@@ -43,8 +43,8 @@ const TAB_ICONS: Record<
 
 const TAB_LABELS: Record<string, string> = {
   chat: 'แชท',
-  work: 'งาน',      // ← เปลี่ยนจาก “หน้าหลัก”
-  schedule: 'ตารางงาน',
+  work: 'งาน',
+  schedule: 'ตาราง',
   profile: 'โปรไฟล์',
 };
 
@@ -65,7 +65,7 @@ export default function ServiceMainTabs() {
             position: 'absolute',
             bottom: insets.bottom,
             paddingTop: 10,
-            paddingInline: 5,
+            paddingInline: 6,
             backgroundColor: MainColor,
             height: 65,
             elevation: 5,
@@ -91,11 +91,14 @@ export default function ServiceMainTabs() {
               >
                 <Ionicons name={icon} size={28} color={color} />
                 <Text
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
                   style={{
                     fontSize: 9,
                     marginTop: 2,
                     color,
                     fontFamily: FONT.REGULAR,
+                    textAlign: 'center',
                   }}
                 >
                   {TAB_LABELS[route.name]}
