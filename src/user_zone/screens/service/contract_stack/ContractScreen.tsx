@@ -13,6 +13,7 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { MainColor } from "../../../../../constant/theme";
 import { getContractPosts } from "./contractPost.service";
 import { ContractStackParamList } from "./ContractStack";
+import { supabase } from "../../../../../configs/supabase"; 
 
 type NavigationProp = NativeStackNavigationProp<
   ContractStackParamList,
@@ -35,11 +36,62 @@ export default function ContractScreen() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let isMounted = true; // กัน setState หลัง unmount
+
     getContractPosts()
-      .then(setPosts)
+      .then((data) => {
+        if (isMounted) {
+          setPosts(data);
+        }
+      })
       .catch(console.error)
-      .finally(() => setLoading(false));
-  }, []);
+      .finally(() => {
+        if (isMounted) setLoading(false);
+      });
+
+    const channel = supabase
+      .channel("contract_posts-realtime")
+      .on(
+        "postgres_changes",
+        {
+          event: "*", // INSERT | UPDATE | DELETE
+          schema: "public",
+          table: "contract_posts",
+        },
+        (payload: any) => {
+          setPosts((prev) => {
+            // Add New Post
+            if (payload.eventType === "INSERT") {
+              return [payload.new as ContractPost, ...prev];
+            }
+
+            // Edit Post
+            if (payload.eventType === "UPDATE") {
+              return prev.map((post) =>
+                post.id === payload.new.id
+                  ? (payload.new as ContractPost)
+                  : post
+              );
+            }
+
+            // Delete Post
+            if (payload.eventType === "DELETE") {
+              return prev.filter(
+                (post) => post.id !== payload.old.id
+              );
+            }
+
+            return prev;
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      isMounted = false;
+      supabase.removeChannel(channel);
+    };
+  }, [posts]);
 
   if (loading) {
     return (
@@ -104,8 +156,3 @@ const styles = StyleSheet.create({
   price: { fontSize: 18, fontFamily: "Kanit_700Bold", color: MainColor },
   location: { fontSize: 13, color: "#6B7280" },
 });
-
-
-
-
-
