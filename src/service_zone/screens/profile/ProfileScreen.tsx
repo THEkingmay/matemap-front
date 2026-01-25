@@ -12,6 +12,9 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import LogoutButton from "../../components/LogoutButton";
 import { useAuth } from "../../../AuthProvider";
 import { styles } from "../../styles/profile.styles";
+import Radio from "../../components/Radio";
+import Label from "../../components/Label";
+import StatBox from "../../components/StatBox";
 
 export default function ProfileScreen() {
   const [isEdit, setIsEdit] = useState(false);
@@ -171,16 +174,3 @@ export default function ProfileScreen() {
     </View>
   );
 }
-
-/* ================== COMPONENTS ================== */
-function StatBox({ title, value }: { title: string; value: string }) {
-  return (
-    <View style={styles.statBox}>
-      <Text style={styles.statValue}>{value}</Text>
-      <Text style={styles.statTitle}>{title}</Text>
-    </View>
-  );
-}
-
-
-
