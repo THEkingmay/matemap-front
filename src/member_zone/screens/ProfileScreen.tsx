@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
+  Alert,
+  StatusBar,
   ScrollView,
-  TouchableOpacity,
   Image,
 } from 'react-native';
 import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
@@ -14,246 +15,210 @@ import type { MemberTabsParamsList } from '../MemberMainTabs';
 import CustomButton from '../../components/ActionButton';
 import { useAuth } from '../../AuthProvider';
 
+/* ===== CONFIG ===== */
+const MainColor = '#2E7D32';
+const FONT = {
+  BOLD: 'System',
+};
+
 type Props = BottomTabScreenProps<MemberTabsParamsList, 'profile'>;
 
-/* ================= MOCK DATA ================= */
-const MOCK_PROFILE = {
-  firstName: 'สมชาย',
-  lastName: 'ใจดี',
-  role: 'เจ้าของหอพัก',
-  businessName: 'หอพักสบายใจ',
-  location: 'ใกล้มหาวิทยาลัยเกษตรศาสตร์',
-  phone: '081-234-5678',
-  email: 'somchai@example.com',
-  lineId: '@somchai',
-  facebook: 'facebook.com/somchai',
-  // dormImage: 'https://example.com/dorm.jpg'
+type Profile = {
+  firstName: string;
+  lastName: string;
+  role: string;
+  businessName: string;
+  location: string;
+  phone: string;
+  email: string;
+  lineId: string;
+  facebook: string;
+  dormImage?: string;
 };
 
 export default function ProfileScreen({ navigation }: Props) {
-  const { logout } = useAuth();
+  const { user, token, logout } = useAuth();
+  const [userProfile, setUserProfile] = useState<Profile | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const profile = MOCK_PROFILE;
-  const fullName = `${profile.firstName} ${profile.lastName}`;
+  useEffect(() => {
+    const fetchDormProfile = async () => {
+      try {
+        if (!token) return;
+
+        const apiUrl = `${process.env.EXPO_PUBLIC_BASE_API_URL}/api/dorms?user_id=${user?.id}`;
+
+        const response = await fetch(apiUrl, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) throw new Error('fetch failed');
+
+        const result = await response.json();
+        const dorm = result;
+        setUserProfile({
+          firstName: dorm.owner_name?.split(' ')[0] || '',
+          lastName: dorm.owner_name?.split(' ')[1] || '',
+          role: 'เจ้าของหอพัก',
+          businessName: dorm.name,
+          location: `${dorm.sub_district} ${dorm.district} ${dorm.province}`,
+          phone: dorm.owner_tel,
+          email: dorm.owner_email,
+          lineId: dorm.id_line,
+          facebook: dorm.social_media_link,
+          dormImage: dorm.image_url,
+        });
+        
+      } catch (e) {
+        Alert.alert('Error', 'ไม่สามารถโหลดข้อมูลได้');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDormProfile();
+  }, []);
+
+  if (loading) {
+    return (
+      <View style={styles.center}>
+        <Text>กำลังโหลดข้อมูล...</Text>
+      </View>
+    );
+  }
+
+  if (!userProfile) {
+    return (
+      <View style={styles.center}>
+        <Text>ไม่พบข้อมูล</Text>
+      </View>
+    );
+  }
 
   return (
-    <ScrollView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>โปรไฟล์ของฉัน</Text>
-        <Text style={styles.headerSub}>
-          จัดการข้อมูลส่วนตัวและช่องทางการติดต่อ
-        </Text>
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" />
+
+      {/* HERO */}
+      <View style={styles.hero}>
+        <Text style={styles.heroText}>PROFILE</Text>
       </View>
 
-      {/* Profile Card */}
-      <View style={styles.card}>
-        <View style={styles.profileRow}>
-          <View style={styles.avatar}>
-            <Ionicons name="person" size={28} color="#fff" />
-          </View>
+      <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
+        <View style={styles.card}>
+          {userProfile.dormImage && (
+            <Image
+              source={{ uri: userProfile.dormImage }}
+              style={styles.image}
+            />
+          )}
+            
+          <Text style={styles.title}>
+            {userProfile.businessName}
+          </Text>
 
-          <View style={{ flex: 1 }}>
-            <Text style={styles.name}>{fullName}</Text>
-            <Text style={styles.role}>{profile.role}</Text>
-          </View>
+          <Text style={styles.subText}>
+            {userProfile.firstName} {userProfile.lastName} · {userProfile.role}
+          </Text>
+          <View style={styles.divider} />
 
-          <TouchableOpacity style={styles.editBtn}>
-            <Ionicons name="pencil" size={16} color="#fff" />
-            <Text style={styles.editText}>แก้ไขโปรไฟล์</Text>
-          </TouchableOpacity>
+          <Text style={styles.sectionTitle}>ข้อมูลติดต่อ</Text>
+          <ContactItem icon="call-outline" value={userProfile.phone} />
+          <View style={styles.divider} />
+          <ContactItem icon="mail-outline" value={userProfile.email} />
+          <View style={styles.divider} />
+          <ContactItem icon="location-outline" value={userProfile.location} />
+          <View style={styles.divider} />
+          <ContactItem icon="at-outline" value={userProfile.lineId} />
+          <View style={styles.divider} />
+          <ContactItem icon="logo-facebook" value={userProfile.facebook} />
+          
+          <View style={styles.divider} />
+          <View style={{ marginTop: 20 }}>
+            <CustomButton
+              title="ตั้งค่า"
+              theme="warn"
+              iconName="settings-outline"
+              onPress={() => navigation.navigate('setting')}
+            />
+            {/* ปุ่มออกจากระบบ */}
+          <View style={{ marginTop: 12 }}>
+            <CustomButton
+              title="ออกจากระบบ"
+              theme="danger"
+              iconName="log-out-outline"
+              onPress={logout}
+            />
+          </View>
+          </View>
         </View>
-
-        <View style={styles.divider} />
-
-        <ProfileItem
-          icon="person-outline"
-          label="ชื่อ-นามสกุล"
-          value={fullName}
-        />
-
-        <ProfileItem
-          icon="business-outline"
-          label="ชื่อธุรกิจ/หอพัก"
-          value={profile.businessName}
-        />
-
-        {/* ====== ที่ใส่รูปหอพัก ====== */}
-        <View style={styles.dormImageSection}>
-          <Text style={styles.dormImageLabel}>รูปหอพัก</Text>
-
-          <View style={styles.dormImagePlaceholder}>
-            {/* ถ้ามีรูป ให้ใช้ Image */}
-            {/* <Image source={{ uri: profile.dormImage }} style={styles.dormImage} /> */}
-            <Ionicons name="image-outline" size={32} color="#999" />
-            <Text style={styles.dormImageText}>ยังไม่มีรูปหอพัก</Text>
-          </View>
-        </View>
-
-        <ProfileItem
-          icon="location-outline"
-          label="ที่ตั้ง"
-          value={profile.location}
-        />
-        <ProfileItem
-          icon="call-outline"
-          label="เบอร์โทรศัพท์"
-          value={profile.phone}
-        />
-        <ProfileItem
-          icon="mail-outline"
-          label="อีเมล"
-          value={profile.email}
-        />
-        <ProfileItem
-          icon="chatbubble-outline"
-          label="LINE ID"
-          value={profile.lineId}
-        />
-        <ProfileItem
-          icon="logo-facebook"
-          label="Facebook"
-          value={profile.facebook}
-        />
-      </View>
-
-      {/* Logout */}
-      <View style={styles.logoutSection}>
-        <CustomButton
-          title="ออกจากระบบ"
-          theme="danger"
-          iconName="log-out-outline"
-          onPress={logout}
-        />
-      </View>
-    </ScrollView>
-  );
-}
-
-/* ---------- reusable item ---------- */
-function ProfileItem({
-  icon,
-  label,
-  value,
-}: {
-  icon: any;
-  label: string;
-  value: string;
-}) {
-  return (
-    <View style={styles.itemRow}>
-      <Ionicons name={icon} size={18} color="#666" />
-      <View style={{ marginLeft: 12 }}>
-        <Text style={styles.itemLabel}>{label}</Text>
-        <Text style={styles.itemValue}>{value}</Text>
-      </View>
+      </ScrollView>
     </View>
   );
 }
 
-/* ---------- styles ---------- */
+/* ===== COMPONENT ===== */
+
+const ContactItem = ({ icon, value }: any) => (
+  <View style={styles.contactItem}>
+    <Ionicons name={icon} size={18} color={MainColor} />
+    <Text style={styles.contactText}>{value || '-'}</Text>
+  </View>
+);
+
+/* ===== STYLES ===== */
+
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F5F5F5',
-  },
-  header: {
-    padding: 16,
-  },
-  headerTitle: {
-    fontSize: 22,
-    fontFamily: 'Kanit_700Bold',
-    color: '#000',
-  },
-  headerSub: {
-    marginTop: 4,
-    color: '#666',
-  },
+  container: { flex: 1, backgroundColor: '#F6F7F9' },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+
+  hero: {
+  height: 90,
+  backgroundColor: '#8C9CCE',
+  justifyContent: 'flex-end',
+  paddingHorizontal: 20,
+  paddingBottom: 12,
+  borderBottomLeftRadius: 20,
+  borderBottomRightRadius: 20,
+},
+divider: {
+  height: 1,
+  backgroundColor: '#E0E0E0',
+  marginVertical: 16,
+},
+
+sectionTitle: {
+  fontSize: 14,
+  color: '#555',
+  marginBottom: 8,
+  fontFamily: FONT.BOLD,
+},
+  heroText: { color: '#fff', fontSize: 20, fontFamily: FONT.BOLD },
+
   card: {
     backgroundColor: '#fff',
-    marginHorizontal: 16,
-    borderRadius: 12,
-    padding: 16,
-    elevation: 2,
-  },
-  profileRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  avatar: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: '#3B82F6',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  name: {
-    fontSize: 18,
-    fontFamily: 'Kanit_600SemiBold',
-  },
-  role: {
-    color: '#666',
-  },
-  editBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#2563EB',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
-  },
-  editText: {
-    color: '#fff',
-    marginLeft: 4,
-    fontSize: 12,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: '#EEE',
-    marginVertical: 16,
-  },
-  itemRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginBottom: 14,
-  },
-  itemLabel: {
-    fontSize: 12,
-    color: '#888',
-  },
-  itemValue: {
-    fontSize: 14,
-    color: '#000',
+    margin: 16,
+    borderRadius: 20,
+    padding: 20,
+    elevation: 4,
   },
 
-  /* ===== รูปหอพัก ===== */
-  dormImageSection: {
-    marginBottom: 16,
-    marginLeft: 30,
-  },
-  dormImageLabel: {
-    fontSize: 12,
-    color: '#888',
-    marginBottom: 6,
-  },
-  dormImagePlaceholder: {
-    height: 120,
-    borderRadius: 10,
-    backgroundColor: '#F1F1F1',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  dormImageText: {
-    marginTop: 6,
-    fontSize: 12,
-    color: '#999',
+  image: {
+    width: '100%',
+    height: 160,
+    borderRadius: 16,
+    marginBottom: 12,
   },
 
-  logoutSection: {
-    marginTop: 24,
-    marginHorizontal: 16,
-    marginBottom: 32,
+  title: { fontSize: 20, fontFamily: FONT.BOLD },
+  subText: { fontSize: 13, color: '#777', marginBottom: 12 },
+
+  contactItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
   },
+  contactText: { marginLeft: 8 },
 });
