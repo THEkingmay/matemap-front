@@ -16,6 +16,7 @@ export const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 12,
+    paddingTop: 32,
   },
 
   cancel: {
