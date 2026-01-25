@@ -15,11 +15,12 @@ export default function ProfileScreen() {
   const [isEdit, setIsEdit] = useState(false);
 
   const [user, setUser] = useState({
-    name: "ตู่ ใจดี",
+    name: "มาร์โอ้",
     phone: "099 999 9999",
-    vehicle: "กข 1234 กรุงเทพมหานคร",
-    rating: 4.5,
-    avatar: "https://i.pravatar.cc/300?img=11",
+    vehicle: "2กข 5555 Toyota Revo",
+    rating: 5.0,
+    avatar:
+      "https://s.isanook.com/wo/0/ui/22/110165/eaa62bb1887103defc051486d0e8f20b_1527227051.jpg",
     jobType: "ขนของ/ย้ายของ",
   });
 
@@ -29,7 +30,7 @@ export default function ProfileScreen() {
         contentContainerStyle={s.content}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header */}
+        {/* ===== Header ===== */}
         <View style={s.headerRow}>
           {isEdit ? (
             <TouchableOpacity onPress={() => setIsEdit(false)}>
@@ -50,7 +51,7 @@ export default function ProfileScreen() {
           )}
         </View>
 
-        {/* Avatar */}
+        {/* ===== Avatar ===== */}
         <View style={s.avatarWrapper}>
           <Image source={{ uri: user.avatar }} style={s.avatar} />
           {isEdit && (
@@ -70,9 +71,15 @@ export default function ProfileScreen() {
               <Text style={s.ratingText}>{user.rating.toFixed(1)}</Text>
             </View>
 
+            {/* ===== Vehicle Plate ===== */}
+            <View style={s.vehicleRow}>
+              <Ionicons name="car-outline" size={16} color="#6B7280" />
+              <Text style={s.vehicleText}>{user.vehicle}</Text>
+            </View>
+
             <View style={s.statRow}>
-              <StatBox title="งานที่รับ" value="12" />
-              <StatBox title="งานสำเร็จ" value="10" />
+              <StatBox title="งานที่รับ" value="5" />
+              <StatBox title="งานสำเร็จ" value="5" />
             </View>
 
             <View style={s.reviewCard}>
@@ -80,13 +87,15 @@ export default function ProfileScreen() {
 
               <View style={s.reviewItem}>
                 <Image
-                  source={{ uri: "https://i.pravatar.cc/100?img=32" }}
+                  source={{
+                    uri: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRSKdMDtiohdnWlMxTRrz5Ghpcqk5IXJVS8RQ&s",
+                  }}
                   style={s.reviewAvatar}
                 />
                 <View>
                   <Text style={s.reviewName}>Rose</Text>
                   <Text style={s.reviewText}>
-                    ทำงานดีมาก ตรงต่อเวลา สุภาพ
+                    ขนย้ายของอย่างระมัดระวัง ตรงต่อเวลา
                   </Text>
                   <Text style={s.reviewStar}>★★★★★</Text>
                 </View>
@@ -256,12 +265,25 @@ const s = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     gap: 6,
-    marginVertical: 8,
+    marginVertical: 6,
   },
 
   ratingText: {
     fontSize: 16,
     fontWeight: "600",
+  },
+
+  vehicleRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 6,
+    marginBottom: 8,
+  },
+
+  vehicleText: {
+    fontSize: 14,
+    color: "#6B7280",
   },
 
   statRow: {

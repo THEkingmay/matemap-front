@@ -9,12 +9,12 @@ import SubscriptionProvider from '../SubscriptionProvider';
 import ChatScreen from './screens/ChatScreen';
 import ScheduleScreen from './screens/ScheduleScreen';
 import ProfileScreen from './screens/ProfileScreen';
-import WorkHistoryScreen from './screens/WorkHistoryScreen';
+import WorkScreen from './screens/WorkScreen';
 
 
 export type ServiceTabsParamsList = {
   chat: undefined;
-  workhistory: undefined;      // ← ใช้เป็น “ประวัติงาน”
+  work: undefined;      // ← ใช้เป็น “ประวัติงาน”
   schedule: undefined;
   profile: undefined;
 };
@@ -27,7 +27,7 @@ const TAB_ICONS: Record<
     active: 'chatbubble',
     inactive: 'chatbubble-outline',
   },
-  workhistory: {
+  work: {
     active: 'time',
     inactive: 'time-outline', // ← เหมาะกับประวัติงาน
   },
@@ -43,7 +43,7 @@ const TAB_ICONS: Record<
 
 const TAB_LABELS: Record<string, string> = {
   chat: 'แชท',
-  workhistory: 'ประวัติงาน',      // ← เปลี่ยนจาก “หน้าหลัก”
+  work: 'งาน',      // ← เปลี่ยนจาก “หน้าหลัก”
   schedule: 'ตารางงาน',
   profile: 'โปรไฟล์',
 };
@@ -107,7 +107,7 @@ export default function ServiceMainTabs() {
       >
        
         <Tabs.Screen name="chat" component={ChatScreen} />
-        <Tabs.Screen name="workhistory" component={WorkHistoryScreen} />
+        <Tabs.Screen name="work" component={WorkScreen} />
         <Tabs.Screen name="schedule" component={ScheduleScreen} />
         <Tabs.Screen name="profile" component={ProfileScreen} />
       </Tabs.Navigator>

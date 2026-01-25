@@ -1,396 +1,298 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Modal,
-} from 'react-native';
-import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
-import { ServiceTabsParamsList } from '../ServiceMainTabs';
+} from "react-native";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
-type Props = BottomTabScreenProps<ServiceTabsParamsList, 'schedule'>;
-
-const DAYS = ['จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส', 'อา'];
+/* ================= CONSTANT ================= */
+const DAYS = ["S", "M", "T", "W", "T", "F", "S"];
 const MONTHS = [
-  'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน',
-  'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม',
-  'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม',
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
 ];
 
-export default function ScheduleScreen({ navigation }: Props) {
-  const currentYear = new Date().getFullYear();
+/* ================= SCREEN ================= */
+export default function ScheduleScreen() {
+  const today = new Date();
 
-  const [month, setMonth] = useState(new Date().getMonth());
-  const [year, setYear] = useState(currentYear);
-  const [selectedDay, setSelectedDay] = useState<number | null>(null);
-  const [availability, setAvailability] = useState<Record<string, boolean>>({});
-  const [status, setStatus] = useState<boolean | null>(null);
+  const [month, setMonth] = useState(today.getMonth());
+  const [year, setYear] = useState(2026);
 
-  const [showMonthPicker, setShowMonthPicker] = useState(false);
-  const [showYearPicker, setShowYearPicker] = useState(false);
+  // mode: view | edit
+  const [mode, setMode] = useState<"view" | "edit">("view");
+
+  // status: available | booked
+  const [dayStatus, setDayStatus] = useState<
+    Record<number, "available" | "booked">
+  >({
+    21: "booked",
+    22: "booked",
+    23: "booked",
+  });
 
   const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const keyOf = (day: number) => `${year}-${month}-${day}`;
 
-  const onSelectDay = (day: number) => {
-    setSelectedDay(day);
-    setStatus(availability[keyOf(day)] ?? null);
-  };
+  const onPressDay = (day: number) => {
+    if (mode !== "edit") return;
 
-  const onConfirm = () => {
-    if (!selectedDay || status === null) return;
-    setAvailability(prev => ({
-      ...prev,
-      [keyOf(selectedDay)]: status,
-    }));
+    setDayStatus((prev) => {
+      const current = prev[day];
+      if (!current) return { ...prev, [day]: "available" };
+      if (current === "available") return { ...prev, [day]: "booked" };
+
+      const clone = { ...prev };
+      delete clone[day];
+      return clone;
+    });
   };
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={{ paddingBottom: 40 }}
-      showsVerticalScrollIndicator={false}
-    >
-      {/* Title */}
-      <Text style={styles.title}>เพิ่ม / แก้ตารางงาน</Text>
-
-      {/* Month / Year Selector */}
-      <View style={styles.selectorRow}>
+    <ScrollView style={s.container} showsVerticalScrollIndicator={false}>
+      {/* ===== BUTTONS ===== */}
+      <View style={s.topRow}>
         <TouchableOpacity
-          style={styles.selector}
-          onPress={() => setShowMonthPicker(true)}
+          style={[s.topBtn, mode === "view" && s.topBtnActive]}
+          onPress={() => setMode("view")}
         >
-          <Text style={styles.selectorText}>{MONTHS[month]}</Text>
+          <Text style={s.topBtnText}>ตารางงาน</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={styles.selector}
-          onPress={() => setShowYearPicker(true)}
+          style={[s.topBtn, mode === "edit" && s.topBtnActive]}
+          onPress={() => setMode("edit")}
         >
-          <Text style={styles.selectorText}>{year}</Text>
+          <Ionicons name="create-outline" size={16} />
+          <Text style={s.topBtnText}>แก้ไขตารางงาน</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Calendar */}
-      <View style={styles.calendarCard}>
-        <View style={styles.headerRow}>
-          {DAYS.map(d => (
-            <Text key={d} style={styles.dayHeader}>{d}</Text>
+      {/* ===== LEGEND ===== */}
+      <View style={s.legendRow}>
+        <Legend color="#C62828" label="มีคนจองแล้ว" />
+        <Legend color="#2E7D32" label="ว่าง" />
+        <Legend color="#E0E0E0" label="ยังไม่ตั้งค่า" />
+      </View>
+
+      {/* ===== CALENDAR CARD ===== */}
+      <View style={s.card}>
+        {/* Header */}
+        <View style={s.cardHeader}>
+          <View>
+            <Text style={s.selectLabel}>Select date</Text>
+            <Text style={s.bigDate}>
+              {MONTHS[month]} {year}
+            </Text>
+          </View>
+        </View>
+
+        {/* Month Navigation */}
+        <View style={s.monthRow}>
+          <TouchableOpacity
+            onPress={() => setMonth((m) => (m === 0 ? 11 : m - 1))}
+          >
+            <Ionicons name="chevron-back" size={18} />
+          </TouchableOpacity>
+
+          <Text style={s.monthText}>{MONTHS[month]}</Text>
+
+          <TouchableOpacity
+            onPress={() => setMonth((m) => (m === 11 ? 0 : m + 1))}
+          >
+            <Ionicons name="chevron-forward" size={18} />
+          </TouchableOpacity>
+        </View>
+
+        {/* Day Header */}
+        <View style={s.daysHeader}>
+          {DAYS.map((d, i) => (
+            <Text key={`${d}-${i}`} style={s.dayHeader}>
+              {d}
+            </Text>
           ))}
         </View>
 
-        <View style={styles.grid}>
+        {/* Dates */}
+        <View style={s.grid}>
           {Array.from({ length: daysInMonth }, (_, i) => {
             const day = i + 1;
-            const value = availability[keyOf(day)];
+            const status = dayStatus[day];
 
             return (
               <TouchableOpacity
                 key={day}
                 style={[
-                  styles.dayBox,
-                  value === true && styles.available,
-                  value === false && styles.unavailable,
-                  selectedDay === day && styles.selected,
+                  s.dayCell,
+                  status === "booked" && s.booked,
+                  status === "available" && s.available,
                 ]}
-                onPress={() => onSelectDay(day)}
+                onPress={() => onPressDay(day)}
               >
-                <Text style={styles.dayText}>{day}</Text>
+                <Text
+                  style={[
+                    s.dayText,
+                    status && { color: "#fff", fontWeight: "700" },
+                  ]}
+                >
+                  {day}
+                </Text>
               </TouchableOpacity>
             );
           })}
         </View>
       </View>
-
-      {/* Status */}
-      {selectedDay && (
-        <View style={styles.statusCard}>
-          <Text style={styles.sectionTitle}>
-            วันที่ {selectedDay} {MONTHS[month]} {year}
-          </Text>
-
-          <View style={styles.checkboxRow}>
-            <TouchableOpacity
-              style={[styles.checkbox, status === true && styles.checked]}
-              onPress={() => setStatus(true)}
-            >
-              <Text style={styles.checkboxText}>ว่าง</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.checkbox, status === false && styles.checkedRed]}
-              onPress={() => setStatus(false)}
-            >
-              <Text style={styles.checkboxText}>ไม่ว่าง</Text>
-            </TouchableOpacity>
-          </View>
-
-          <TouchableOpacity style={styles.confirmButton} onPress={onConfirm}>
-            <Text style={styles.confirmText}>ยืนยัน</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-
-      {/* Month Picker (Horizontal) */}
-      <Modal transparent visible={showMonthPicker} animationType="slide">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>เลือกเดือน</Text>
-
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.horizontalList}
-            >
-              {MONTHS.map((m, i) => (
-                <TouchableOpacity
-                  key={m}
-                  style={[
-                    styles.pill,
-                    month === i && styles.pillActive,
-                  ]}
-                  onPress={() => {
-                    setMonth(i);
-                    setShowMonthPicker(false);
-                  }}
-                >
-                  <Text
-                    style={[
-                      styles.pillText,
-                      month === i && styles.pillTextActive,
-                    ]}
-                  >
-                    {m}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
-        </View>
-      </Modal>
-
-      {/* Year Picker (Horizontal) */}
-      <Modal transparent visible={showYearPicker} animationType="slide">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>เลือกปี</Text>
-
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.horizontalList}
-            >
-              {Array.from({ length: 11 }, (_, i) => currentYear - 5 + i).map(y => (
-                <TouchableOpacity
-                  key={y}
-                  style={[
-                    styles.pill,
-                    year === y && styles.pillActive,
-                  ]}
-                  onPress={() => {
-                    setYear(y);
-                    setShowYearPicker(false);
-                  }}
-                >
-                  <Text
-                    style={[
-                      styles.pillText,
-                      year === y && styles.pillTextActive,
-                    ]}
-                  >
-                    {y}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
-        </View>
-      </Modal>
     </ScrollView>
   );
 }
-const styles = StyleSheet.create({
+
+/* ================= COMPONENTS ================= */
+function Legend({ color, label }: { color: string; label: string }) {
+  return (
+    <View style={s.legendItem}>
+      <View style={[s.legendDot, { backgroundColor: color }]} />
+      <Text style={s.legendText}>{label}</Text>
+    </View>
+  );
+}
+
+/* ================= STYLES ================= */
+const s = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F7F8FA',
+    backgroundColor: "#FFFFFF",
     padding: 16,
   },
 
-  title: {
-    fontSize: 22,
-    fontWeight: '700',
-    marginBottom: 16,
-    color: '#111827',
-  },
-
-  selectorRow: {
-    flexDirection: 'row',
+  topRow: {
+    flexDirection: "row",
     gap: 12,
-    marginBottom: 16,
+    marginBottom: 12,
   },
 
-  selector: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-    padding: 14,
-    borderRadius: 12,
-    alignItems: 'center',
-    elevation: 2,
+  topBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: "#F1F1F1",
   },
 
-  selectorText: {
-    fontSize: 16,
-    fontWeight: '600',
+  topBtnActive: {
+    backgroundColor: "#E3F2FD",
   },
 
-  calendarCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 12,
-    marginBottom: 20,
-    elevation: 3,
+  topBtnText: {
+    fontSize: 14,
+    fontWeight: "600",
   },
 
-  headerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  legendRow: {
+    flexDirection: "row",
+    gap: 16,
+    marginBottom: 12,
+  },
+
+  legendItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+
+  legendDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+  },
+
+  legendText: {
+    fontSize: 12,
+    color: "#444",
+  },
+
+  card: {
+    backgroundColor: "#EDE7F6",
+    borderRadius: 20,
+    padding: 16,
+  },
+
+  cardHeader: {
+    marginBottom: 12,
+  },
+
+  selectLabel: {
+    fontSize: 12,
+    color: "#555",
+  },
+
+  bigDate: {
+    fontSize: 30,
+    fontWeight: "700",
+  },
+
+  monthRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginVertical: 12,
+  },
+
+  monthText: {
+    fontSize: 18,
+    fontWeight: "600",
+  },
+
+  daysHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
 
   dayHeader: {
-    width: '14%',
-    textAlign: 'center',
-    fontWeight: '600',
+    width: "14%",
+    textAlign: "center",
+    fontSize: 12,
+    color: "#555",
   },
 
   grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     marginTop: 8,
   },
 
-  dayBox: {
-    width: '14%',
+  dayCell: {
+    width: "14%",
     aspectRatio: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 8,
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 20,
     marginVertical: 4,
-  },
-
-  dayText: {
-    fontWeight: '600',
+    backgroundColor: "#E0E0E0",
   },
 
   available: {
-    backgroundColor: '#DCFCE7',
+    backgroundColor: "#2E7D32",
   },
 
-  unavailable: {
-    backgroundColor: '#FEE2E2',
+  booked: {
+    backgroundColor: "#C62828",
   },
 
-  selected: {
-    borderWidth: 2,
-    borderColor: '#2563EB',
-  },
-
-  statusCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 16,
-    elevation: 3,
-  },
-
-  sectionTitle: {
-    fontWeight: '600',
-    marginBottom: 12,
-  },
-
-  checkboxRow: {
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 16,
-  },
-
-  checkbox: {
-    flex: 1,
-    padding: 12,
-    borderRadius: 12,
-    backgroundColor: '#E5E7EB',
-    alignItems: 'center',
-  },
-
-  checked: {
-    backgroundColor: '#22C55E',
-  },
-
-  checkedRed: {
-    backgroundColor: '#EF4444',
-  },
-
-  checkboxText: {
-    color: '#FFFFFF',
-    fontWeight: '600',
-  },
-
-  confirmButton: {
-    backgroundColor: '#2563EB',
-    paddingVertical: 14,
-    borderRadius: 14,
-    alignItems: 'center',
-  },
-
-  confirmText: {
-    color: '#FFFFFF',
-    fontWeight: '700',
-    fontSize: 16,
-  },
-
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    justifyContent: 'flex-end',
-  },
-
-  modalCard: {
-    backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: 16,
-  },
-
-  modalTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 12,
-    textAlign: 'center',
-  },
-
-  horizontalList: {
-    paddingHorizontal: 8,
-  },
-
-  pill: {
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 20,
-    backgroundColor: '#E5E7EB',
-    marginHorizontal: 6,
-  },
-
-  pillActive: {
-    backgroundColor: '#2563EB',
-  },
-
-  pillText: {
+  dayText: {
     fontSize: 14,
-    fontWeight: '500',
-    color: '#111827',
-  },
-
-  pillTextActive: {
-    color: '#FFFFFF',
   },
 });
