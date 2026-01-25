@@ -8,12 +8,16 @@ import {
   TouchableOpacity,
   SafeAreaView,
   TextInput,
+  Alert,
 } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import LogoutButton from "../../components/LogoutButton";
+import { useAuth } from "../../../AuthProvider";
+
 
 export default function ProfileScreen() {
   const [isEdit, setIsEdit] = useState(false);
-
+  const { logout } = useAuth();
   const [user, setUser] = useState({
     name: "มาร์โอ้",
     phone: "099 999 9999",
@@ -23,6 +27,17 @@ export default function ProfileScreen() {
       "https://s.isanook.com/wo/0/ui/22/110165/eaa62bb1887103defc051486d0e8f20b_1527227051.jpg",
     jobType: "ขนของ/ย้ายของ",
   });
+
+  const handleLogout = () => {
+    Alert.alert(
+      "ออกจากระบบ",
+      "คุณต้องการออกจากระบบใช่หรือไม่?",
+      [
+        { text: "ยกเลิก", style: "cancel" },
+        { text: "ใช่, ออกจากระบบ", style: "destructive", onPress: logout },
+      ]
+    );
+  };
 
   return (
     <SafeAreaView style={s.safe}>
@@ -101,6 +116,7 @@ export default function ProfileScreen() {
                 </View>
               </View>
             </View>
+            <LogoutButton onLogout={handleLogout} />
           </>
         )}
 
