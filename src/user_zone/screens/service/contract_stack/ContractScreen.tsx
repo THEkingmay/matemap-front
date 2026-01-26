@@ -13,36 +13,7 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { MainColor } from "../../../../../constant/theme";
 import { getContractPosts } from "./contractPost.service";
 import { ContractStackParamList } from "./ContractStack";
-
-const datamock: ContractPost[] = [
-  {
-    "id": "eb418dc7-fa65-4937-a6d8-4bdfea0197ab",
-    "title": "ขายสัญญาหอ ใกล้ ม.ธรรมศาสตร์",
-    "price": 7500,
-    "image_url": "https://res.cloudinary.com/dcr8iggld/image/upload/v1769190427/matemap/contract-posts/eb418dc7-fa65-4937-a6d8-4bdfea0197ab/y7ecmwvhjzqtdzq7nsgq.webp",
-    "province": "ปทุมธานี",
-    "city": "คลองหลวง",
-    "created_at": "2026-01-23T17:39:42.53116+00:00"
-    },
-    {
-      "id": "d3f3f3e1-1e2b-4f4c-9f4e-2b2c2d2e2f2a",
-      "title": "ขายสัญญาหอพัก ใกล้ ม.รังสิต",
-      "price": 6800,
-      "image_url": "https://bcdn.renthub.in.th/listing_picture/202009/20200910/cuuGKkZCoZZTUYGDBFqL.jpg?class=lthumbnail",
-      "province": "ปทุมธานี",
-      "city": "ธัญบุรี",
-      "created_at": "2026-01-22T10:15:30.12345+00:00"
-    },
-    {
-      "id": "a1b2c3d4-e5f6-7g8h-9i0j-k1l2m3n4o5p6",
-      "title": "ขายสัญญาหอพัก ใกล้ ม.กรุงเทพ",
-      "price": 7200,
-      "image_url": "https://assets.baanfinder.com/ll3uaqfgiynuu55p88ka2d7ku0uvde51at9ziqz7dffe39274xv6azo8gmzxs7g8tte8fnjk7m4keut1yfr5fqu5vki2ljf1269w8n5ytxct4zktvwht82cygdvjaqq9.jpg",
-      "province": "นนทบุรี",
-      "city": "เมืองนนทบุรี",
-      "created_at": "2026-01-20T14:25:50.67890+00:00" 
-    }
-];
+import { supabase } from "../../../../../configs/supabase"; 
 
 type NavigationProp = NativeStackNavigationProp<
   ContractStackParamList,
@@ -65,11 +36,62 @@ export default function ContractScreen() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let isMounted = true; // กัน setState หลัง unmount
+
     getContractPosts()
-      .then(setPosts)
+      .then((data) => {
+        if (isMounted) {
+          setPosts(data);
+        }
+      })
       .catch(console.error)
-      .finally(() => setLoading(false));
-  }, []);
+      .finally(() => {
+        if (isMounted) setLoading(false);
+      });
+
+    const channel = supabase
+      .channel("contract_posts-realtime")
+      .on(
+        "postgres_changes",
+        {
+          event: "*", // INSERT | UPDATE | DELETE
+          schema: "public",
+          table: "contract_posts",
+        },
+        (payload: any) => {
+          setPosts((prev) => {
+            // Add New Post
+            if (payload.eventType === "INSERT") {
+              return [payload.new as ContractPost, ...prev];
+            }
+
+            // Edit Post
+            if (payload.eventType === "UPDATE") {
+              return prev.map((post) =>
+                post.id === payload.new.id
+                  ? (payload.new as ContractPost)
+                  : post
+              );
+            }
+
+            // Delete Post
+            if (payload.eventType === "DELETE") {
+              return prev.filter(
+                (post) => post.id !== payload.old.id
+              );
+            }
+
+            return prev;
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      isMounted = false;
+      supabase.removeChannel(channel);
+    };
+  }, [posts]);
 
   if (loading) {
     return (
@@ -82,7 +104,7 @@ export default function ContractScreen() {
   return (
     <View style={styles.container}>
       <FlatList
-        data={datamock} // mock data
+        data={posts}
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ padding: 16 }}
         renderItem={({ item }) => (
@@ -134,8 +156,3 @@ const styles = StyleSheet.create({
   price: { fontSize: 18, fontFamily: "Kanit_700Bold", color: MainColor },
   location: { fontSize: 13, color: "#6B7280" },
 });
-
-
-
-
-
