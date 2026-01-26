@@ -1,128 +1,85 @@
-import React from 'react';
-import { View, Text, StyleSheet, FlatList } from 'react-native';
-import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
-import { MemberTabsParamsList } from '../MemberMainTabs';
+"use client";
 
-type props = BottomTabScreenProps<MemberTabsParamsList, 'chat'>;
+import React, { useEffect, useState } from "react";
+import { View, Text, FlatList, Image } from "react-native";
+import { BottomTabScreenProps } from "@react-navigation/bottom-tabs";
+import { MemberTabsParamsList } from "../MemberMainTabs";
+import { ChatRoom } from "../../../types/type";
+import * as SecureStore from "expo-secure-store";
+import { styles } from "./styles/ChatMemberStyle";
+import { timeAgoTH } from "../../../utils/util";
 
-const MOCK_CHATS = [
-  {
-    id: '1',
-    name: 'nicha',
-    message: 'หอพักอยู่ใกล้มหาวิทยาลัยไหมคะ?',
-    time: 'เมื่อสักครู่',
-  },
-  {
-    id: '2',
-    name: 'Mook',
-    message: 'หอพักราคาแพงไหมครับ?',
-    time: '30 นาที',
-  },
-  {
-    id: '3',
-    name: 'Bell',
-    message: 'ขอสอบถามรายละเอียดเพิ่มเติมได้ไหมครับ?',
-    time: '1 ชม.',
-  },
-];
+type props = BottomTabScreenProps<MemberTabsParamsList, "chat">;
 
 export default function ChatScreen({ navigation }: props) {
+  const [chats, setChats] = useState<ChatRoom[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchChats = async () => {
+      try {
+        const token = await SecureStore.getItemAsync("token");
+
+        if (!token) {
+          console.warn("ไม่เจอ token");
+          return;
+        }
+
+        const res = await fetch(
+          `${process.env.EXPO_PUBLIC_BASE_API_URL}/api/chats`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+
+        const data = await res.json();
+        setChats(data);
+      } catch (error) {
+        console.error("Failed to fetch chats:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchChats();
+  }, []);
+
   return (
     <View style={styles.container}>
-
       {/* Search bar */}
       <View style={styles.searchBar}>
         <Text style={styles.searchText}>ค้นหาการสนทนา...</Text>
       </View>
 
-      {/* Chat list */}
       <FlatList
-        data={MOCK_CHATS}
-        keyExtractor={(item) => item.id}
+        data={chats}
+        keyExtractor={item => item.roomId}
+        ListEmptyComponent={!loading ? <Text>ยังไม่มีการสนทนา</Text> : null}
         renderItem={({ item }) => (
           <View style={styles.chatItem}>
+            {item.image_url ? (
+              <Image source={{ uri: item.image_url }} style={styles.avatar} />
+            ) : (
+              <View style={styles.avatarFallback}>
+                <Text style={styles.avatarText}>
+                  {item.name.charAt(0).toUpperCase()}
+                </Text>
+              </View>
+            )}
 
-            {/* Avatar placeholder */}
-            <View style={styles.avatar} />
-
-            {/* Chat info */}
             <View style={styles.chatContent}>
               <Text style={styles.name}>{item.name}</Text>
               <Text style={styles.message} numberOfLines={1}>
-                {item.message}
+                {item.lastMessage}
               </Text>
             </View>
 
-            {/* Time */}
-            <Text style={styles.time}>{item.time}</Text>
+            <Text style={styles.time}>{timeAgoTH(item.lastMessageTime)}</Text>
           </View>
         )}
       />
-
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 16,
-    paddingTop: 12,
-  },
-
-  searchBar: {
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: '#F2F2F2',
-    justifyContent: 'center',
-    paddingHorizontal: 16,
-    marginBottom: 12,
-  },
-
-  searchText: {
-    color: '#999999',
-    fontSize: 14,
-    fontFamily: 'Kanit_400Regular',
-  },
-
-  chatItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#EEEEEE',
-  },
-
-  avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#D9D9D9',
-    marginRight: 12,
-  },
-
-  chatContent: {
-    flex: 1,
-  },
-
-  name: {
-    fontSize: 16,
-    fontFamily: 'Kanit_600SemiBold',
-    color: '#000',
-    marginBottom: 2,
-  },
-
-  message: {
-    fontSize: 14,
-    fontFamily: 'Kanit_400Regular',
-    color: '#777777',
-  },
-
-  time: {
-    fontSize: 12,
-    fontFamily: 'Kanit_400Regular',
-    color: '#AAAAAA',
-    marginLeft: 8,
-  },
-});
