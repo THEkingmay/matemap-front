@@ -15,7 +15,7 @@ export const useSubscription = () => useContext(SubscriptionContext)
 export default function SubscriptionProvider({children} :{children : ReactNode}){
 
     const [is_expired , setIsExpried] = useState<boolean>(false)
-    const {logout , user} = useAuth()
+    const {logout , user , token} = useAuth()
     const [loading , setIsLoading] = useState<boolean>(true)
 
     useEffect(()=>{
@@ -25,15 +25,20 @@ export default function SubscriptionProvider({children} :{children : ReactNode})
 
                 // ตรวจสอบสถานะบัญชีจากตาราง subscription
                 const res = await fetch(`${process.env.EXPO_PUBLIC_BASE_API_URL}/api/subscription?userId=${user?.id}`, {
-                    method :"GET"
+                    method :"GET", 
+                     headers: {
+                            Authorization: `Bearer ${token}`,
+                    },
                 })
 
                 const data = await res.json()
                 if(!res.ok) throw new Error(data.message)
 
                 setIsExpried(data.is_expired)
+                // console.log(data.is_expired)
 
             }catch(err){
+                setIsExpried(true)
                 Toast.show({
                     type :'error' ,
                     text1 : (err as Error).message

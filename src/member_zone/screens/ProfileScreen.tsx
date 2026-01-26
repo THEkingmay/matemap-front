@@ -141,7 +141,7 @@ export default function ProfileScreen({ navigation }: Props) {
               title="ตั้งค่า"
               theme="warn"
               iconName="settings-outline"
-              onPress={() => navigation.navigate('setting')}
+              // onPress={() => navigation.navigate('setting')}
             />
             {/* ปุ่มออกจากระบบ */}
           <View style={{ marginTop: 12 }}>
