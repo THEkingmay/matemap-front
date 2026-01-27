@@ -8,8 +8,8 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { RouteProp } from "@react-navigation/native";
-import { MainColor } from "../../../../../constant/theme";
-import { ContractStackParamList } from "./ContractStack";
+import { MainColor } from "../../../../../../constant/theme";
+import { ContractStackParamList } from "../ContractStack";
 import { useNavigation } from "@react-navigation/native";
 import { TouchableOpacity } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";

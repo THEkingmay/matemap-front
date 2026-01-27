@@ -1,7 +1,7 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import ServiceScreen from "./ServiceScreen";
-import ServiceDetail from "./ServiceDetail";
-import ServiceUserId from "./ServiceUserId";
+import ServiceScreen from "./screen/ServiceScreen";
+import ServiceDetail from "./screen/ServiceDetail";
+import ServiceUserId from "./screen/ServiceUserId";
 
 export type ServiceStackParamsList = {
     service : undefined , 

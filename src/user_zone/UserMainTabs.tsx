@@ -12,7 +12,6 @@ import ProfileStack from './screens/profile/ProfileStack';
 import { activeColor, FONT, MainColor } from '../../constant/theme';
 
 import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
-import ContractStack from './screens/service/contract_stack/ContractStack';
 
 export type UserTabsParamsList = {
     home: undefined; // explore screen

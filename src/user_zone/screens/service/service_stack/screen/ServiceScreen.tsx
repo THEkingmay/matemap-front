@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { MainColor } from '../../../../../constant/theme';
+import { MainColor } from '../../../../../../constant/theme';
 
 
 export default function ServiceScreen() {

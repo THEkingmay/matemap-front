@@ -10,10 +10,10 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { MainColor } from "../../../../../constant/theme";
+import { MainColor } from "../../../../../../constant/theme";
 import { getContractPosts } from "./contractPost.service";
-import { ContractStackParamList } from "./ContractStack";
-import { supabase } from "../../../../../configs/supabase"; 
+import { ContractStackParamList } from "../ContractStack";
+import { supabase } from "../../../../../../configs/supabase"; 
 
 type NavigationProp = NativeStackNavigationProp<
   ContractStackParamList,
