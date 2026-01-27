@@ -75,4 +75,9 @@ export const styles = StyleSheet.create({
     fontFamily: "Kanit_600SemiBold",
     color: "#555",
   },
+  centerLoader: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
 });
