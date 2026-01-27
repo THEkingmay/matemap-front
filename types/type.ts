@@ -14,4 +14,14 @@ interface UserCard {
   image_url?: string;
   birth_year? : number
 }
-export type {User , UserCard}
+
+interface ChatRoom {
+  roomId: string;
+  partnerId: string;
+  name: string;
+  lastMessage: string;
+  lastMessageTime: string;
+  image_url: string;
+}
+
+export type {User , UserCard, ChatRoom}
