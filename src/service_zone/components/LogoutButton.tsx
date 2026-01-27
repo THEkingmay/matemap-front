@@ -1,5 +1,5 @@
 import React from "react";
-import { TouchableOpacity, Text, StyleSheet } from "react-native";
+import { TouchableOpacity, Text, StyleSheet, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { FONT } from "../../../constant/theme";
 
@@ -8,8 +8,19 @@ type LogoutButtonProps = {
 };
 
 export default function LogoutButton({ onLogout }: LogoutButtonProps) {
+  const handleLogout = () => {
+      Alert.alert(
+        "ออกจากระบบ",
+        "คุณต้องการออกจากระบบใช่หรือไม่?",
+        [
+          { text: "ยกเลิก", style: "cancel" },
+          { text: "ใช่, ออกจากระบบ", style: "destructive", onPress: onLogout },
+        ]
+      );
+    };
+
   return (
-    <TouchableOpacity style={styles.logoutButton} onPress={onLogout}>
+    <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
       <Ionicons name="log-out-outline" size={20} color="#ffffff" />
       <Text style={styles.logoutText}>ออกจากระบบ</Text>
     </TouchableOpacity>
