@@ -17,6 +17,7 @@ interface UserCard {
 
 interface ChatRoom {
   roomId: string;
+  partnerId: string;
   name: string;
   lastMessage: string;
   lastMessageTime: string;
