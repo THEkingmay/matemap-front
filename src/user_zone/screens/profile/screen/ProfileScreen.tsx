@@ -11,11 +11,11 @@ import {
   Dimensions,
   StatusBar
 } from 'react-native';
-import type { ProfileStackParamsList } from './ProfileStack';
+import type { ProfileStackParamsList } from '../ProfileStack';
 // ตรวจสอบ path ของ theme ให้ถูกต้องนะคะ
-import { MainColor, FONT } from '../../../../constant/theme'; 
-import { useAuth } from '../../../AuthProvider';
-import CustomButton from '../../../components/ActionButton';
+import { MainColor, FONT } from '../../../../../constant/theme'; 
+import { useAuth } from '../../../../AuthProvider';
+import CustomButton from '../../../../components/ActionButton';
 import { Ionicons } from '@expo/vector-icons';
 import Toast from 'react-native-toast-message';
 import * as ImagePicker from 'expo-image-picker'; 

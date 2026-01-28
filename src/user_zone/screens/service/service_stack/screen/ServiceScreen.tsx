@@ -1,12 +1,13 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { MainColor } from '../../../../constant/theme';
+import { MainColor } from '../../../../../../constant/theme';
 
 
-export default function DormScreen() {
+export default function ServiceScreen() {
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Dorm Screen</Text>
+      <Text style={styles.text}>Service User</Text>
+      <Text>แสดงทุกบริการที่มี</Text>
     </View>
   );
 }

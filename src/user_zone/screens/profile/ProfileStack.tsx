@@ -1,6 +1,6 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import ProfileScreen from "./ProfileScreen";
-import SettingScreen from "./Setting";
+import ProfileScreen from "./screen/ProfileScreen";
+import SettingScreen from "./screen/Setting";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export type ProfileStackParamsList = {

@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, Image, ActivityIndicator, Pressable, ImageSourcePropType , RefreshControl } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { ChatStackParamsList } from './ChatStack'; 
+import { ChatStackParamsList } from '../ChatStack'; 
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useAuth } from '../../../AuthProvider';
+import { useAuth } from '../../../../AuthProvider';
 import Toast from 'react-native-toast-message';
-import { FONT, MainColor } from '../../../../constant/theme';
+import { FONT, MainColor } from '../../../../../constant/theme';
 
 // Import รูปภาพ Default
-const DEFAULT_PROFILE = require('../../../../assets/no-profile.png');
+const DEFAULT_PROFILE = require('../../../../../assets/no-profile.png');
 
 type props = NativeStackScreenProps<ChatStackParamsList, 'chat'>;
 

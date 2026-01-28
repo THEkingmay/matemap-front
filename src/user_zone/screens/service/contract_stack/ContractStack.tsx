@@ -1,6 +1,6 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import ContractScreen from "./ContractScreen";
-import ContractDetail from "./ContractDetail";
+import ContractScreen from "./screen/ContractScreen";
+import ContractDetail from "./screen/ContractDetail";
 
 export type ContractStackParamList = {
   contractScreen: undefined;
@@ -22,11 +22,8 @@ export default function ContractStack() {
       <Stack.Screen
         name="contractDetail"
         component={ContractDetail}
-        options={{
-          title: "กลับหน้ารวมโพสต์",
-          headerBackTitle: "back",
-        }}
       />
+ 
     </Stack.Navigator>
   );
 }

@@ -1,6 +1,6 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import ChatScreen from "./ChatScreen";
-import ChatSelectId from "./ChatIdScreen";
+import ChatScreen from "./screen/ChatScreen";
+import ChatSelectId from "./screen/ChatIdScreen";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export type ChatStackParamsList = {
