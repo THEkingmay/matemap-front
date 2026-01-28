@@ -16,9 +16,14 @@ export default function ProfileScreen({ navigation }: any) {
   useEffect(() => {
     if (!user?.id) return;
 
-    fetch(`${process.env.EXPO_PUBLIC_BASE_API_URL}/api/service-workers/${user.id}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
+    fetch(
+      `${process.env.EXPO_PUBLIC_BASE_API_URL}/api/service-workers/${user.id}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    )
       .then((res) => res.json())
       .then((data) => {
         setProfile(data);
@@ -39,34 +44,38 @@ export default function ProfileScreen({ navigation }: any) {
         body: JSON.stringify(form),
       }
     );
-    setIsEdit(false);
-    setProfile((p) =>
-      p ? { ...p, service_worker_detail: form } : p
+
+    setProfile((prev) =>
+      prev ? { ...prev, service_worker_detail: form } : prev
     );
+    setIsEdit(false);
   };
 
   const handleCancel = () => {
     if (!profile) return;
-
-    // reset form กลับเป็นข้อมูลเดิม
     setForm(profile.service_worker_detail);
     setIsEdit(false);
   };
 
-  if (loading)
+  if (loading) {
     return (
-      <View style={styles.container}>
+      <View style={styles.center}>
         <ActivityIndicator size="large" />
       </View>
     );
+  }
 
   if (!profile) return null;
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.headerBackground} />
+      {/* Header background */}
+      <View style={styles.headerBackground} />
 
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
         {!isEdit ? (
           <ProfileView
             profile={profile}
@@ -81,14 +90,7 @@ export default function ProfileScreen({ navigation }: any) {
             onSave={handleSave}
           />
         )}
-
       </ScrollView>
-
-      {isEdit && (
-        <View style={styles.saveFloating}>
-          <View />
-        </View>
-      )}
     </View>
   );
 }

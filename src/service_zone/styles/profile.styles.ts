@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import { MainColor } from "../../../constant/theme";
+import { MainColor, FONT } from "../../../constant/theme";
 
 export const styles = StyleSheet.create({
   container: {
@@ -7,136 +7,64 @@ export const styles = StyleSheet.create({
     backgroundColor: "#F8FAFC",
   },
 
+  center: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  /* ===== Header (พื้นหลัง) ===== */
+  headerBackground: {
+    position: "absolute",   // ⭐ สำคัญที่สุด
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 300,
+    backgroundColor: MainColor,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+  },
+  /* ===== Scroll content (ลอยบน header) ===== */
   content: {
+    marginTop: 120,
     paddingBottom: 120,
   },
 
-  headerBackground: {
-    height: 140,
-    backgroundColor: MainColor,
-  },
-
-  headerRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    padding: 16,
-  },
-
-  cancel: {
-    color: "#ff0000",
-    fontSize: 16,
-  },
-
-  editBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-  },
-
-  editText: {
-    color: MainColor,
-    fontSize: 14,
-  },
-
-  avatarWrapper: {
-    alignSelf: "center",
-    marginTop: -50,
-  },
-
-  avatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    borderWidth: 4,
-    borderColor: "#fff",
-  },
-
-  editAvatarBtn: {
-    position: "absolute",
-    right: 4,
-    bottom: 4,
-    backgroundColor: MainColor,
-    padding: 6,
-    borderRadius: 999,
-  },
-
-  name: {
-    textAlign: "center",
-    fontSize: 20,
-    fontWeight: "600",
-    marginTop: 12,
-    color: "#0F172A",
-  },
-
-  vehicleRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 6,
-    marginTop: 4,
-  },
-
-  vehicleText: {
-    color: "#64748B",
-  },
-
-  statRow: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    marginVertical: 20,
-  },
-
+  /* ===== Shared Card ===== */
   card: {
     backgroundColor: "#fff",
     borderRadius: 16,
     padding: 16,
     marginHorizontal: 16,
     marginBottom: 16,
+
     shadowColor: "#000",
-    shadowOpacity: 0.05,
+    shadowOpacity: 0.06,
     shadowRadius: 10,
-    elevation: 3,
+    elevation: 4,
   },
 
-  label: {
-    color: "#64748B",
-    marginBottom: 6,
+  avatar: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    alignSelf: "center",
+    marginTop: -50,        // 👈 avatar ลอยขึ้นจากการ์ด (เหมือนในรูป)
+    marginBottom: 8,
+    borderWidth: 3,
+    borderColor: "#fff",
   },
 
-  input: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
-    marginBottom: 14,
-  },
-
-  radioRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    marginBottom: 10,
-  },
-
-  radioText: {
+  textTitle: {
+    fontSize: 18,
+    fontFamily: FONT.BOLD,
     color: "#0F172A",
+    textAlign: "center",
   },
 
-  saveFloating: {
-    position: "absolute",
-    bottom: 20,
-    left: 20,
-    right: 20,
-    backgroundColor: MainColor,
-    padding: 16,
-    borderRadius: 16,
-    alignItems: "center",
-  },
-
-  saveText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
+  textSub: {
+    color: "#64748B",
+    marginTop: 4,
+    textAlign: "center",
   },
 });

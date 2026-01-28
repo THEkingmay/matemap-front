@@ -57,7 +57,7 @@ export default function SettingScreen({navigation} : props) {
           <SettingItem 
             icon="person-outline" 
             title="แก้ไขข้อมูลส่วนตัว" 
-            onPress={() => navigation.navigate('profile')} 
+            onPress={() => navigation.navigate('profiledetail')} 
           />
           <Divider />
           <SettingItem 
