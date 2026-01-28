@@ -10,7 +10,7 @@ import {
   SafeAreaView,
   Alert,
 } from "react-native";
-import { MainColor } from "../../../../../../constant/theme";
+import { BGColor, MainColor } from "../../../../../../constant/theme";
 import { ContractStackParamList } from "../ContractStack";
 import { useNavigation } from "@react-navigation/native";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -136,7 +136,7 @@ export default function ContractDetail({ route }: Props) {
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#fff"  }}>
+    <View style={{ flex: 1, backgroundColor: BGColor  }}>
       {/* Back Button */}
       <TouchableOpacity
         style={styles.backButton}

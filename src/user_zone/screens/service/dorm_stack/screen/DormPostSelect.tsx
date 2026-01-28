@@ -17,7 +17,7 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 
 // Import Theme (สมมติ path เดิม)
-import { FONT, MainColor } from '../../../../../../constant/theme';
+import { BGColor, FONT, MainColor } from '../../../../../../constant/theme';
 import type { DormStackParamsList } from "../DormStack";
 import Toast from 'react-native-toast-message';
 import apiClient from '../../../../../../constant/axios';
@@ -348,7 +348,7 @@ export default function DormPostSelect({ route }: props) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F5F7FA',
+        backgroundColor: BGColor,
     },
     errorContainer: {
         flex: 1,

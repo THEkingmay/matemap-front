@@ -11,7 +11,7 @@ import {
   Platform,
   RefreshControl
 } from 'react-native';
-import { FONT, MainColor } from '../../../../../../constant/theme';
+import { BGColor, FONT, MainColor } from '../../../../../../constant/theme';
 import Toast from 'react-native-toast-message';
 import apiClient from '../../../../../../constant/axios';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -248,7 +248,7 @@ export default function DormScreen({ navigation }: props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F7FA', // สีพื้นหลังเทาอ่อน สบายตา
+    backgroundColor: BGColor, // สีพื้นหลังเทาอ่อน สบายตา
   },
   centerContainer: {
     flex: 1,

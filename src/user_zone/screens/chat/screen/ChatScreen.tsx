@@ -5,7 +5,7 @@ import { ChatStackParamsList } from '../ChatStack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../../../AuthProvider';
 import Toast from 'react-native-toast-message';
-import { FONT, MainColor } from '../../../../../constant/theme';
+import { BGColor, FONT, MainColor } from '../../../../../constant/theme';
 
 // Import รูปภาพ Default
 const DEFAULT_PROFILE = require('../../../../../assets/no-profile.png');
@@ -220,7 +220,7 @@ export default function ChatScreen({ navigation }: props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: BGColor,
   },
   center: {
     justifyContent: 'center',

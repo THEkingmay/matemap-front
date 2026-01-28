@@ -16,7 +16,7 @@ import { useEffect, useState, useRef } from "react";
 import { useAuth } from "../../../../AuthProvider";
 import { Ionicons } from '@expo/vector-icons'; 
 import { SafeAreaView } from "react-native-safe-area-context";
-import { MainColor } from "../../../../../constant/theme";
+import { BGColor, MainColor } from "../../../../../constant/theme";
 
 import { supabase } from "../../../../../configs/supabase";
 
@@ -253,7 +253,7 @@ export default function ChatSelectId({ navigation, route }: Props) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#ffffff',
+        backgroundColor: BGColor,
     },
     keyboardView: {
         flex: 1,

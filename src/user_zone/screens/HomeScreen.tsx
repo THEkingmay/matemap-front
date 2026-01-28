@@ -16,7 +16,7 @@ import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import type { UserTabsParamsList } from '../UserMainTabs';
 import type { UserCard } from '../../../types/type';
-import { FONT } from '../../../constant/theme';
+import { BGColor, FONT } from '../../../constant/theme';
 import { useAuth } from '../../AuthProvider';
 import RenderCardContent from '../component/RenderCard';
 import MatchModal from '../component/MatchModal';
@@ -334,7 +334,7 @@ export default function HomeScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFFFFF' },
+  container: { flex: 1, backgroundColor: BGColor },
   header: { paddingHorizontal: 20, paddingVertical: 10 },
   headerTitle: { fontSize: 24, color: '#4834D4', fontWeight: 'bold', fontFamily: FONT.BOLD }, // Ensure Font is loaded
   cardContainer: {

@@ -11,7 +11,7 @@ import {
   Pressable,
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { FONT, MainColor } from "../../../../../../constant/theme";
+import { BGColor, FONT, MainColor } from "../../../../../../constant/theme";
 import { getContractPosts } from "./contractPost.service";
 import { ContractStackParamList } from "../ContractStack";
 import Toast from "react-native-toast-message";
@@ -170,7 +170,7 @@ export default function ContractScreen({navigation} : Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#ffffff" },
+  container: { flex: 1, backgroundColor: BGColor },
   loading: { flex: 1, justifyContent: "center", alignItems: "center" },
   card: {
     backgroundColor: "#fff",
@@ -183,7 +183,7 @@ const styles = StyleSheet.create({
   content: { padding: 14 },
   title: { fontSize: 16, fontFamily: FONT.BOLD},
   price: { fontSize: 18, fontFamily:FONT.BOLD, color: MainColor },
-  location: { fontSize: 13, color: "#6B7280" },
+  location: { fontSize: 13, color: "#6B7280" , fontFamily : FONT.REGULAR },
   detailsRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
