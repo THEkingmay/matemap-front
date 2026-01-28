@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -6,48 +6,177 @@ import {
   Image,
   TouchableOpacity,
   TextInput,
+  ActivityIndicator,
   Alert,
 } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import LogoutButton from "../../components/LogoutButton";
+
 import { useAuth } from "../../../AuthProvider";
-import { styles } from "../../styles/profile.styles";
-import Radio from "../../components/Radio";
+import { styles } from "../../styles/profile_screen_styles";
 import Label from "../../components/Label";
 import StatBox from "../../components/StatBox";
 import { MainColor } from "../../../../constant/theme";
+import CustomButton from "../../../components/ActionButton";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import type { ProfileStackParamsList } from "./ProfileStack";
 
-export default function ProfileScreen() {
+/* =======================
+  Navigation Type
+======================= */
+type Props = NativeStackScreenProps<
+  ProfileStackParamsList,
+  "profiledetail"
+>;
+
+/* =======================
+  Types
+======================= */
+type ServiceWorkerDetail = {
+  name: string;
+  tel?: string;
+  image_url?: string;
+};
+
+type Profile = {
+  service_worker_detail: ServiceWorkerDetail;
+  service_and_worker?: {
+    services?: {
+      name?: string;
+    };
+  }[];
+};
+
+export default function ProfileScreen({ navigation }: Props) {
+  const { user, token } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
-  const { logout } = useAuth();
-  const [user, setUser] = useState({
-    name: "มาร์โอ้",
-    phone: "099 999 9999",
-    vehicle: "2กข 5555 Toyota Revo",
-    rating: 5.0,
-    avatar:
-      "https://s.isanook.com/wo/0/ui/22/110165/eaa62bb1887103defc051486d0e8f20b_1527227051.jpg",
-    jobType: "ขนของ/ย้ายของ",
+  const [profile, setProfile] = useState<Profile | null>(null);
+
+  const [form, setForm] = useState({
+    name: "",
+    tel: "",
   });
 
-  const handleLogout = () => {
-    Alert.alert(
-      "ออกจากระบบ",
-      "คุณต้องการออกจากระบบใช่หรือไม่?",
-      [
-        { text: "ยกเลิก", style: "cancel" },
-        { text: "ใช่, ออกจากระบบ", style: "destructive", onPress: logout },
-      ]
-    );
+  /* =======================
+    Fetch Profile
+  ======================= */
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const fetchProfile = async () => {
+      try {
+        const url = `${process.env.EXPO_PUBLIC_BASE_API_URL}/api/service-workers/${user.id}`;
+
+        const res = await fetch(url, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(text);
+        }
+
+        const data: Profile = await res.json();
+
+        setProfile(data);
+        setForm({
+          name: data.service_worker_detail.name ?? "",
+          tel: data.service_worker_detail.tel ?? "",
+        });
+      } catch (err) {
+        console.warn("❌ โหลดโปรไฟล์ไม่สำเร็จ:", err);
+        setProfile(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, [user?.id]);
+
+  /* =======================
+    Save Profile
+  ======================= */
+  const handleSave = async () => {
+    if (!user?.id) return;
+
+    try {
+      setSaving(true);
+
+      const res = await fetch(
+        `${process.env.EXPO_PUBLIC_BASE_API_URL}/api/service-workers/${user.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(form),
+        }
+      );
+
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text);
+      }
+
+      setProfile((prev) =>
+        prev
+          ? {
+              ...prev,
+              service_worker_detail: {
+                ...prev.service_worker_detail,
+                name: form.name,
+                tel: form.tel,
+              },
+            }
+          : prev
+      );
+
+      setIsEdit(false);
+    } catch (err) {
+      console.warn("❌ บันทึกไม่สำเร็จ:", err);
+      Alert.alert("เกิดข้อผิดพลาด", "ไม่สามารถบันทึกข้อมูลได้");
+    } finally {
+      setSaving(false);
+    }
   };
 
+  /* =======================
+    Loading / Error
+  ======================= */
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <View style={styles.container}>
+        <Text>ไม่พบข้อมูลผู้ใช้</Text>
+      </View>
+    );
+  }
+
+  const detail = profile.service_worker_detail;
+  const serviceName =
+    profile.service_and_worker?.[0]?.services?.name ?? "-";
+
+  /* =======================
+    Render
+  ======================= */
   return (
     <View style={styles.container}>
-      <ScrollView
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* ===== Header ===== */}
+      <ScrollView contentContainerStyle={styles.content}>
+        <View style={styles.headerBackground} />
+
+        {/* Header */}
         <View style={styles.headerRow}>
           {isEdit ? (
             <TouchableOpacity onPress={() => setIsEdit(false)}>
@@ -68,107 +197,72 @@ export default function ProfileScreen() {
           )}
         </View>
 
-        {/* ===== Avatar ===== */}
+        {/* Avatar */}
         <View style={styles.avatarWrapper}>
-          <Image source={{ uri: user.avatar }} style={styles.avatar} />
-          {isEdit && (
-            <TouchableOpacity style={styles.camera}>
-              <Ionicons name="camera" size={16} color="#fff" />
-            </TouchableOpacity>
-          )}
+          <Image
+            source={{
+              uri:
+                detail.image_url ??
+                "https://cdn-icons-png.flaticon.com/512/149/149071.png",
+            }}
+            style={styles.avatar}
+          />
         </View>
 
-        {/* ===== VIEW MODE ===== */}
         {!isEdit && (
           <>
-            <Text style={styles.name}>{user.name}</Text>
+            <Text style={styles.name}>{detail.name}</Text>
 
-            <View style={styles.ratingRow}>
-              <Ionicons name="star" size={18} color="#F59E0B" />
-              <Text style={styles.ratingText}>{user.rating.toFixed(1)}</Text>
-            </View>
-
-            {/* ===== Vehicle Plate ===== */}
             <View style={styles.vehicleRow}>
-              <Ionicons name="car-outline" size={16} color="#6B7280" />
-              <Text style={styles.vehicleText}>{user.vehicle}</Text>
+              <Ionicons name="call-outline" size={16} color="#6B7280" />
+              <Text style={styles.vehicleText}>{detail.tel ?? "-"}</Text>
             </View>
 
-            {/* ===== Job Type ===== */}
             <View style={styles.statRow}>
-              <StatBox title="งานที่รับ" value="5" />
+              <StatBox title="ประเภทงาน" value={serviceName} />
               <StatBox title="งานสำเร็จ" value="5" />
             </View>
 
-            {/* ===== Reviews ===== */}
-            <View style={styles.reviewCard}>
-              <Text style={styles.reviewTitle}>รีวิวจากผู้จ้าง (1)</Text>
-              <View style={styles.reviewItem}>
-                <Image
-                  source={{
-                    uri: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRSKdMDtiohdnWlMxTRrz5Ghpcqk5IXJVS8RQ&s",
-                  }}
-                  style={styles.reviewAvatar}
-                />
-                <View>
-                  <Text style={styles.reviewName}>Rose</Text>
-                  <Text style={styles.reviewText}>
-                    ขนย้ายของอย่างระมัดระวัง ตรงต่อเวลา
-                  </Text>
-                  <Text style={styles.reviewStar}>★★★★★</Text>
-                </View>
-              </View>
-            </View>
-            <LogoutButton onLogout={handleLogout} />
+            <CustomButton
+              title="ตั้งค่าระบบ"
+              theme="warn"
+              iconName="settings-outline"
+              onPress={() =>
+                navigation.navigate("setting")
+              }
+            />
           </>
         )}
 
-        {/* ===== EDIT MODE ===== */}
         {isEdit && (
           <View style={styles.form}>
             <Label title="ชื่อผู้ใช้งาน" />
             <TextInput
-              value={user.name}
+              value={form.name}
+              onChangeText={(text) =>
+                setForm((prev) => ({ ...prev, name: text }))
+              }
               style={styles.input}
-              onChangeText={(t) => setUser({ ...user, name: t })}
             />
 
             <Label title="เบอร์โทร" />
             <TextInput
-              value={user.phone}
+              value={form.tel}
+              onChangeText={(text) =>
+                setForm((prev) => ({ ...prev, tel: text }))
+              }
               style={styles.input}
               keyboardType="phone-pad"
-              onChangeText={(t) => setUser({ ...user, phone: t })}
-            />
-
-            <Label title="ทะเบียนรถ" />
-            <TextInput
-              value={user.vehicle}
-              style={styles.input}
-              onChangeText={(t) => setUser({ ...user, vehicle: t })}
-            />
-
-            <Label title="ประเภทงานที่รับ" />
-            <Radio
-              label="ขนของ/ย้ายของ"
-              active={user.jobType === "ขนของ/ย้ายของ"}
-              onPress={() =>
-                setUser({ ...user, jobType: "ขนของ/ย้ายของ" })
-              }
-            />
-            <Radio
-              label="ทำความสะอาด"
-              active={user.jobType === "ทำความสะอาด"}
-              onPress={() =>
-                setUser({ ...user, jobType: "ทำความสะอาด" })
-              }
             />
 
             <TouchableOpacity
-              style={styles.saveBtn}
-              onPress={() => setIsEdit(false)}
+              style={[styles.saveBtn, saving && { opacity: 0.6 }]}
+              disabled={saving}
+              onPress={handleSave}
             >
-              <Text style={styles.saveText}>บันทึก</Text>
+              <Text style={styles.saveText}>
+                {saving ? "กำลังบันทึก..." : "บันทึก"}
+              </Text>
             </TouchableOpacity>
           </View>
         )}

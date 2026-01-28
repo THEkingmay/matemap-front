@@ -12,6 +12,17 @@ export const styles = StyleSheet.create({
     paddingBottom: 120,
   },
 
+  headerBackground: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 300,
+    backgroundColor: MainColor,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+  },
+
   headerRow: {
     fontFamily: FONT.REGULAR,
     flexDirection: "row",
