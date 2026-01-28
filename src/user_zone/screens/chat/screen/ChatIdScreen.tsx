@@ -199,11 +199,11 @@ export default function ChatSelectId({ navigation, route }: Props) {
             
             {/* Header: อยู่นอก KeyboardAvoidingView เพื่อให้ตรึงอยู่กับที่ */}
             <View style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+                <TouchableOpacity onPress={() => navigation.navigate('chat')} style={styles.backButton}>
                     <Ionicons name="chevron-back" size={28} color={'#ffffff'} />
                 </TouchableOpacity>
                 <View>
-                    <Text style={styles.headerTitle}>ข้อความของ {target_name}</Text>
+                    <Text style={styles.headerTitle}>{target_name? `ข้อความของ ${target_name}` : 'พูดคุยเลย'}</Text>
                 </View>
             </View>
 

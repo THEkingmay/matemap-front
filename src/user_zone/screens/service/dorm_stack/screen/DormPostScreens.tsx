@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  ActivityIndicator, 
-  FlatList, 
-  Image, 
-  TouchableOpacity, 
+import {
+  View,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  FlatList,
+  Image,
+  TouchableOpacity,
   Dimensions,
-  Platform
+  Platform,
+  RefreshControl
 } from 'react-native';
-import { MainColor } from '../../../../../../constant/theme';
+import { FONT, MainColor } from '../../../../../../constant/theme';
 import Toast from 'react-native-toast-message';
 import apiClient from '../../../../../../constant/axios';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -32,9 +33,9 @@ export type DormPostScreenType = {
 
 const { width } = Dimensions.get('window');
 
-type props = NativeStackScreenProps<DormStackParamsList , 'dormPostScreen'>
+type props = NativeStackScreenProps<DormStackParamsList, 'dormPostScreen'>
 
-export default function DormScreen({navigation} : props) {
+export default function DormScreen({ navigation }: props) {
   const [dormsPosts, setDormPosts] = useState<DormPostScreenType[]>([]);
   const [loading, setLoading] = useState(true);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
@@ -104,23 +105,31 @@ export default function DormScreen({navigation} : props) {
 
   const renderItem = ({ item }: { item: DormPostScreenType }) => {
     const isReady = new Date(item.ready_date) <= new Date();
-    
+
     return (
-      <TouchableOpacity 
-      style={styles.card} 
-      activeOpacity={0.9} 
-      onPress={()=>navigation.navigate('dormPostSelect' , {
-        dorm_post : item
-      })}>
+      <TouchableOpacity
+        style={styles.card}
+        activeOpacity={0.9}
+        onPress={() => navigation.navigate('dormPostSelect', {
+          dorm_post: item
+        })}>
         {/* Image Section */}
         <View style={styles.imageContainer}>
-          <Image 
-            source={{ 
-              uri: item.image_url || 'https://via.placeholder.com/400x300.png?text=No+Image' 
-            }} 
-            style={styles.cardImage}
-            resizeMode="cover"
-          />
+          {
+            item.image_url ? (
+              <Image
+                source={{
+                  uri: item.image_url || 'https://via.placeholder.com/400x300.png?text=No+Image'
+                }}
+                style={styles.cardImage}
+                resizeMode="cover"
+              />
+            ) : (
+              <View style={{justifyContent : 'center' , alignItems :'center' , flexDirection : 'column' , flex : 1}}>
+                <Text style={{fontFamily  : FONT.REGULAR , color : '#a7a7a7' , fontSize : 20}}>ไม่มีรูปตัวอย่าง</Text>
+              </View>
+            )
+          }
           <View style={styles.priceTag}>
             <Text style={styles.priceText}>{formatPrice(item.rent_price)}/ด.</Text>
           </View>
@@ -134,13 +143,13 @@ export default function DormScreen({navigation} : props) {
               {item.room_number ? ` • ${item.room_number}` : ''}
             </Text>
             {isReady ? (
-                <View style={[styles.statusBadge, { backgroundColor: '#E8F5E9' }]}>
-                    <Text style={[styles.statusText, { color: '#2E7D32' }]}>พร้อมเข้าอยู่</Text>
-                </View>
+              <View style={[styles.statusBadge, { backgroundColor: '#E8F5E9' }]}>
+                <Text style={[styles.statusText, { color: '#2E7D32' }]}>พร้อมเข้าอยู่</Text>
+              </View>
             ) : (
-                <View style={[styles.statusBadge, { backgroundColor: '#FFF3E0' }]}>
-                    <Text style={[styles.statusText, { color: '#EF6C00' }]}>ว่าง {formatDate(item.ready_date)}</Text>
-                </View>
+              <View style={[styles.statusBadge, { backgroundColor: '#FFF3E0' }]}>
+                <Text style={[styles.statusText, { color: '#EF6C00' }]}>ว่าง {formatDate(item.ready_date)}</Text>
+              </View>
             )}
           </View>
 
@@ -188,8 +197,8 @@ export default function DormScreen({navigation} : props) {
     if (hasMore && dormsPosts.length > 0) {
       return (
         <View style={styles.footerContainer}>
-          <TouchableOpacity 
-            style={styles.loadMoreButton} 
+          <TouchableOpacity
+            style={styles.loadMoreButton}
             onPress={() => fetchDormPosts(true)} // แก้ไขชื่อฟังก์ชันให้ถูกต้อง
             activeOpacity={0.7}
           >
@@ -215,6 +224,10 @@ export default function DormScreen({navigation} : props) {
   return (
     <View style={styles.container}>
       <FlatList
+        refreshControl={
+          <RefreshControl refreshing={loading} onRefresh={() => fetchDormPosts(false)} />
+        }
+
         data={dormsPosts}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}

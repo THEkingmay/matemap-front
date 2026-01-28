@@ -10,20 +10,23 @@ import {
     StatusBar,
     Platform,
     ActivityIndicator,
-    Linking // Import Linking
+    Linking,
+    SafeAreaView // Import SafeAreaView
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 
-// Import Theme
+// Import Theme (สมมติ path เดิม)
 import { FONT, MainColor } from '../../../../../../constant/theme';
 import type { DormStackParamsList } from "../DormStack";
 import Toast from 'react-native-toast-message';
 import apiClient from '../../../../../../constant/axios';
 import { useAuth } from '../../../../../AuthProvider';
+import { useNavigation } from '@react-navigation/native';
 
 interface DormDetail {
     id: string;
+    user_id : string ,
     created_at: string;
     owner_name: string;
     owner_tel: string;
@@ -45,37 +48,37 @@ type props = NativeStackScreenProps<DormStackParamsList, 'dormPostSelect'>;
 
 const { width } = Dimensions.get('window');
 
-export default function DormPostSelect({ route, navigation }: props) {
+export default function DormPostSelect({ route }: props) {
     const { dorm_post } = route.params || {};
+    const { token , user } = useAuth();
+    const [dormDetail, setDormDetail] = useState<DormDetail | null>(null);
+    const [loading, setLoading] = useState<boolean>(false);
 
-    const { token } = useAuth()
-    const [dormDetail, setDormDetail] = useState<DormDetail | null>(null)
-    const [loading, setLoading] = useState<boolean>(false)
+    const [isCreatingRoom , setCreatingRoom] = useState<boolean>(false)
+
+    const navigation = useNavigation<any>()
 
     useEffect(() => {
         const fetchDormDetail = async () => {
             try {
-                setLoading(true)
+                setLoading(true);
                 const res = await apiClient.get(`/api/dorms/${dorm_post.dorm_id}`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                })
-                setDormDetail({ ...res.data.data, owner_email: res.data.owner_email })
-
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                setDormDetail({ ...res.data.data, owner_email: res.data.owner_email });
             } catch (err) {
-                console.log((err as Error).message)
+                console.log((err as Error).message);
                 Toast.show({
                     type: 'error',
                     text1: (err as Error).message
-                })
+                });
             } finally {
-                setLoading(false)
+                setLoading(false);
             }
-        }
+        };
 
         if (dorm_post?.dorm_id) {
-            fetchDormDetail()
+            fetchDormDetail();
         }
     }, [dorm_post]);
 
@@ -91,6 +94,40 @@ export default function DormPostSelect({ route, navigation }: props) {
     const handleOpenSocial = () => {
         if (dormDetail?.social_media_link) {
             Linking.openURL(dormDetail.social_media_link);
+        }
+    };
+
+    const handleChat = async () => {
+        try{
+            setCreatingRoom(true)
+
+            const res = await apiClient.post('/api/room' , 
+                {
+                    userId : user?.id, 
+                    roomType : 'contract', 
+                    ownerPostId : dormDetail?.user_id
+                },
+                {
+                headers : {
+                    'Authorization' : `Bearer ${token}`
+                }
+            })
+            // console.log(res.data)
+            navigation.navigate('chat_stack' , {
+                screen : 'chat_select' , 
+                params : {
+                    room_id : res.data.data.id,
+                    target_name : dormDetail?.name
+                }
+            })
+
+        }catch(err){
+            Toast.show({
+                type: "error" ,
+                text1 : (err as Error).message
+            })
+        }finally{
+            setCreatingRoom(false)
         }
     };
 
@@ -149,7 +186,6 @@ export default function DormPostSelect({ route, navigation }: props) {
                     showsVerticalScrollIndicator={false}
                     contentContainerStyle={styles.scrollContent}
                 >
-
                     {/* Header Info */}
                     <View style={styles.titleSection}>
                         <View>
@@ -216,12 +252,12 @@ export default function DormPostSelect({ route, navigation }: props) {
                             <Text style={styles.detailText}>{dorm_post.detail}</Text>
                         </View>
                     )}
-                    
+
                     <View style={styles.divider} />
 
-                    {/* --- DORMITORY DETAILS (NEW SECTION) --- */}
+                    {/* --- DORMITORY DETAILS --- */}
                     <Text style={styles.sectionTitle}>ข้อมูลหอพัก</Text>
-                    
+
                     {loading ? (
                         <View style={styles.loadingContainer}>
                             <ActivityIndicator size="small" color={MainColor} />
@@ -229,13 +265,18 @@ export default function DormPostSelect({ route, navigation }: props) {
                         </View>
                     ) : dormDetail ? (
                         <View style={styles.dormInfoContainer}>
-                            
+
                             {/* Dorm Name & Address */}
                             <View style={styles.dormHeaderRow}>
                                 <View style={styles.iconBox}>
-                                    <Ionicons name="business" size={24} color={MainColor} />
+                                    {/* FIX: ปรับ Image Style */}
+                                    <Image
+                                        source={{ uri: dormDetail.image_url || 'https://via.placeholder.com/100' }}
+                                        style={{ width: '100%', height: '100%', borderRadius: 10 }}
+                                        resizeMode="cover"
+                                    />
                                 </View>
-                                <View style={{flex: 1}}>
+                                <View style={{ flex: 1 }}>
                                     <Text style={styles.dormName}>{dormDetail.name}</Text>
                                     <Text style={styles.dormAddress}>
                                         {dormDetail.dorm_number} {dormDetail.sub_district} {dormDetail.district} {dormDetail.city} {dormDetail.province} {dormDetail.postal_code}
@@ -243,7 +284,7 @@ export default function DormPostSelect({ route, navigation }: props) {
                                 </View>
                             </View>
 
-                            <View style={styles.innerDivider}/>
+                            <View style={styles.innerDivider} />
 
                             {/* Contact Owner */}
                             <View style={styles.contactRow}>
@@ -258,7 +299,7 @@ export default function DormPostSelect({ route, navigation }: props) {
                                 </View>
                             )}
 
-                             {dormDetail.social_media_link && (
+                            {dormDetail.social_media_link && (
                                 <TouchableOpacity onPress={handleOpenSocial} style={styles.socialLinkButton}>
                                     <MaterialCommunityIcons name="web" size={18} color={MainColor} />
                                     <Text style={styles.socialLinkText}>เยี่ยมชมเว็บไซต์ / เพจ</Text>
@@ -268,25 +309,38 @@ export default function DormPostSelect({ route, navigation }: props) {
                     ) : (
                         <Text style={styles.errorText}>ไม่สามารถโหลดข้อมูลหอพักได้</Text>
                     )}
+                    <View style={styles.footerPriceContainer}>
+                        <Text style={styles.footerLabel}>ค่าเช่าสุทธิ</Text>
+                        <Text style={styles.footerPrice}>{formatPrice(dorm_post.rent_price)}</Text>
+                    </View>
 
-                    {/* 3. Footer Section (Inline) */}
-                    <View style={styles.inlineFooter}>
-                        <View style={styles.footerInfo}>
-                            <Text style={styles.footerLabel}>ค่าเช่าสุทธิ</Text>
-                            <Text style={styles.footerPrice}>{formatPrice(dorm_post.rent_price)}</Text>
-                        </View>
-                        <TouchableOpacity 
-                            style={styles.actionButton} 
+                    <View style={styles.footerButtonContainer}>
+                        <TouchableOpacity
+                            style={[styles.actionButton, styles.chatButton]}
+                            activeOpacity={0.8}
+                            onPress={handleChat}
+                            disabled={isCreatingRoom}
+                        >
+                            <Ionicons name={isCreatingRoom ? 'arrow-up-right-box' : "chatbox-ellipses-outline"} size={20} color={MainColor} />
+                            <Text style={[styles.actionButtonText, { color: MainColor }]}>{isCreatingRoom ? 'กำลังพาไปยังช่องแชท...' : 'พูดคุย'}</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            style={[styles.actionButton, styles.callButton]}
                             activeOpacity={0.8}
                             onPress={handleCallOwner}
+                            disabled={isCreatingRoom}
                         >
-                            <Ionicons name="call" size={18} color="#FFF" style={{marginRight: 6}}/>
-                            <Text style={styles.actionButtonText}>ติดต่อจองห้องพัก</Text>
+                            <Ionicons name="call" size={20} color="#FFF" />
+                            <Text style={styles.actionButtonText}>จอง / โทร</Text>
                         </TouchableOpacity>
                     </View>
 
                 </ScrollView>
             </View>
+
+            {/* Safe Area สำหรับ iPhone รุ่นใหม่ที่มีขอบล่าง */}
+            {Platform.OS === 'ios' && <View style={{ height: 20, backgroundColor: '#FFF' }} />}
         </View>
     );
 }
@@ -333,7 +387,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#FFFFFF',
         borderTopLeftRadius: 30,
         borderTopRightRadius: 30,
-        overflow: 'hidden',
+        overflow: 'hidden', // สำคัญเพื่อให้ Footer ไม่บังมุมโค้ง ถ้า Footer อยู่ในนี้
     },
     scrollContent: {
         padding: 24,
@@ -437,8 +491,7 @@ const styles = StyleSheet.create({
         lineHeight: 24,
         fontFamily: FONT.REGULAR,
     },
-
-    // --- New Styles for Dorm Info ---
+    // Dorm Info
     loadingContainer: {
         padding: 20,
         alignItems: 'center',
@@ -461,21 +514,20 @@ const styles = StyleSheet.create({
     dormHeaderRow: {
         flexDirection: 'row',
         gap: 12,
-        alignItems: 'flex-start'
+        alignItems: 'center' // เปลี่ยนเป็น center เพื่อความสวยงาม
     },
     iconBox: {
-        width: 40,
-        height: 40,
+        width: 50, // เพิ่มขนาดเล็กน้อย
+        height: 50,
         borderRadius: 10,
         backgroundColor: '#fff',
         justifyContent: 'center',
         alignItems: 'center',
-        // soft shadow
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.05,
+        shadowOpacity: 0.1,
         shadowRadius: 2,
-        elevation: 1,
+        elevation: 2,
     },
     dormName: {
         fontSize: 16,
@@ -484,7 +536,7 @@ const styles = StyleSheet.create({
         marginBottom: 4
     },
     dormAddress: {
-        fontSize: 13,
+        fontSize: 12,
         fontFamily: FONT.REGULAR,
         color: '#666',
         lineHeight: 18
@@ -508,31 +560,22 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         gap: 6,
-        marginTop: 4
+        marginTop: 8,
+        paddingTop: 8,
+        borderTopWidth: 1,
+        borderTopColor: '#EEE'
     },
     socialLinkText: {
         fontSize: 14,
         fontFamily: FONT.BOLD,
         color: MainColor,
-        textDecorationLine: 'underline'
     },
     errorText: {
         color: '#E53935',
         fontFamily: FONT.REGULAR,
         textAlign: 'center'
     },
-
-    // Footer (Inline Style)
-    inlineFooter: {
-        marginTop: 10,
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        backgroundColor: '#F9F9F9',
-        padding: 16,
-        borderRadius: 16,
-    },
-    footerInfo: {
+    footerPriceContainer: {
         flexDirection: 'column',
     },
     footerLabel: {
@@ -545,23 +588,35 @@ const styles = StyleSheet.create({
         color: MainColor,
         fontFamily: FONT.BOLD,
     },
+    footerButtonContainer: {
+        flexDirection: 'row',
+        gap: 10,
+    },
     actionButton: {
         flexDirection: 'row',
-        backgroundColor: MainColor,
-        paddingVertical: 12,
-        paddingHorizontal: 24,
-        borderRadius: 50,
+        paddingVertical: 10,
+        paddingHorizontal: 16,
+        borderRadius: 12,
         alignItems: 'center',
-        // Shadow
+        justifyContent: 'center',
+        gap: 6
+    },
+    callButton: {
+        backgroundColor: MainColor,
         shadowColor: MainColor,
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.3,
         shadowRadius: 6,
         elevation: 4,
     },
+    chatButton: {
+        backgroundColor: '#FFF',
+        borderWidth: 1,
+        borderColor: MainColor,
+    },
     actionButtonText: {
         color: '#FFF',
-        fontSize: 16,
+        fontSize: 14,
         fontFamily: FONT.BOLD,
     },
 });

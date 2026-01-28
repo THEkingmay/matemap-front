@@ -122,6 +122,7 @@ export default function HistoryUserPost({ route }: props) {
                 contentContainerStyle={styles.listContent}
                 refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
                 
+                showsVerticalScrollIndicator={false}
                 // --- ส่วนหัวข้อที่ขอมา ---
                 ListHeaderComponent={
                     <View style={styles.headerContainer}>
