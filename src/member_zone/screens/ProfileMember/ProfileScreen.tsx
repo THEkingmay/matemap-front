@@ -26,19 +26,20 @@ type Props = BottomTabScreenProps<MemberTabsParamsList, 'profile'>;
 
 type Profile = {
   dormId: string;
+  dormNumber : string;
   businessName: string;
   ownerName: string;
   role: string;
   subDistrict: string;
   district: string;
-  //location: string;
   province: string;
-  phone: string;
   city: string;
   postalCode: string;
+  phone: string;
   email: string;
   lineId: string;
-  facebook: string;
+  socialMediaLink: string;
+  detail: string;
   dormImage?: string | null;
 };
 
@@ -57,29 +58,37 @@ export default function ProfileScreen({ navigation }: Props) {
     const fetchDormProfile = async () => {
       try {
         if (!token || !user) return;
-        
-        const res = await fetch(
+
+        const mailRes = await fetch(
+          `${process.env.EXPO_PUBLIC_BASE_API_URL}/api/user/${user.id}/get-mail`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        const mailData = await mailRes.json();
+
+        const dormRes = await fetch(
           `${process.env.EXPO_PUBLIC_BASE_API_URL}/api/dorms?user_id=${user.id}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
+        if (!dormRes.ok) throw new Error();
 
-        if (!res.ok) throw new Error();
-        const dorm = await res.json();
+        const dorm = await dormRes.json();
 
         const mapped: Profile = {
           dormId: dorm.id,
+          dormNumber : dorm.dorm_number,
           businessName: dorm.name,
           ownerName: dorm.owner_name,
           role: 'เจ้าของหอพัก',
           subDistrict: dorm.sub_district,
           district: dorm.district,
-          province: dorm.province,
-          phone: dorm.owner_tel,
           city: dorm.city,
+          province: dorm.province,
           postalCode: dorm.postal_code,
-          email: dorm.owner_email,
+          phone: dorm.owner_tel,
+          email: mailData.email,
           lineId: dorm.id_line,
-          facebook: dorm.social_media_link,
+          socialMediaLink: dorm.social_media_link,
+          detail: dorm.detail || '',
           dormImage: dorm.image_url ?? null,
         };
 
@@ -95,61 +104,51 @@ export default function ProfileScreen({ navigation }: Props) {
     fetchDormProfile();
   }, []);
 
-  /* ===== UPDATE FIELD ===== */
   const updateField = (field: keyof Profile, value: string) => {
     if (!formProfile) return;
     setFormProfile({ ...formProfile, [field]: value });
   };
 
- /* ===== SAVE PROFILE ===== */
-const handleSave = async () => {
-  try {
-    const res = await fetch(
-      `${process.env.EXPO_PUBLIC_BASE_API_URL}/api/dorms/${profile?.dormId}`,
-      {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          name: formProfile?.businessName || null,
-          owner_name: formProfile?.ownerName || null,
-          owner_tel: formProfile?.phone || null,
-          sub_district: formProfile?.subDistrict || null,
-          district: formProfile?.district || null,
-          city: formProfile?.city || null,              // ← เพิ่ม
-          province: formProfile?.province || null,
-          postal_code: formProfile?.postalCode || null,  // ← เพิ่ม
-          id_line: formProfile?.lineId || null,
-          social_media_link: formProfile?.facebook || null,
-        }),
-      }
-    );
+  /* ===== SAVE ===== */
+  const handleSave = async () => {
+    try {
+      const res = await fetch(
+        `${process.env.EXPO_PUBLIC_BASE_API_URL}/api/dorms/${profile?.dormId}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            owner_tel: formProfile?.phone,
+            dorm_number : formProfile?.dormNumber,
+            sub_district: formProfile?.subDistrict,
+            district: formProfile?.district,
+            city: formProfile?.city,
+            province: formProfile?.province,
+            postal_code: formProfile?.postalCode,
+            id_line: formProfile?.lineId,
+            social_media_link: formProfile?.socialMediaLink,
+            detail: formProfile?.detail,
+          }),
+        }
+      );
 
-    if (!res.ok) {
-      const errorText = await res.text();
-      console.error('Error response:', errorText);
-      throw new Error('Update failed');
+      if (!res.ok) throw new Error();
+
+      setProfile(formProfile);
+      setIsEditing(false);
+      Alert.alert('สำเร็จ', 'บันทึกข้อมูลเรียบร้อย');
+    } catch {
+      Alert.alert('Error', 'บันทึกไม่สำเร็จ');
     }
+  };
 
-    const contentType = res.headers.get('content-type');
-    if (contentType?.includes('application/json')) {
-      const data = await res.json();
-    }
-
-    setProfile(formProfile);
-    setIsEditing(false);
-    Alert.alert('สำเร็จ', 'บันทึกข้อมูลเรียบร้อย');
-  } catch (error) {
-    console.error('Save error:', error);
-    Alert.alert('Error', 'บันทึกไม่สำเร็จ');
-  }
-};
-  /* ===== IMAGE UPLOAD ===== */
+  /* ===== IMAGE ===== */
   const pickAndUploadImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') return Alert.alert('Permission denied');
+    if (status !== 'granted') return;
 
     const result = await ImagePicker.launchImageLibraryAsync({
       allowsEditing: true,
@@ -161,11 +160,9 @@ const handleSave = async () => {
 
     try {
       setUploading(true);
-
       const uri = result.assets[0].uri;
-      const name = uri.split('/').pop() || 'image.jpg';
-      const match = /\.(\w+)$/.exec(name);
-      const type = match ? `image/${match[1]}` : `image/jpeg`;
+      const name = uri.split('/').pop()!;
+      const type = 'image/jpeg';
 
       const formData = new FormData();
       formData.append('file', { uri, name, type } as any);
@@ -182,12 +179,8 @@ const handleSave = async () => {
       const data = await res.json();
       if (!res.ok) throw new Error();
 
-      setProfile((prev) =>
-        prev ? { ...prev, dormImage: `${data.image_url}?t=${Date.now()}` } : prev
-      );
-      setFormProfile((prev) =>
-        prev ? { ...prev, dormImage: `${data.image_url}?t=${Date.now()}` } : prev
-      );
+      setProfile(p => p && { ...p, dormImage: data.image_url });
+      setFormProfile(p => p && { ...p, dormImage: data.image_url });
     } catch {
       Alert.alert('Error', 'อัปโหลดรูปไม่สำเร็จ');
     } finally {
@@ -195,36 +188,6 @@ const handleSave = async () => {
     }
   };
 
-  /* ===== DELETE IMAGE ===== */
-  const deleteImage = async () => {
-    Alert.alert('ยืนยัน', 'ลบรูปหอพัก?', [
-      { text: 'ยกเลิก', style: 'cancel' },
-      {
-        text: 'ลบ',
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            setDeleting(true);
-            await fetch(
-              `${process.env.EXPO_PUBLIC_BASE_API_URL}/api/cloudinary/delete/dorm-profile?dormId=${profile?.dormId}`,
-              {
-                method: 'DELETE',
-                headers: { Authorization: `Bearer ${token}` },
-              }
-            );
-            setProfile((p) => (p ? { ...p, dormImage: null } : p));
-            setFormProfile((p) => (p ? { ...p, dormImage: null } : p));
-          } catch {
-            Alert.alert('Error', 'ลบรูปไม่สำเร็จ');
-          } finally {
-            setDeleting(false);
-          }
-        },
-      },
-    ]);
-  };
-
-  /* ===== RENDER ===== */
   if (loading) {
     return (
       <View style={styles.center}>
@@ -251,6 +214,7 @@ const handleSave = async () => {
 
       <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
         <View style={styles.card}>
+
           {/* IMAGE */}
           <TouchableOpacity onPress={pickAndUploadImage}>
             <View style={styles.imageWrapper}>
@@ -265,145 +229,116 @@ const handleSave = async () => {
             </View>
           </TouchableOpacity>
 
-          {formProfile.dormImage && (
-            <CustomButton
-              title="ลบรูป"
-              theme="danger"
-              iconName="trash-outline"
-              onPress={deleteImage}
-            />
-          )}
-
           <Text style={styles.title}>{profile.businessName}</Text>
           <Text style={styles.subText}>
             {profile.ownerName} · {profile.role}
           </Text>
-          <View style={styles.divider} />
 
-          <InfoRow icon="call-outline" label="เบอร์โทร" value={formProfile.phone} isEditing={isEditing}
-            onChangeText={(t) => updateField('phone', t)} />
+          {/* ADDRESS */}
+          <Section title="ที่อยู่หอพัก" icon="location-outline">
+             <InfoInput label="บ้านเลขที่ / ซอย / ถนน"
+                value={formProfile.dormNumber}
+                isEditing={isEditing}
+                onChange={(t: string) => updateField('dormNumber', t)}/>
+            <TwoColumn>
+              <InfoInput label="ตำบล" value={formProfile.subDistrict} isEditing={isEditing}
+                onChange={(t:string) => updateField('subDistrict', t)} />
+              <InfoInput label="อำเภอ" value={formProfile.district} isEditing={isEditing}
+                onChange={(t:string) => updateField('district', t)} />
+            </TwoColumn>
 
-          <InfoRow icon="mail-outline" label="อีเมล" value={formProfile.email} isEditing={isEditing}
-            onChangeText={(t) => updateField('email', t)} />
+            <TwoColumn>
+              <InfoInput label="จังหวัด" value={formProfile.province} isEditing={isEditing}
+                onChange={(t:string) => updateField('province', t)} />
+              <InfoInput label="รหัสไปรษณีย์" value={formProfile.postalCode} isEditing={isEditing}
+                onChange={(t:string) => updateField('postalCode', t)} />
+            </TwoColumn>
+          </Section>
 
-          <InfoRow 
-           icon="location-outline" 
-           label="ตำบล" 
-           value={formProfile.subDistrict} 
-           isEditing={isEditing}
-           onChangeText={(t) => updateField('subDistrict', t)} />
+          {/* CONTACT */}
+          <Section title="ช่องทางการติดต่อ" icon="call-outline">
+            <InfoInput label="เบอร์โทรศัพท์" value={formProfile.phone}
+              isEditing={isEditing} onChange={(t:string) => updateField('phone', t)} />
+            <InfoInput label="อีเมล" value={formProfile.email} isEditing={false} />
+            <InfoInput label="Line ID" value={formProfile.lineId}
+              isEditing={isEditing} onChange={(t:string) => updateField('lineId', t)} />
+              <InfoInput label="Social Media (Facebook / IG / Website)"
+              value={formProfile.socialMediaLink}
+              isEditing={isEditing}onChange={(t:string) => updateField('socialMediaLink', t)}/>
+          </Section>
 
-          <InfoRow 
-          icon="location-outline" 
-          label="อำเภอ" 
-          value={formProfile.district} 
-          isEditing={isEditing}
-          onChangeText={(t) => updateField('district', t)} />
+          {/* DETAIL */}
+          <Section title="รายละเอียดของหอพัก" icon="information-circle-outline">
+            <TextInput
+              style={styles.textArea}
+              multiline
+              editable={isEditing}
+              value={formProfile.detail}
+              onChangeText={(t) => updateField('detail', t)}
+            />
+          </Section>
 
-          <InfoRow 
-          icon="location-outline" 
-          label="เมือง" 
-          value={formProfile.city}       // ← เพิ่ม
-          isEditing={isEditing}
-          onChangeText={(t) => updateField('city', t)} />
-
-          <InfoRow 
-          icon="location-outline" 
-          label="จังหวัด" 
-          value={formProfile.province} 
-          isEditing={isEditing}
-          onChangeText={(t) => updateField('province', t)} />
-
-          <InfoRow 
-          icon="mail-outline" 
-          label="รหัสไปรษณีย์" 
-          value={formProfile.postalCode}  // ← เพิ่ม
-          isEditing={isEditing}
-          onChangeText={(t) => updateField('postalCode', t)} 
-          // keyboardType="number-pad"       // ← ให้พิมพ์ได้แค่ตัวเลข
-          />
-          <InfoRow icon="chatbubble-ellipses-outline" label="LINE" value={formProfile.lineId} isEditing={isEditing}
-            onChangeText={(t) => updateField('lineId', t)} />
-
-          <InfoRow icon="logo-facebook" label="Facebook" value={formProfile.facebook} isEditing={isEditing}
-            onChangeText={(t) => updateField('facebook', t)} />
-
+          {/* ACTION */}
           <View style={{ marginTop: 20 }}>
             {isEditing ? (
               <>
-                <CustomButton 
-                title="บันทึก" 
-                theme="danger"
-                iconName="checkmark-outline" 
-                onPress={handleSave} />
+                <CustomButton title="บันทึก" iconName="checkmark-outline" onPress={handleSave} theme="danger" />
                 <View style={{ height: 10 }} />
-                <CustomButton
-                  title="ยกเลิก"
-                  theme="danger"
-                  iconName="close-outline"
-                  onPress={() => {
-                    setFormProfile(profile);
-                    setIsEditing(false);
-                  }}
-                />
+                <CustomButton title="ยกเลิก" iconName="close-outline" theme="danger"
+                  onPress={() => { setFormProfile(profile); setIsEditing(false); }} />
               </>
             ) : (
               <>
-                <CustomButton
-                  title="แก้ไขโปรไฟล์"
-                  theme="danger"
-                  iconName="create-outline"
-                  onPress={() => setIsEditing(true)}
-                />
+                <CustomButton title="แก้ไขโปรไฟล์" iconName="create-outline" theme="danger"
+                  onPress={() => setIsEditing(true)} />
                 <View style={{ height: 12 }} />
-                <CustomButton
-                  title="ออกจากระบบ"
-                  theme="danger"
-                  iconName="log-out-outline"
-                  onPress={logout}
-                />
+                <CustomButton title="ออกจากระบบ" iconName="log-out-outline" onPress={logout} theme="danger"/>
               </>
             )}
           </View>
+
         </View>
       </ScrollView>
     </View>
   );
 }
 
-/* ===== INFO ROW ===== */
-const InfoRow = ({
-  icon,
-  label,
-  value,
-  isEditing,
-  onChangeText,
-}: {
-  icon: keyof typeof Ionicons.glyphMap;
-  label: string;
-  value?: string;
-  isEditing?: boolean;
-  onChangeText?: (text: string) => void;
-}) => (
-  <View style={styles.infoRow}>
-    <View style={styles.infoIcon}>
-      <Ionicons name={icon} size={18} color="#5C6BC0" />
+/* ===== UI HELPERS ===== */
+const Section = ({ title, icon, children }: any) => (
+  <View style={styles.section}>
+    <View style={styles.sectionHeader}>
+      <Ionicons name={icon} size={18} color="#3F51B5" />
+      <Text style={styles.sectionTitle}>{title}</Text>
     </View>
+    {children}
+  </View>
+);
 
-    <View style={styles.infoText}>
-      <Text style={styles.infoLabel}>{label}</Text>
+const TwoColumn = ({ children }: any) => (
+  <View style={styles.twoColumn}>{children}</View>
+);
+
+const InfoInput = ({ label, value, isEditing, onChange }: any) => (
+  <View style={styles.inputBox}>
+    <Text style={styles.inputLabel}>{label}</Text>
+
+    <View style={styles.inputContainer}>
       {isEditing ? (
         <TextInput
-          style={styles.editInput}
+          style={styles.input}
           value={value}
-          onChangeText={onChangeText}
+          onChangeText={onChange}
+          placeholder="-"
         />
       ) : (
-        <Text style={styles.infoValue}>{value || '-'}</Text>
+        <Text style={styles.inputText}>
+          {value || '-'}
+        </Text>
       )}
     </View>
   </View>
 );
+
 
 /* ===== STYLES ===== */
 const styles = StyleSheet.create({
@@ -428,6 +363,58 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
 
+  section: {
+    marginTop: 20,
+    backgroundColor: '#FAFAFA',
+    borderRadius: 12,
+    padding: 14,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  sectionTitle: {
+    marginLeft: 6,
+    fontSize: 15,
+    fontWeight: 'bold',
+  },
+
+  twoColumn: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+
+  inputBox: {
+    flex: 1,
+    marginBottom: 12,
+  },
+  inputLabel: {
+    fontSize: 12,
+    color: '#777',
+    marginBottom: 4,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#DDD',
+    borderRadius: 8,
+    padding: 10,
+  },
+  inputValue: {
+    fontSize: 14,
+    paddingVertical: 10,
+    color: '#333',
+  },
+
+  textArea: {
+    borderWidth: 1,
+    borderColor: '#DDD',
+    borderRadius: 10,
+    padding: 10,
+    minHeight: 80,
+    textAlignVertical: 'top',
+  },
+
   imageWrapper: {
     width: '100%',
     height: 160,
@@ -442,31 +429,18 @@ const styles = StyleSheet.create({
 
   title: { fontSize: 20, fontWeight: 'bold' },
   subText: { fontSize: 13, color: '#777', marginBottom: 12 },
-  divider: { height: 1, backgroundColor: '#E0E0E0', marginVertical: 16 },
+  inputContainer: {
+  borderWidth: 1,
+  borderColor: '#DDD',
+  borderRadius: 8,
+  paddingHorizontal: 10,
+  paddingVertical: 10,
+  backgroundColor: '#FFF',
+},
 
-  infoRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 12 },
-  infoIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#EEF2FF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  infoText: {
-    flex: 1,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
-    paddingBottom: 6,
-  },
-  infoLabel: { fontSize: 12, color: '#9E9E9E' },
-  infoValue: { fontSize: 14, color: '#333', fontWeight: '600' },
-  editInput: {
-    fontSize: 14,
-    color: '#333',
-    borderBottomWidth: 1,
-    borderBottomColor: '#DDD',
-    paddingVertical: 4,
-  },
+inputText: {
+  fontSize: 14,
+  color: '#333',
+},
+
 });
