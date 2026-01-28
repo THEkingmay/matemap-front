@@ -9,10 +9,10 @@ import {
   Alert 
 } from 'react-native';
 // ตรวจสอบ path ของ theme ให้ถูกต้องด้วยนะคะ
-import { FONT, MainColor} from '../../../../constant/theme';
-import type { ProfileStackParamsList } from './ProfileStack';
+import { FONT, MainColor} from '../../../../../constant/theme';
+import type { ProfileStackParamsList } from '../ProfileStack';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useAuth } from '../../../AuthProvider';
+import { useAuth } from '../../../../AuthProvider';
 import { Ionicons } from '@expo/vector-icons';
 
 type props = NativeStackScreenProps<ProfileStackParamsList , 'setting'>

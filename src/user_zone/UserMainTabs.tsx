@@ -8,6 +8,7 @@ import HomeScreen from "./screens/HomeScreen";
 import ChatStack from './screens/chat/ChatStack';
 import ServiceTopTabs from './screens/service/ServiceTopTab';
 import ProfileStack from './screens/profile/ProfileStack';
+import HistoryTopTabs from './screens/history/HistoryTobTabs';
 
 import { activeColor, FONT, MainColor } from '../../constant/theme';
 
@@ -17,7 +18,9 @@ export type UserTabsParamsList = {
     home: undefined; // explore screen
     chat_stack: undefined;
     service_toptab : undefined; 
+    history_toptab : undefined ,
     profile_stack : undefined;
+
 }
 
 // แก้ไข Key ให้ตรงกับ name ใน Tabs.Screen
@@ -43,6 +46,10 @@ const TAB_ICONS: Record<
     active: 'person',
     inactive: 'person-outline',
   },
+  history_toptab: {
+    active: 'time',
+    inactive: 'time-outline',
+  },
 };
 
 // แก้ไข Key ให้ตรงกับ name ใน Tabs.Screen เช่นกัน
@@ -51,6 +58,7 @@ const TAB_LABELS: Record<string, string> = {
   chat_stack: 'แชท',
   service_toptab: 'บริการ', // แก้ชื่อ Key
   profile_stack: 'โปรไฟล์', // แก้ชื่อ Key
+  history_toptab : 'ประวัติ'
 };
 
 const Tabs = createBottomTabNavigator<UserTabsParamsList>();
@@ -126,6 +134,7 @@ export default function UserMainTabs() {
             <Tabs.Screen name="home" component={HomeScreen} />
             <Tabs.Screen name="chat_stack" component={ChatStack} />
             <Tabs.Screen name='service_toptab' component={ServiceTopTabs} />
+            <Tabs.Screen name='history_toptab' component={HistoryTopTabs} />
             <Tabs.Screen name="profile_stack" component={ProfileStack} />
 
         </Tabs.Navigator>

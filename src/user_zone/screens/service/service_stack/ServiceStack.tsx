@@ -4,19 +4,19 @@ import ServiceDetail from "./screen/ServiceDetail";
 import ServiceUserId from "./screen/ServiceUserId";
 
 export type ServiceStackParamsList = {
-    service : undefined , 
-    service_detail : {service_id : string}
-    service_user_id : {user_id : string}
+    serviceScreen : undefined , 
+    serviceDetail : {service_id : string}
+    serviceUseId: {user_id : string}
 }
 
 const Stacks = createNativeStackNavigator<ServiceStackParamsList>()
 
 export default function ServiceStack(){
     return(
-        <Stacks.Navigator>
-            <Stacks.Screen name="service" component={ServiceScreen} />
-            <Stacks.Screen name="service_detail" component={ServiceDetail} />
-            <Stacks.Screen name="service_user_id" component={ServiceUserId} />
+        <Stacks.Navigator screenOptions={{headerShown : false}}>
+            <Stacks.Screen name="serviceScreen" component={ServiceScreen} />
+            <Stacks.Screen name="serviceDetail" component={ServiceDetail} />
+            <Stacks.Screen name="serviceUseId" component={ServiceUserId} />
         </Stacks.Navigator>
     )
 }

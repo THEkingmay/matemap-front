@@ -22,11 +22,8 @@ export default function ContractStack() {
       <Stack.Screen
         name="contractDetail"
         component={ContractDetail}
-        options={{
-          title: "กลับหน้ารวมโพสต์",
-          headerBackTitle: "back",
-        }}
       />
+ 
     </Stack.Navigator>
   );
 }

@@ -1,13 +1,19 @@
-const MAIN_API_URL = process.env.EXPO_PUBLIC_BASE_API_URL;
-
-export async function getContractPosts() {
-  const res = await fetch(`${MAIN_API_URL}/api/contract-posts`);
-  if (!res.ok) throw new Error("fetch failed in getContractPosts");
-  return res.json();
+import apiClient from "../../../../../../constant/axios";
+export async function getContractPosts(lastPostCreateAt : string | undefined , token : string | null) {
+  const cursor = lastPostCreateAt || ""; 
+  const res = await apiClient.get(`/api/contract-posts` , {
+    headers : {
+      'Authorization' : `Bearer ${token}`  // แนบไป ไม่เอาโพสต์ตัวเอง
+    } ,
+    params : {
+       lastIndexCreate: cursor
+    }
+  })
+  return res.data;  
 }
 
 export async function getContractPostById(id: string) {
-  const res = await fetch(`${MAIN_API_URL}/api/contract-posts/${id}`);
-  if (!res.ok) throw new Error("fetch failed in getContractPostById");
-  return res.json();
+  const res = await apiClient.get(`/api/contract-posts/${id}`)
+
+  return res.data
 }

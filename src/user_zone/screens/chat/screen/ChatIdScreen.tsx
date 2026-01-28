@@ -10,15 +10,15 @@ import {
     ActivityIndicator
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { ChatStackParamsList } from "./ChatStack";
+import { ChatStackParamsList } from "../ChatStack";
 import Toast from "react-native-toast-message";
 import { useEffect, useState, useRef } from "react";
-import { useAuth } from "../../../AuthProvider";
+import { useAuth } from "../../../../AuthProvider";
 import { Ionicons } from '@expo/vector-icons'; 
 import { SafeAreaView } from "react-native-safe-area-context";
-import { MainColor } from "../../../../constant/theme";
+import { MainColor } from "../../../../../constant/theme";
 
-import { supabase } from "../../../../configs/supabase";
+import { supabase } from "../../../../../configs/supabase";
 
 type Props = NativeStackScreenProps<ChatStackParamsList, 'chat_select'>
 
@@ -31,7 +31,9 @@ interface MessageDetail {
 }
 
 export default function ChatSelectId({ navigation, route }: Props) {
-    const { room_id , target_name} = route.params;
+    const  room_id = route.params?.room_id;
+    const  target_name = route.params?.target_name
+    
     const { user, token } = useAuth();
     const [messages, setMessages] = useState<MessageDetail[]>([]);
     const [text, setText] = useState("");
