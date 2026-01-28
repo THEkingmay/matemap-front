@@ -5,7 +5,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import HomeScreen from "./screens/HomeScreen";
-import ProfileScreen from "./screens/ProfileScreen";
+import ProfileScreen from "./screens/ProfileMember/ProfileScreen";
 import CreatePost from "./screens/CreatePost";
 
 import SubscriptionProvider from "../SubscriptionProvider";

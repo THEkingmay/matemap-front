@@ -1,9 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { MainColor } from '../../../../../../constant/theme';
 
+interface ServiceType {
+  id : string , 
+  name : string
+}
 
 export default function ServiceScreen() {
+
+  const [services , setServices] = useState<ServiceType[]>([])
+
+  // const 
+
   return (
     <View style={styles.container}>
       <Text style={styles.text}>Service User</Text>
