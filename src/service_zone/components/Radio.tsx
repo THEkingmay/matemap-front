@@ -1,6 +1,6 @@
 import { Text, TouchableOpacity } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { styles } from "../styles/profile_screen_styles";
+import { styles } from "../styles/profile.styles";
 import { activeColor } from "../../../constant/theme";
 
 export default function Radio({

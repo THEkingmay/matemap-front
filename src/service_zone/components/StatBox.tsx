@@ -1,5 +1,5 @@
 import { View, Text } from "react-native";
-import { styles } from "../styles/profile_screen_styles";
+import { styles } from "../styles/profile.styles";
 
 export default function StatBox({ title, value }: { title: string; value: string }) {
   return (
