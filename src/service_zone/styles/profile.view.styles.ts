@@ -41,6 +41,16 @@ export const styles = StyleSheet.create({
     backgroundColor: "#F1F5F9",
   },
 
+  avatarLoading: {
+    position: 'absolute',
+    width: 115,
+    height: 115,
+    borderRadius: 60,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+  },
   /* ===== 2. Edit Page Specific Styles (สำหรับหน้า Edit เท่านั้น) ===== */
   editHeaderRow: {
     width: '100%',
@@ -101,7 +111,7 @@ export const styles = StyleSheet.create({
     fontFamily: FONT.REGULAR,
   },
   /* สไตล์ของ Radio Card ในหน้า Edit */
-  radioOptionCard: {
+  jobOptionCard: {
     flexDirection: "row",
     alignItems: "center",
     padding: 16,
@@ -146,7 +156,12 @@ export const styles = StyleSheet.create({
   },
   editFloatingBtn: { backgroundColor: "#4F46E5" },
   settingBtn: { backgroundColor: "#F1F5F9", marginRight: 10 },
-  avatarWrapper: { position: "relative", marginBottom: 16 },
+  avatarWrapper: { 
+    position: "relative", 
+    marginBottom: 16, 
+    alignItems: "center",     // เพิ่มส่วนนี้
+    justifyContent: "center",  // เพิ่มส่วนนี้
+  },
   statusBadge: {
     position: "absolute",
     bottom: 5,

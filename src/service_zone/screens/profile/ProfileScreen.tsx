@@ -30,11 +30,13 @@ export default function ProfileScreen({ navigation }: any) {
         setForm(data.service_worker_detail);
       })
       .finally(() => setLoading(false));
+      
   }, [user?.id]);
 
   const handleSave = async () => {
     await fetch(
-      `${process.env.EXPO_PUBLIC_BASE_API_URL}/api/service-workers/${user?.id}`,
+      // `${process.env.EXPO_PUBLIC_BASE_API_URL}/api/service-workers/${user?.id}`,
+      `http://192.168.0.106:3000/api/service-workers/${user?.id}`,
       {
         method: "PUT",
         headers: {
@@ -57,6 +59,7 @@ export default function ProfileScreen({ navigation }: any) {
     setIsEdit(false);
   };
 
+  
   if (loading) {
     return (
       <View style={styles.center}>
