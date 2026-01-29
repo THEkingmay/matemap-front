@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import HomeScreen from "./screens/HomeScreen";
 import ProfileScreen from "./screens/ProfileMember/ProfileScreen";
-import CreatePost from "./screens/CreatePost";
+import CreatePost from "./screens/Posts/CreatePost";
 
 import SubscriptionProvider from "../SubscriptionProvider";
 import { MainColor } from "../../constant/theme";
