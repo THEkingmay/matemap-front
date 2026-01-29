@@ -21,7 +21,7 @@ import Toast from "react-native-toast-message";
 import apiClient from "../../../../../../constant/axios";
 import { useAuth } from "../../../../../AuthProvider";
 
-interface BookingForm {
+export type BookingForm ={
     customer_id: string;
     provider_id: string;
     service_type_id: string | undefined;
