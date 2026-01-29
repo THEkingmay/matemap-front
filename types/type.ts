@@ -24,4 +24,12 @@ interface ChatRoom {
   image_url: string;
 }
 
-export type {User , UserCard, ChatRoom}
+interface CreateDormFormState {
+  roomNumber: string;
+  roomType: string;
+  price: string;
+  description: string;
+  readyDate: Date | null;
+};
+
+export type {User , UserCard, ChatRoom, CreateDormFormState}
