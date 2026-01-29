@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
   },
   card: {
     width: CARD_WIDTH,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: MainColor,
     borderRadius: 16,
     padding: 16,
     margin: CARD_MARGIN,
@@ -142,20 +142,20 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: `${MainColor}15`, // ใช้สี MainColor แต่จางลง (Opacity 15%)
+    backgroundColor: `#fff`, // ใช้สี MainColor แต่จางลง (Opacity 15%)
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 12,
   },
   iconText: {
     fontSize: 24,
-    color: MainColor,
+    color: MainColor ,
     fontFamily: FONT.BOLD,
   },
   serviceName: {
     fontSize: 16,
     fontFamily: FONT.BOLD, // หรือ Bold ตามที่มี
-    color: MainColor,
+    color: '#fff',
     textAlign: 'center',
   },
   emptyText: {

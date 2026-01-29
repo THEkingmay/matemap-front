@@ -19,6 +19,8 @@ import { BookingModal } from "../components/BookingModal";
 type props = NativeStackScreenProps<ServiceStackParamsList, 'serviceUseId'>
 
 import styles from "../style";
+import { useAuth } from "../../../../../AuthProvider";
+import { useNavigation } from "@react-navigation/native";
 
 interface ServiceAndWorker {
     name: string,
@@ -38,7 +40,9 @@ interface ServiceProviderResponse {
     service_worker_detail: ServiceAndWorker
 }
 
-export default function ServiceUserId({ route, navigation }: props) {
+export default function ServiceUserId({ route }: props) {
+    const {user} = useAuth()
+    const navigation = useNavigation<any>()
 
     const [data, setData] = useState<ServiceProviderResponse | null>(null);
     const [reviews, setReview] = useState<{ id: string, review: string, rate: number }[]>([])
@@ -292,7 +296,14 @@ export default function ServiceUserId({ route, navigation }: props) {
 
             </ScrollView>
 
-            <BookingModal modalVisible={modalVisible} handleCloseModal={handleCloseModal} selectedService={selectedService} />
+            <BookingModal 
+            onSuccess={() => navigation.navigate('history_toptab', {
+                screen: 'serviceStack',
+                params: {
+                    screen: 'service_history'
+                }
+                })}
+            customer_id={user?.id || ''} provider_id={user_id}  modalVisible={modalVisible} handleCloseModal={handleCloseModal} selectedService={selectedService} />
         </View>
     );
 }
