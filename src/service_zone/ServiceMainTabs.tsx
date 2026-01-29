@@ -8,8 +8,8 @@ import SubscriptionProvider from '../SubscriptionProvider';
 
 import ChatScreen from './screens/chat/ChatScreen';
 import ScheduleScreen from './screens/schedule/ScheduleScreen';
-import ProfileScreen from './screens/profile/ProfileScreen';
 import WorkScreen from './screens/work/WorkScreen';
+import ProfileStack from './screens/profile/ProfileStack';
 
 
 export type ServiceTabsParamsList = {
@@ -112,7 +112,7 @@ export default function ServiceMainTabs() {
         <Tabs.Screen name="chat" component={ChatScreen} />
         <Tabs.Screen name="work" component={WorkScreen} />
         <Tabs.Screen name="schedule" component={ScheduleScreen} />
-        <Tabs.Screen name="profile" component={ProfileScreen} />
+        <Tabs.Screen name="profile" component={ProfileStack} />
       </Tabs.Navigator>
     </SubscriptionProvider>
   );
