@@ -30,7 +30,7 @@ export default function ServiceHistory(){
                 }
             })
 
-            // console.log(res.data)
+            setServiceHistory(res.data)
 
         }catch(err){
             console.log(err)
