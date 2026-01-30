@@ -10,6 +10,7 @@ import { HistoryServiecStackParamsList } from "../ServiceStack";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import styles from "../style";
 import ReviewModal from "../component/ReviewModal";
+import ActionConfirmationModal from "../component/ConfirmModal";
 type props = NativeStackScreenProps<HistoryServiecStackParamsList, 'service_history'>
 
 interface HistoryResType {
@@ -366,6 +367,8 @@ export default function ServiceHistory({ route }: props) {
                 onCloseModal={() => setHistoryToReview(null)}
                 onSuccess={fetchHistory}
             />
+            
+            {isOpenConfirmModal && <ActionConfirmationModal visible={isOpenConfirmModal!==null} onClose={onCloseConfirmModal} onSuccess={fetchHistory} history_id={isOpenConfirmModal?.history_id} type={isOpenConfirmModal?.type} />}
         </View>
     );
 }
