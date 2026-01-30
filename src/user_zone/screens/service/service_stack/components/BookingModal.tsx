@@ -20,8 +20,9 @@ import 'dayjs/locale/th';
 import Toast from "react-native-toast-message";
 import apiClient from "../../../../../../constant/axios";
 import { useAuth } from "../../../../../AuthProvider";
+import { isAxiosError } from "axios";
 
-interface BookingForm {
+export type BookingForm ={
     customer_id: string;
     provider_id: string;
     service_type_id: string | undefined;
@@ -53,7 +54,7 @@ export function BookingModal({
     onSuccess,
 }: Props) {
     const defaultStyles = useDefaultStyles();
-    const {token} = useAuth()
+    const {token , user} = useAuth()
 
     const [selectedDate, setSelectedDate] = useState<DateType>(()=>{
         const date = new Date()
@@ -76,7 +77,7 @@ export function BookingModal({
     });
     const resetForm = () => {
         setStartTime({ hour: 0, minute: 0 })
-        setEndTime({ hour: 0, minute: 0 })
+        setEndTime({ hour: 23, minute: 59 })
         setSelectedDate(new Date())
         setFormData({
             customer_id: customer_id,
@@ -186,7 +187,7 @@ export function BookingModal({
                 end_date: dateObj.hour(endTime.hour).minute(endTime.minute).toISOString()
             }
             
-            await apiClient.post('/api/service-history' , reqBody, {
+            await apiClient.post(`/api/service-history/user/${user?.id}` , reqBody, {
                 headers : {
                     'Authorization' : `Bearer ${token}`
                 }
@@ -197,15 +198,40 @@ export function BookingModal({
                 text1: 'จองสำเร็จรอการตอบกลับจากผู้ให้บริการ'
             })
             resetForm()
-            handleCloseModal()
             onSuccess()
         } catch (err) {
+            handleCloseModal();
+
+            let message = "เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ"; // ข้อความ Default กันเหนียว
+
+            if (isAxiosError(err)) {
+                // กรณี Server ตอบกลับมา (เช่น 400 Bad Request, 500 Internal Server Error)
+                if (err.response) {
+                    // *สำคัญ* ตรงนี้ต้องดูว่า Backend ของคุณส่ง key ชื่ออะไรมา 
+                    // ส่วนใหญ่จะเป็น .message, .msg, หรือ .error
+                    message = err.response.data.message || err.response.data.error || "เกิดข้อผิดพลาดจากเซิร์ฟเวอร์";
+                    
+                    // Debug ดูโครงสร้างจริง
+                    console.log("Server Error Data:", err.response.data); 
+                } else if (err.request) {
+                    // กรณีส่ง Request ไปแล้ว แต่ไม่ได้รับ Response (เน็ตหลุด, Server ล่ม)
+                    message = "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้";
+                } else {
+                    // กรณี Error จากการตั้งค่า Request
+                    message = err.message;
+                }
+            } else if (err instanceof Error) {
+                // กรณี Error อื่นๆ ที่ไม่ใช่ Axios (เช่น Code พังใน frontend)
+                message = err.message;
+            }
+
             Toast.show({
                 type: "error",
-                text1: (err as Error).message
-            })
+                text1: 'เกิดข้อผิดพลาด',
+                text2 : message
+            });
         } finally {
-            setIsSubmitting(false)
+            setIsSubmitting(false);
         }
 
         // console.log(reqBody)

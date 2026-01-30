@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, Image, ActivityIndicator, Alert } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import * as ImagePicker from 'expo-image-picker';
-import Toast from 'react-native-toast-message';
 import { styles } from "../../styles/profile.view.styles";
 import { useAuth } from "../../../AuthProvider";
 
@@ -110,12 +109,13 @@ export default function ProfileEdit({ form, setForm, onCancel, onSave }: Profile
   };
 
   // 5. ฟังก์ชันกดยืนยันบันทึกทั้งหมด (รวม Logic อัปโหลด/ลบ และส่งค่ากลับ Parent)
+  // แก้ไขส่วน STEP 3 ในฟังก์ชัน handleConfirmSave
   const handleConfirmSave = async () => {
     try {
       setIsProcessing(true);
-      let finalUrl = form.image_url; // ค่าเริ่มต้น (อาจเป็น URL เดิม หรือ Local URI)
+      let finalUrl = form.image_url;
 
-      // STEP 1: ลบรูปเดิมออกหากผู้ใช้กดลบ (และไม่ได้เลือกรูปใหม่มาแทน)
+      // STEP 1: ลบรูปเดิมออกหากมีการกดลบ
       if (isDeletedPending && !pendingImage) {
         await deleteImageFromServer();
         finalUrl = null;
@@ -125,12 +125,12 @@ export default function ProfileEdit({ form, setForm, onCancel, onSave }: Profile
       if (pendingImage) {
         const uploadedUrl = await uploadImageToCloudinary();
         if (uploadedUrl) {
-          finalUrl = uploadedUrl; // อัปเดต finalUrl เป็น https:// จาก Cloudinary
+          finalUrl = uploadedUrl;
         }
       }
 
-      // STEP 3: ส่ง URL จริงกลับไปที่ Parent เพื่ออัปเดต Database
-      // finalUrl ตอนนี้จะเป็น: URL ใหม่ (https), null (กรณีลบ), หรือ URL เดิม
+      // STEP 3: ส่งข้อมูลกลับไปที่ Parent
+      // ส่ง finalUrl ไปเพื่อให้ Parent อัปเดต state และยิง API ต่อ
       onSave(finalUrl); 
       
       setPendingImage(null);
@@ -206,32 +206,54 @@ export default function ProfileEdit({ form, setForm, onCancel, onSave }: Profile
         />
       </View>
 
+          {/* Services Radio Type */}
       <View style={styles.infoCard}>
         <Text style={styles.formSectionTitle}>ประเภทงานที่ให้บริการ</Text>
-        {[
-          ['delivery', 'ขนของ / ย้ายของ'],
-          ['cleaning', 'ทำความสะอาด'],
-          ['other', 'บริการอื่นๆ']
-        ].map(([key, label]) => {
-          const isActive = form?.job_type === key;
-          return (
-            <TouchableOpacity
-              key={key}
-              onPress={() => setForm({ ...form, job_type: key })}
-              style={[styles.jobOptionCard, isActive && styles.radioOptionActive]}
-            >
-              <Ionicons
-                name={isActive ? "checkmark-circle" : "ellipse-outline"}
-                size={24}
-                color={isActive ? "#4F46E5" : "#CBD5E1"}
-              />
-              <Text style={[styles.radioText, isActive && styles.radioTextActive]}>
-                {label}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
+        
+        {/* ตรวจสอบว่าเป็น Array และดึงข้อมูลมา Map */}
+        {Array.isArray(form?.all_services) ? (
+          form.all_services.map((service: any, index: number) => {
+            // ใช้ชื่อจาก DB ตรงๆ (เช่น "ซักผ้า", "นวด", "ทำความสะอาด")
+            const serviceName = service.name; 
+
+            // เช็คสถานะการเลือกจาก Array selected_services
+            const isActive = form?.selected_services?.includes(serviceName);
+
+            const toggleService = () => {
+              let nextServices = [...(form.selected_services || [])];
+              if (isActive) {
+                // ถ้ามีอยู่แล้วให้เอาออก
+                nextServices = nextServices.filter((name: string) => name !== serviceName);
+              } else {
+                // ถ้ายังไม่มีให้เพิ่มเข้า
+                nextServices.push(serviceName);
+              }
+              setForm({ ...form, selected_services: nextServices });
+            };
+
+            return (
+              <TouchableOpacity
+                key={service.id || index}
+                onPress={toggleService}
+                style={[styles.jobOptionCard, isActive && styles.radioOptionActive]}
+              >
+                <Ionicons
+                  name={isActive ? "checkbox" : "square-outline"}
+                  size={24}
+                  color={isActive ? "#4F46E5" : "#CBD5E1"}
+                />
+                <Text style={[styles.radioText, isActive && styles.radioTextActive]}>
+                  {serviceName} {/* แสดงชื่อจาก Database โดยตรง */}
+                </Text>
+              </TouchableOpacity>
+            );
+          })
+        ) : (
+          // กรณีข้อมูลยังโหลดไม่เสร็จ หรือ all_services ยังเป็น undefined
+          <ActivityIndicator color="#4F46E5" style={{ marginVertical: 20 }} />
+        )}
       </View>
+
     </View>
   );
 }

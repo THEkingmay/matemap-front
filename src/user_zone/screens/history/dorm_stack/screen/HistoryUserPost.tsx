@@ -14,7 +14,7 @@ import type { Post } from "../../../service/contract_stack/screen/ContractDetail
 import Toast from "react-native-toast-message";
 import apiClient from "../../../../../../constant/axios";
 import { useAuth } from "../../../../../AuthProvider";
-import { FONT } from "../../../../../../constant/theme";
+import { BGColor, FONT } from "../../../../../../constant/theme";
 import type { HistoryDormStackParamsList } from "../HistoryDormStack";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 
@@ -144,7 +144,7 @@ export default function HistoryUserPost({ route }: props) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#FFFFFF', // พื้นขาวคลีนๆ
+        backgroundColor: BGColor, // พื้นขาวคลีนๆ
     },
     center: {
         flex: 1,

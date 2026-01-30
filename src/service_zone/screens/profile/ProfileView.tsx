@@ -7,7 +7,7 @@ import { useNavigation } from "@react-navigation/native";
 export default function ProfileView({ profile, onEdit }: any) {
   const navigation = useNavigation<any>();
   const detail = profile?.service_worker_detail;
-  const serviceName = profile?.service_and_worker?.[0]?.services?.name ?? "ทั่วไป";
+  const services = profile?.service_and_worker || [];
 
   return (
     <View style={{ paddingBottom: 20 }}>
@@ -34,7 +34,25 @@ export default function ProfileView({ profile, onEdit }: any) {
         </View>
 
         <Text style={styles.name}>{detail?.name}</Text>
-        <View style={styles.tagBadge}><Text style={styles.tagText}>{serviceName}</Text></View>
+        <View style={{ 
+          flexDirection: 'row', 
+          flexWrap: 'wrap', 
+          justifyContent: 'center', 
+          gap: 6, 
+          marginTop: 8 
+        }}>
+          {services.length > 0 ? (
+            services.map((item: any, index: number) => (
+              <View key={index} style={styles.tagBadge}>
+                <Text style={styles.tagText}>{item.services?.name}</Text>
+              </View>
+            ))
+          ) : (
+            <View style={styles.tagBadge}>
+              <Text style={styles.tagText}>ทั่วไป</Text>
+            </View>
+          )}
+        </View>
 
         {/* Stats Row */}
         <View style={styles.statsRow}>
