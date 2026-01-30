@@ -41,7 +41,7 @@ interface ServiceProviderResponse {
 }
 
 export default function ServiceUserId({ route }: props) {
-    const {user} = useAuth()
+    const { user , token } = useAuth()
     const navigation = useNavigation<any>()
 
     const [data, setData] = useState<ServiceProviderResponse | null>(null);
@@ -127,7 +127,39 @@ export default function ServiceUserId({ route }: props) {
         setSelectedService(null);
     };
 
-   
+    const [isLoadingChat , setIsLoadChat] = useState<boolean>(false)
+    const handleChat = async () => {
+        try{
+            setIsLoadChat(true)
+
+            const res = await apiClient.post('/api/room' , 
+                {
+                userId : user?.id, roomType : 'service', ownerPostId : user_id
+                },{
+                    headers :{
+                        'Authorization' : `Bearer ${token}`
+                    }
+                }
+            )
+            // console.log(res.data.data.id)
+            navigation.navigate('chat_stack' ,{
+                screen : 'chat_select' , 
+                params : {
+                    room_id :res.data.data.id,
+                    target_name : data?.service_worker_detail.name
+                }
+            })
+
+        }catch(er){
+            Toast.show({
+                type :"error" ,
+                text1 : (er as Error).message
+            })
+        }finally{
+            setIsLoadChat(false)
+        }
+    }
+
     if (loading) {
         return (
             <View style={[styles.container, styles.center]}>
@@ -198,6 +230,17 @@ export default function ServiceUserId({ route }: props) {
                             </Text>
                         </View>
                     </View>
+                    <TouchableOpacity
+                        disabled={isLoadingChat}
+                        style={styles.chatButton}
+                        onPress={handleChat}
+                        activeOpacity={0.8}
+                    >
+                        {/* เลือกใช้ไอคอนรูปแชท (ปรับชื่อ icon ได้ตามต้องการครับ) */}
+                        <Ionicons name="chatbubble-ellipses-outline" size={24} color="#FFFFFF" style={styles.icon} />
+
+                        <Text style={styles.buttonText}>{isLoadingChat ? 'กำลังนำพาไปยังแชท...' : 'พูดคุยกับผู้ให้บริการ'}</Text>
+                    </TouchableOpacity>
                 </View>
 
                 {/* 2. รายการบริการ */}
@@ -276,9 +319,9 @@ export default function ServiceUserId({ route }: props) {
                                             </View>
                                         </View>
                                     </View>
-                                    <Text style={styles.reviewDate}>ล่าสุด</Text> 
+                                    <Text style={styles.reviewDate}>ล่าสุด</Text>
                                 </View>
-                                
+
                                 <View style={styles.reviewContent}>
                                     <Text style={styles.reviewText}>
                                         "{review.review || "ไม่มีข้อความรีวิว"}"
@@ -296,14 +339,14 @@ export default function ServiceUserId({ route }: props) {
 
             </ScrollView>
 
-            <BookingModal 
-            onSuccess={() => navigation.navigate('history_toptab', {
-                screen: 'serviceStack',
-                params: {
-                    screen: 'service_history'
-                }
+            <BookingModal
+                onSuccess={() => navigation.navigate('history_toptab', {
+                    screen: 'serviceStack',
+                    params: {
+                        screen: 'service_history'
+                    }
                 })}
-            customer_id={user?.id || ''} provider_id={user_id}  modalVisible={modalVisible} handleCloseModal={handleCloseModal} selectedService={selectedService} />
+                customer_id={user?.id || ''} provider_id={user_id} modalVisible={modalVisible} handleCloseModal={handleCloseModal} selectedService={selectedService} />
         </View>
     );
 }

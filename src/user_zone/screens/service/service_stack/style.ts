@@ -20,6 +20,35 @@ const styles = StyleSheet.create({
         shadowRadius: 4,
         elevation: 5,
     },
+    chatButton: {
+        flexDirection : "row",
+        backgroundColor: MainColor, // สีฟ้าที่ดูเป็นมิตรและน่าเชื่อถือ
+        paddingVertical: 12,
+        paddingHorizontal: 24,
+        borderRadius: 25, // ทำเป็นทรงแคปซูลมนๆ
+        alignItems: 'center',
+        justifyContent: 'center',
+
+        // การใส่เงา (Shadow) สำหรับ iOS
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 5,
+
+        // การใส่เงา (Elevation) สำหรับ Android
+        elevation: 5,
+
+        marginVertical: 10, // เว้นระยะห่างจาก element อื่น
+    },
+    icon: {
+    marginRight: 8, // เว้นระยะห่างระหว่างไอคอนกับข้อความ
+  },
+    buttonText: {
+        color: '#FFFFFF',
+        fontSize: 16,
+        textAlign: 'center',
+        fontFamily :FONT.REGULAR
+    },
     container: {
         position: 'relative',
         flex: 1,
@@ -336,8 +365,8 @@ const styles = StyleSheet.create({
     // --- Modal Styles (เหมือนเดิม) ---
     modalOverlay: {
         flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.6)', 
-        justifyContent: 'center', 
+        backgroundColor: 'rgba(0,0,0,0.6)',
+        justifyContent: 'center',
         padding: 20,
     },
     modalContent: {
@@ -416,7 +445,7 @@ const styles = StyleSheet.create({
     modalFooter: {
         flexDirection: 'row',
         marginTop: 10,
-        gap: 12, 
+        gap: 12,
     },
     modalButton: {
         flex: 1,
