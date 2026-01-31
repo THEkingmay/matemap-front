@@ -8,14 +8,27 @@ import {
   Alert,
   ScrollView,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import * as ImagePicker from 'expo-image-picker';
+
 import { HomeStackParamsList } from './HomeStack';
 import { useAuth } from '../../../AuthProvider';
-import { Ionicons } from '@expo/vector-icons';
 import { MainColor } from '../../../../constant/theme';
 
 type Props = NativeStackScreenProps<HomeStackParamsList, 'editPost'>;
+
+const FACILITIES = [
+  'Wi-Fi',
+  'เครื่องปรับอากาศ',
+  'ตู้เย็น',
+  'เครื่องทำน้ำอุ่น',
+  'ที่จอดรถ',
+  'ลิฟต์',
+  'ระบบรักษาความปลอดภัย',
+  'ซักรีดหยอดเหรียญ',
+];
 
 export default function EditPostScreen({ route, navigation }: Props) {
   const { post } = route.params;
@@ -23,68 +36,126 @@ export default function EditPostScreen({ route, navigation }: Props) {
 
   const [rentPrice, setRentPrice] = useState(String(post.rent_price));
   const [detail, setDetail] = useState(post.detail ?? '');
+  const [facilities, setFacilities] = useState<string[]>(
+    post.facilities ?? []
+  );
+  const [image, setImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-const handleSave = async () => {
-  if (!rentPrice || isNaN(Number(rentPrice))) {
-    Alert.alert('กรุณากรอกราคาที่ถูกต้อง');
-    return;
-  }
+  /* ================= IMAGE ================= */
+  const pickImage = async () => {
+     const result = await ImagePicker.launchImageLibraryAsync({
+    allowsEditing: true,
+    quality: 0.8,
+  });
 
-  try {
-    setLoading(true);
-    
-    const payload = {
-      rent_price: Number(rentPrice),
-      detail
-    };
-    
-    console.log('📤 Sending payload:', payload);
-    console.log('📤 URL:', `${process.env.EXPO_PUBLIC_BASE_API_URL}/api/dorms/${post.dormId}/posts/${post.id}`);
-    
+    if (!result.canceled) {
+      setImage(result.assets[0].uri);
+    }
+  };
+
+  const uploadImage = async () => {
+    if (!image) return;
+
+    const formData = new FormData();
+    formData.append('file', {
+      uri: image,
+      name: 'post.jpg',
+      type: 'image/jpeg',
+    } as any);
+
     const res = await fetch(
-      `${process.env.EXPO_PUBLIC_BASE_API_URL}/api/dorms/${post.dormId}/posts/${post.id}`,
+      `${process.env.EXPO_PUBLIC_BASE_API_URL}/api/cloudinary/upload/dorm-posts?dormId=${post.dormId}&postId=${post.id}`,
       {
-        method: 'PATCH',
+        method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(payload),
+        body: formData,
       }
     );
-
-    const responseData = await res.json();
-    console.log('📥 Response status:', res.status);
-    console.log('📥 Response data:', responseData);
-
     if (!res.ok) {
-      console.error('❌ Update failed:', responseData);
-      throw new Error('update failed');
+      throw new Error('upload image failed');
+    }
+  };
+
+  /* ================= FACILITY ================= */
+
+  const toggleFacility = (item: string) => {
+    setFacilities(prev =>
+      prev.includes(item)
+        ? prev.filter(f => f !== item)
+        : [...prev, item]
+    );
+  };
+
+  /* ================= SAVE ================= */
+
+  const handleSave = async () => {
+    if (!rentPrice || isNaN(Number(rentPrice))) {
+      Alert.alert('กรุณากรอกราคาที่ถูกต้อง');
+      return;
     }
 
-    Alert.alert('สำเร็จ', 'แก้ไขโพสต์เรียบร้อย');
-    navigation.goBack();
-  } catch (error) {
-    console.error('❌ Error:', error);
-    Alert.alert('ผิดพลาด', 'ไม่สามารถแก้ไขโพสต์ได้');
-  } finally {
-    setLoading(false);
-  }
-};
+    try {
+      setLoading(true);
+
+      // 1️⃣ update post data
+      const payload = {
+        rent_price: Number(rentPrice),
+        detail,
+        facilities,
+      };
+
+      const res = await fetch(
+        `${process.env.EXPO_PUBLIC_BASE_API_URL}/api/dorms/${post.dormId}/posts/${post.id}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (!res.ok) throw new Error('update failed');
+
+      // 2️⃣ upload image (if selected)
+      if (image) {
+        await uploadImage();
+      }
+
+      Alert.alert('สำเร็จ', 'แก้ไขโพสต์เรียบร้อย');
+      navigation.goBack();
+    } catch (error) {
+      Alert.alert('ผิดพลาด', 'ไม่สามารถแก้ไขโพสต์ได้');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /* ================= UI ================= */
 
   return (
     <ScrollView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>แก้ไขโพสต์</Text>
-        <Text style={styles.subtitle}>
-          แก้ไขข้อมูลห้องพักของคุณ
-        </Text>
+        <Text style={styles.subtitle}>แก้ไขข้อมูลห้องพักของคุณ</Text>
       </View>
 
-      {/* Card */}
       <View style={styles.card}>
+        {/* Image */}
+        <Text style={styles.label}>รูปห้องพัก</Text>
+        <TouchableOpacity style={styles.imagePicker} onPress={pickImage}>
+          {image ? (
+            <Image source={{ uri: image }} style={styles.preview} />
+          ) : (
+            <Text style={{ color: '#6B7280' }}>เลือกรูปใหม่</Text>
+          )}
+        </TouchableOpacity>
+
         {/* Price */}
         <Text style={styles.label}>ค่าเช่า (บาท/เดือน) *</Text>
         <TextInput
@@ -102,8 +173,35 @@ const handleSave = async () => {
           multiline
           value={detail}
           onChangeText={setDetail}
-          placeholder="รายละเอียดห้องพัก สิ่งอำนวยความสะดวก ฯลฯ"
+          placeholder="รายละเอียดห้องพัก"
         />
+
+        {/* Facilities */}
+        <Text style={styles.label}>สิ่งอำนวยความสะดวก</Text>
+        <View style={styles.facilityWrap}>
+          {FACILITIES.map(item => {
+            const active = facilities.includes(item);
+            return (
+              <TouchableOpacity
+                key={item}
+                onPress={() => toggleFacility(item)}
+                style={[
+                  styles.facilityItem,
+                  active && styles.facilityActive,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.facilityText,
+                    active && styles.facilityTextActive,
+                  ]}
+                >
+                  {item}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
 
         {/* Actions */}
         <TouchableOpacity
@@ -130,38 +228,25 @@ const handleSave = async () => {
   );
 }
 
+/* ================= STYLES ================= */
+
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F9FAFB' },
 
-  header: {
-    padding: 16,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: '#6B7280',
-  },
+  header: { padding: 16 },
+  title: { fontSize: 22, fontWeight: '600' },
+  subtitle: { fontSize: 14, color: '#6B7280', marginTop: 4 },
 
   card: {
     backgroundColor: '#fff',
     margin: 16,
     borderRadius: 16,
     padding: 16,
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
     elevation: 3,
   },
 
-  label: {
-    fontSize: 14,
-    fontWeight: '500',
-    marginBottom: 6,
-  },
+  label: { fontSize: 14, fontWeight: '500', marginBottom: 6 },
+
   input: {
     borderWidth: 1,
     borderColor: '#D1D5DB',
@@ -170,10 +255,43 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     fontSize: 15,
   },
-  textArea: {
-    height: 120,
-    textAlignVertical: 'top',
+  textArea: { height: 120, textAlignVertical: 'top' },
+
+  imagePicker: {
+    height: 160,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
   },
+  preview: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 12,
+  },
+
+  facilityWrap: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: 16,
+  },
+  facilityItem: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    marginRight: 8,
+    marginBottom: 8,
+  },
+  facilityActive: {
+    backgroundColor: MainColor,
+    borderColor: MainColor,
+  },
+  facilityText: { fontSize: 13, color: '#374151' },
+  facilityTextActive: { color: '#fff', fontWeight: '500' },
 
   submitBtn: {
     backgroundColor: MainColor,
@@ -182,18 +300,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 8,
   },
-  submitText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
+  submitText: { color: '#fff', fontSize: 16, fontWeight: '600' },
 
-  cancelBtn: {
-    paddingVertical: 12,
-    alignItems: 'center',
-  },
-  cancelText: {
-    color: '#6B7280',
-    fontSize: 14,
-  },
+  cancelBtn: { paddingVertical: 12, alignItems: 'center' },
+  cancelText: { color: '#6B7280', fontSize: 14 },
 });

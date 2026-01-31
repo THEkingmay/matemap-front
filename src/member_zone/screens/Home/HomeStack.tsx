@@ -12,6 +12,7 @@ export type HomeStackParamsList = {
       dormId: string;
       rent_price: number;
       detail: string;
+      facilities: string[] | null;
     };
   };
 };

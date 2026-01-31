@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -7,20 +7,19 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Image,
+  Alert,
 } from 'react-native';
 import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 
-import type { MemberTabsParamsList } from '../../MemberMainTabs';
 import type { HomeStackParamsList } from './HomeStack';
 import { MainColor } from '../../../../constant/theme';
 import { useAuth } from '../../../AuthProvider';
 
 /* ================= TYPE ================= */
 
-type Props = BottomTabScreenProps<MemberTabsParamsList, 'home'>;
-
+type Props = BottomTabScreenProps<HomeStackParamsList, 'home'>;
 type HomeNav = NativeStackNavigationProp<HomeStackParamsList>;
 
 export type Post = {
@@ -44,10 +43,13 @@ export default function HomeScreen({ navigation }: Props) {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
 
+  /* ===== Fetch Posts ===== */
   useEffect(() => {
     const fetchPosts = async () => {
       try {
         if (!user || !token) return;
+
+        setLoading(true);
 
         // 1️⃣ ดึง dorm ของ user
         const dormRes = await fetch(
@@ -60,7 +62,7 @@ export default function HomeScreen({ navigation }: Props) {
         if (!dormRes.ok) throw new Error('fetch dorm failed');
         const dorm = await dormRes.json();
 
-        // 2️⃣ ดึง post
+        // 2️⃣ ดึง posts
         const postRes = await fetch(
           `${process.env.EXPO_PUBLIC_BASE_API_URL}/api/dorms/${dorm.id}/posts`,
           {
@@ -71,7 +73,7 @@ export default function HomeScreen({ navigation }: Props) {
         if (!postRes.ok) throw new Error('fetch posts failed');
         const postData = await postRes.json();
 
-        // 3️⃣ map DB → Frontend
+        // 3️⃣ map DB → frontend
         const mapped: Post[] = postData.map((p: any) => ({
           id: p.id,
           dormId: p.dorm_id,
@@ -94,7 +96,32 @@ export default function HomeScreen({ navigation }: Props) {
     };
 
     fetchPosts();
-  }, []);
+  }, [user, token]);
+
+  /* ===== Delete Post ===== */
+  const handleDeletePost = async (postId: string, dormId: string) => {
+    try {
+      if (!token) return;
+
+      const res = await fetch(
+        `${process.env.EXPO_PUBLIC_BASE_API_URL}/api/dorms/${dormId}/posts/${postId}`,
+        {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!res.ok) throw new Error('delete failed');
+
+      // ลบออกจาก state ทันที
+      setPosts(prev => prev.filter(p => p.id !== postId));
+    } catch (error) {
+      console.error('Delete post error:', error);
+      Alert.alert('เกิดข้อผิดพลาด', 'ไม่สามารถลบโพสต์ได้');
+    }
+  };
 
   if (loading) {
     return (
@@ -109,7 +136,9 @@ export default function HomeScreen({ navigation }: Props) {
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>โพสต์ของฉัน</Text>
-        <Text style={styles.subTitle}>จัดการโพสต์ห้องว่างทั้งหมดของคุณ</Text>
+        <Text style={styles.subTitle}>
+          จัดการโพสต์ห้องว่างทั้งหมดของคุณ
+        </Text>
         <Text style={styles.totalPost}>ทั้งหมด {posts.length} โพสต์</Text>
       </View>
 
@@ -119,6 +148,7 @@ export default function HomeScreen({ navigation }: Props) {
           key={post.id}
           post={post}
           navigation={navigation as unknown as HomeNav}
+          onDelete={handleDeletePost}
         />
       ))}
 
@@ -134,9 +164,11 @@ export default function HomeScreen({ navigation }: Props) {
 function PostCard({
   post,
   navigation,
+  onDelete,
 }: {
   post: Post;
   navigation: HomeNav;
+  onDelete: (postId: string, dormId: string) => void;
 }) {
   return (
     <View style={styles.card}>
@@ -184,6 +216,7 @@ function PostCard({
                   dormId: post.dormId,
                   rent_price: post.rent_price,
                   detail: post.detail,
+                  facilities: post.facilities,
                 },
               })
             }
@@ -192,7 +225,23 @@ function PostCard({
             <Text style={styles.editText}>แก้ไข</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.deleteBtn}>
+          <TouchableOpacity
+            style={styles.deleteBtn}
+            onPress={() =>
+              Alert.alert(
+                'ยืนยันการลบ',
+                'คุณต้องการลบโพสต์นี้ใช่หรือไม่?',
+                [
+                  { text: 'ยกเลิก', style: 'cancel' },
+                  {
+                    text: 'ลบ',
+                    style: 'destructive',
+                    onPress: () => onDelete(post.id, post.dormId),
+                  },
+                ]
+              )
+            }
+          >
             <Ionicons name="trash-outline" size={18} color="#DC2626" />
             <Text style={styles.deleteText}>ลบ</Text>
           </TouchableOpacity>
