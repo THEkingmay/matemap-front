@@ -149,7 +149,7 @@ export default function ProfileEdit({ form, setForm, onCancel, onSave }: Profile
           <TouchableOpacity onPress={onCancel} activeOpacity={0.6} disabled={isProcessing}>
             <Text style={styles.cancelBtnText}>ยกเลิก</Text>
           </TouchableOpacity>
-          <Text style={{ fontFamily: 'Bold', fontSize: 17, color: '#1E293B' }}>แก้ไขโปรไฟล์</Text>
+          <Text style={styles.titleText}>แก้ไขโปรไฟล์</Text>
           <TouchableOpacity onPress={handleConfirmSave} activeOpacity={0.6} disabled={isProcessing}>
             <Text style={[styles.saveBtnText, isProcessing && { color: '#94A3B8' }]}>
               {isProcessing ? "กำลังบันทึก..." : "บันทึก"}
