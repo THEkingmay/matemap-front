@@ -51,6 +51,12 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     zIndex: 1,
   },
+  avatarWarnText :  {
+    fontSize: 12,
+    fontFamily: FONT.REGULAR,
+    color: "#64748B",
+    textAlign: "center",
+  },
   /* ===== 2. Edit Page Specific Styles (สำหรับหน้า Edit เท่านั้น) ===== */
   editHeaderRow: {
     width: '100%',

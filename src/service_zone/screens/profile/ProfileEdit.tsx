@@ -248,6 +248,14 @@ export default function ProfileEdit({
             </TouchableOpacity>
           )}
         </View>
+
+        {/* {Text that describes the image before upload} */}
+          <View style={{ marginTop: 8 }}>
+            <Text style={styles.avatarWarnText}>
+              รองรับไฟล์ .jpg, .png ขนาดไม่เกิน 5MB
+            </Text>
+          </View>
+
       </View>
 
       {/* ---------- Personal Info ---------- */}
@@ -257,6 +265,7 @@ export default function ProfileEdit({
         <EditInput
           label="ชื่อผู้ใช้งาน"
           value={form?.name}
+          placeholder="เช่น สมชาย ใจดี"
           onChangeText={(val: string) =>
             setForm({ ...form, name: val })
           }
@@ -266,6 +275,8 @@ export default function ProfileEdit({
           label="เบอร์โทรศัพท์"
           value={form?.tel}
           keyboardType="phone-pad"
+          placeholder="เช่น 08xxxxxxxx"
+          maxLength={10}
           onChangeText={(val: string) =>{
             if(val.length <= 10) {
               setForm({ ...form, tel: val });
