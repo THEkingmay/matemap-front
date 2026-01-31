@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,16 +9,21 @@ import {
   Image,
 } from 'react-native';
 import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 
 import type { MemberTabsParamsList } from '../../MemberMainTabs';
+import type { HomeStackParamsList } from './HomeStack';
 import { MainColor } from '../../../../constant/theme';
 import { useAuth } from '../../../AuthProvider';
 
+/* ================= TYPE ================= */
+
 type Props = BottomTabScreenProps<MemberTabsParamsList, 'home'>;
 
-/* ================= TYPE ================= */
-type Post = {
+type HomeNav = NativeStackNavigationProp<HomeStackParamsList>;
+
+export type Post = {
   id: string;
   dormId: string;
   room_number: string;
@@ -32,6 +37,7 @@ type Post = {
 };
 
 /* ================= SCREEN ================= */
+
 export default function HomeScreen({ navigation }: Props) {
   const { user, token } = useAuth();
 
@@ -43,7 +49,7 @@ export default function HomeScreen({ navigation }: Props) {
       try {
         if (!user || !token) return;
 
-        /* 1️⃣ ดึง dorm ของ user */
+        // 1️⃣ ดึง dorm ของ user
         const dormRes = await fetch(
           `${process.env.EXPO_PUBLIC_BASE_API_URL}/api/dorms?user_id=${user.id}`,
           {
@@ -54,7 +60,7 @@ export default function HomeScreen({ navigation }: Props) {
         if (!dormRes.ok) throw new Error('fetch dorm failed');
         const dorm = await dormRes.json();
 
-        /* 2️⃣ ดึง post จาก dorm_posts */
+        // 2️⃣ ดึง post
         const postRes = await fetch(
           `${process.env.EXPO_PUBLIC_BASE_API_URL}/api/dorms/${dorm.id}/posts`,
           {
@@ -65,7 +71,7 @@ export default function HomeScreen({ navigation }: Props) {
         if (!postRes.ok) throw new Error('fetch posts failed');
         const postData = await postRes.json();
 
-        /* 3️⃣ map DB → Frontend */
+        // 3️⃣ map DB → Frontend
         const mapped: Post[] = postData.map((p: any) => ({
           id: p.id,
           dormId: p.dorm_id,
@@ -109,7 +115,11 @@ export default function HomeScreen({ navigation }: Props) {
 
       {/* Post List */}
       {posts.map(post => (
-        <PostCard key={post.id} post={post} />
+        <PostCard
+          key={post.id}
+          post={post}
+          navigation={navigation as unknown as HomeNav}
+        />
       ))}
 
       {posts.length === 0 && (
@@ -120,7 +130,14 @@ export default function HomeScreen({ navigation }: Props) {
 }
 
 /* ================= COMPONENT ================= */
-function PostCard({ post }: { post: Post }) {
+
+function PostCard({
+  post,
+  navigation,
+}: {
+  post: Post;
+  navigation: HomeNav;
+}) {
   return (
     <View style={styles.card}>
       {/* Image */}
@@ -143,7 +160,6 @@ function PostCard({ post }: { post: Post }) {
           text={`${post.rent_price} บาท / เดือน`}
         />
 
-        {/* Tags */}
         <View style={styles.tags}>
           {post.facilities.map((tag, index) => (
             <Tag key={index} text={tag} />
@@ -159,7 +175,19 @@ function PostCard({ post }: { post: Post }) {
 
         {/* Actions */}
         <View style={styles.actions}>
-          <TouchableOpacity style={styles.editBtn}>
+          <TouchableOpacity
+            style={styles.editBtn}
+            onPress={() =>
+              navigation.navigate('editPost', {
+                post: {
+                  id: post.id,
+                  dormId: post.dormId,
+                  rent_price: post.rent_price,
+                  detail: post.detail,
+                },
+              })
+            }
+          >
             <Ionicons name="pencil-outline" size={18} color="#2563EB" />
             <Text style={styles.editText}>แก้ไข</Text>
           </TouchableOpacity>
@@ -192,6 +220,7 @@ function Tag({ text }: { text: string }) {
 }
 
 /* ================= STYLES ================= */
+
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F5F5F5' },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },

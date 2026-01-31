@@ -4,13 +4,14 @@ import { View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import HomeScreen from "./screens/Home/HomeScreen";
 import ProfileScreen from "./screens/ProfileMember/ProfileScreen";
 import CreatePost from "./screens/Posts/CreatePost";
 
 import SubscriptionProvider from "../SubscriptionProvider";
 import { MainColor } from "../../constant/theme";
 import ChatStack from "./screens/Chats/ChatStack";
+import HomeStack from "./screens/Home/HomeStack";
+
 
 export type MemberTabsParamsList = {
   home: undefined;
@@ -80,7 +81,7 @@ export default function MemberMainTabs() {
           },
         })}
       >
-        <Tabs.Screen name="home" component={HomeScreen} />
+        <Tabs.Screen name="home" component={HomeStack} />
         <Tabs.Screen name="chat" component={ChatStack} />
         <Tabs.Screen name="create" component={CreatePost} />
         <Tabs.Screen name="profile" component={ProfileScreen} />
