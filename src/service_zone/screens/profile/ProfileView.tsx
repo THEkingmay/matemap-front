@@ -32,7 +32,7 @@ export default function ProfileView({ profile, stats, onEdit }: any) {
   const [visibleCount, setVisibleCount] = useState(REVIEWS_PER_PAGE);
 
   return (
-    <View style={{ paddingBottom: 20 }}>
+    <View style={styles.spaceBottom}>
       {/* ===== Main Card ===== */}
       <View style={styles.mainCard}>
         <View style={styles.actionButtonGroup}>
@@ -93,70 +93,67 @@ export default function ProfileView({ profile, stats, onEdit }: any) {
       {/* ===== Reviews ===== */}
       <Text style={styles.sectionTitle}>รีวิวจากผู้ใช้</Text>
 
-      {reviews.slice(0, visibleCount).map((item: any, index: number) => {
-        const reviewer = item.service_history?.users?.user_detail;
-        const serviceName = item.service_history?.services?.name;
+      {/* 1. กรณีไม่มีรีวิวเลย */}
+      {reviews.length === 0 ? (
+        <View style={[styles.reviewCard, { alignItems: 'center', paddingVertical: 30, borderStyle: 'dashed', borderWidth: 1, borderColor: '#CBD5E1' }]}>
+          <Ionicons name="chatbubble-ellipses-outline" size={40} color="#94A3B8" />
+          <Text style={[styles.reviewer_comments, { marginTop: 10, color: '#64748B', textAlign: 'center' }]}>
+            ยังไม่มีข้อมูลรีวิวในขณะนี้
+          </Text>
+        </View>
+      ) : (
+        /* 2. กรณีมีรีวิว (โค้ดเดิมของคุณ) */
+        <>
+          {reviews.slice(0, visibleCount).map((item: any, index: number) => {
+            const reviewer = item.service_history?.users?.user_detail;
+            const serviceName = item.service_history?.services?.name;
 
-        return (
-          <View key={item.id ?? index} style={styles.reviewCard}>
-            <View style={styles.reviewHeader}>
-              <View style={styles.reviewerRow}>
-                <Image
-                  source={{
-                    uri:
-                      reviewer?.image_url ??
-                      "https://cdn-icons-png.flaticon.com/512/149/149071.png",
-                  }}
-                  style={styles.reviewerAvatar}
-                />
-
-                <View style={styles.reviewerInfo}>
-                  <View style={styles.reviewerNameRow}>
-                    <Text style={styles.reviewer_name}>
-                      {reviewer?.name ?? "ผู้ใช้"}
-                    </Text>
-
-                    {serviceName && (
-                      <View style={styles.reviewServiceTag}>
-                        <Text style={styles.reviewServiceText}>
-                          {serviceName}
-                        </Text>
+            return (
+              <View key={item.id ?? index} style={styles.reviewCard}>
+                {/* ... โครงสร้างภายใน reviewCard เดิมของคุณ ... */}
+                <View style={styles.reviewHeader}>
+                  {/* ส่วน Avatar และชื่อ */}
+                  <View style={styles.reviewerRow}>
+                      <Image
+                        source={{
+                          uri: reviewer?.image_url ?? "https://cdn-icons-png.flaticon.com/512/149/149071.png",
+                        }}
+                        style={styles.reviewerAvatar}
+                      />
+                      <View style={styles.reviewerInfo}>
+                        <View style={styles.reviewerNameRow}>
+                          <Text style={styles.reviewer_name}>{reviewer?.name ?? "ผู้ใช้"}</Text>
+                          {serviceName && (
+                            <View style={styles.reviewServiceTag}>
+                              <Text style={styles.reviewServiceText}>{serviceName}</Text>
+                            </View>
+                          )}
+                        </View>
+                        <Text style={styles.reviewDate}>{formatDateTime(item.created_at)}</Text>
                       </View>
-                    )}
                   </View>
-
-                  <Text style={styles.reviewDate}>
-                    {formatDateTime(item.created_at)}
-                  </Text>
+                  {/* ส่วนดาว */}
+                  <View style={styles.ratingRow}>
+                      {[...Array(item.rate || 0)].map((_, i) => (
+                        <Ionicons key={i} name="star" size={13} color="#FBBF24" />
+                      ))}
+                  </View>
                 </View>
+                <Text style={styles.reviewer_comments}>{item.review || "-"}</Text>
               </View>
+            );
+          })}
 
-              <View style={styles.ratingRow}>
-                {[...Array(item.rate || 0)].map((_, i) => (
-                  <Ionicons
-                    key={i}
-                    name="star"
-                    size={13}
-                    color="#FBBF24"
-                  />
-                ))}
-              </View>
-            </View>
-
-            <Text style={styles.reviewer_comments}>
-              {item.review || "-"}
-            </Text>
-          </View>
-        );
-      })}
-
-      {visibleCount < reviews.length && (
-        <TouchableOpacity
-          style={styles.loadMoreBtn}
-          onPress={() => setVisibleCount((v) => v + REVIEWS_PER_PAGE)}
-        >
-          <Text style={styles.loadMoreText}>แสดงรีวิวเพิ่มเติม</Text>
-        </TouchableOpacity>
+          {/* ปุ่ม Load More */}
+          {visibleCount < reviews.length && (
+            <TouchableOpacity
+              style={styles.loadMoreBtn}
+              onPress={() => setVisibleCount((v) => v + REVIEWS_PER_PAGE)}
+            >
+              <Text style={styles.loadMoreText}>แสดงรีวิวเพิ่มเติม</Text>
+            </TouchableOpacity>
+          )}
+        </>
       )}
     </View>
   );

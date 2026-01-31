@@ -1,11 +1,13 @@
 import { StyleSheet } from "react-native";
-import { MainColor, FONT } from "../../../constant/theme";
+import { FONT } from "../../../constant/theme";
 
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F8FAFC",
-    paddingBottom: 110
+  },
+  spaceBottom: {
+    paddingBottom: 100
   },
   /* ===== 1. Shared Styles (ใช้ร่วมกัน) ===== */
   mainCard: {
