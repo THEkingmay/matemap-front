@@ -164,7 +164,14 @@ export default function ContractScreen({navigation} : Props) {
           </View>
         </TouchableOpacity>
       )}
+
+        ListEmptyComponent={() => (
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', marginTop: 50 }}>
+            <Text style={{ fontFamily: FONT.REGULAR, color: '#888' }}>ยังไม่มีการขายสัญญาในขณะนี้</Text>
+          </View>
+        )}
       />
+      
     </View>
   );
 }
