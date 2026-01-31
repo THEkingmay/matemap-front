@@ -179,7 +179,9 @@ export const styles = StyleSheet.create({
   statsRow: { flexDirection: "row", marginTop: 24, paddingTop: 20, borderTopWidth: 1, borderTopColor: "#F1F5F9", width: "100%" },
   statItem: { flex: 1, alignItems: "center" },
   statValue: { fontSize: 18, fontFamily: FONT.BOLD, color: "#1E293B" },
-  statLabel: { fontSize: 12, color: "#94A3B8", marginTop: 2 },
+  statLabel: { fontSize: 12, fontFamily: FONT.REGULAR,color: "#94A3B8", marginTop: 2 },
   vDivider: { width: 1, height: '80%', backgroundColor: '#F1F5F9', alignSelf: 'center' },
   sectionTitle: { fontSize: 16, fontFamily: FONT.BOLD, color: "#334155", marginTop: 24, marginHorizontal: 20, marginBottom: 8 },
+  reviewer_name:{ fontFamily: FONT.BOLD, color: '#1E293B', fontSize: 16 },
+  reviewer_comments: { color: '#64748B', fontSize: 13, lineHeight: 18, fontFamily: FONT.REGULAR }
 });
