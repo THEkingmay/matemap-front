@@ -40,7 +40,7 @@ export default function ProfileScreen({ navigation }: any) {
             `${process.env.EXPO_PUBLIC_BASE_API_URL}/api/service-workers/${user.id}/work-history/`
           ),
           fetch(
-            `http://192.168.1.59:3001/api/service-workers/${user.id}/work-history/review`
+            `${process.env.EXPO_PUBLIC_BASE_API_URL}/api/service-workers/${user.id}/work-history/review`
           ),
         ]);
 
