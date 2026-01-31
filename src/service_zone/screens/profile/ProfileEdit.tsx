@@ -204,6 +204,11 @@ export default function ProfileEdit({ form, setForm, onCancel, onSave }: Profile
           keyboardType="phone-pad"
           onChangeText={(val: string) => setForm({ ...form, tel: val })}
         />
+        <EditInput
+          label="ทะเบียนรถ"
+          value={form?.car_registration}
+          onChangeText={(val: string) => setForm({ ...form, car_registration: val })}
+        />
       </View>
 
           {/* Services Radio Type */}
