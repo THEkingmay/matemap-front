@@ -11,6 +11,7 @@ import {
   Platform,
   UIManager,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 /* ================== CONFIG ================== */
 // ✅ 2. เปิดใช้งาน LayoutAnimation สำหรับ Android
@@ -324,7 +325,15 @@ export default function WorkScreen() {
   );
 
   return (
-    <View style={s.container}>
+    <SafeAreaView style={s.container}>
+      <Text>โฟลวงาน</Text>
+      <Text>
+        1.ผู้ให้บริการจะมีได้แค่สองอย่างรับงานหรือปฎิเสธ
+        2.ถ้าปฏิเสธ จบ ง่าย เรียก api เปลี่ยนสถานะใน service_history เป็น rejected
+        3.ถ้ารับงาน มีสองอย่างที่ต้องทำ คือเปลี่ยนสถานะใน service_history เป็น accepted และ เพิ่มในตาราง service_timetable ตามเวลาที่งานเลือกไว้
+        4.การปฏิเสธงานหลัง accepted ให้เปลี่ยนสถานะ เป็น rejected และ ลบใน service_timetable ด้วย
+
+      </Text>
       <View style={s.tabs}>
         <TabButton
           title="การรับงาน"
@@ -355,7 +364,7 @@ export default function WorkScreen() {
         ListEmptyComponent={<Text style={s.empty}>ไม่มีรายการงาน</Text>}
         contentContainerStyle={{ paddingBottom: 30 }}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 

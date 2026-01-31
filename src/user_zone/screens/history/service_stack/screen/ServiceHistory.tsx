@@ -16,7 +16,7 @@ type props = NativeStackScreenProps<HistoryServiecStackParamsList, 'service_hist
 interface HistoryResType {
     id: number;
     provider_name: string;
-    services: { name: string };
+    services: { name: string } | null;
     start_location?: string;
     destination_location: string;
     detail?: string;
@@ -216,7 +216,7 @@ export default function ServiceHistory({ route }: props) {
                 <View style={styles.footerContainer}>
                     <View style={styles.serviceInfo}>
                         <Text style={styles.serviceLabel}>บริการ</Text>
-                        <Text style={styles.serviceValue}>{item.services.name}</Text>
+                        <Text style={styles.serviceValue}>{item.services?.name || '(ลบบริการนี้ไปแล้ว)'}</Text>
                     </View>
                     <View style={styles.providerInfo}>
                         <Text style={styles.serviceLabel}>ผู้ให้บริการ</Text>
