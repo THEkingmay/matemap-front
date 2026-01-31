@@ -67,13 +67,13 @@ export default function ProfileView({ profile, onEdit }: any) {
       {/* ===== Review Section ===== */}
       <Text style={styles.sectionTitle}>รีวิวจากผู้ใช้ล่าสุด</Text>
       <View style={[styles.infoCard, { borderLeftWidth: 4, borderLeftColor: '#4F46E5', marginTop: 0 }]}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
-          <Text style={{ fontWeight: 'bold', color: '#1E293B' }}>Rose K.</Text>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 }}>
+          <Text style={styles.reviewer_name}>Rose K.</Text>
           <View style={{ flexDirection: 'row' }}>
             {[...Array(5)].map((_, i) => <Ionicons key={i} name="star" size={12} color="#FBBF24" />)}
           </View>
         </View>
-        <Text style={{ color: '#64748B', fontSize: 13, lineHeight: 18 }}>"บริการดีมาก ตรงต่อเวลาและสุภาพมากค่ะ แนะนำเลย"</Text>
+        <Text style={styles.reviewer_comments}>บริการดีมาก ตรงต่อเวลาและสุภาพมากค่ะ แนะนำเลย</Text>
       </View>
     </View>
   );
