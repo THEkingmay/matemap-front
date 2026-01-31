@@ -189,5 +189,98 @@ export const styles = StyleSheet.create({
   vDivider: { width: 1, height: '80%', backgroundColor: '#F1F5F9', alignSelf: 'center' },
   sectionTitle: { fontSize: 16, fontFamily: FONT.BOLD, color: "#334155", marginTop: 24, marginHorizontal: 20, marginBottom: 8 },
   reviewer_name:{ fontFamily: FONT.BOLD, color: '#1E293B', fontSize: 16 },
-  reviewer_comments: { color: '#64748B', fontSize: 13, lineHeight: 18, fontFamily: FONT.REGULAR }
+  reviewer_comments: { color: '#64748B', fontSize: 13, lineHeight: 18, fontFamily: FONT.REGULAR },
+    /* ===== Review Section ===== */
+  serviceTagContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "center",
+    gap: 6,
+    marginTop: 8,
+  },
+
+  reviewCard: {
+    backgroundColor: "#FFF",
+    borderRadius: 20,
+    padding: 20,
+    marginHorizontal: 16,
+    marginTop: 10,
+    borderLeftWidth: 4,
+    borderLeftColor: "#4F46E5",
+    shadowColor: "#000",
+    shadowOpacity: 0.04,
+    shadowRadius: 12,
+    elevation: 3,
+  },
+
+  reviewHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 8,
+  },
+
+  reviewerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    flex: 1,
+  },
+
+  reviewerAvatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#E5E7EB",
+  },
+
+  reviewerInfo: {
+    flex: 1,
+  },
+
+  reviewerNameRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    flexWrap: "wrap",
+  },
+
+  reviewServiceTag: {
+    backgroundColor: "#EEF2FF",
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 999,
+  },
+
+  reviewServiceText: {
+    fontSize: 11,
+    color: "#4338CA",
+    fontFamily: FONT.BOLD,
+  },
+
+  reviewDate: {
+    fontSize: 11,
+    color: "#6B7280",
+    marginTop: 2,
+    fontFamily: FONT.REGULAR,
+  },
+
+  ratingRow: {
+    flexDirection: "row",
+    marginLeft: 6,
+  },
+
+  loadMoreBtn: {
+    alignSelf: "center",
+    marginTop: 12,
+  },
+
+  loadMoreText: {
+    color: "#4F46E5",
+    fontFamily: FONT.BOLD,
+  },
+
+  statValueRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
 });

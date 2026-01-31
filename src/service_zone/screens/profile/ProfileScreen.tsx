@@ -9,10 +9,14 @@ import { Profile } from "../../types/profile";
 
 export default function ProfileScreen({ navigation }: any) {
   const { user, token } = useAuth();
+
   const [loading, setLoading] = useState(true);
   const [isEdit, setIsEdit] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [form, setForm] = useState<any>({});
+
+  const [workHistory, setWorkHistory] = useState<any[]>([]);
+  const [reviews, setReviews] = useState<any[]>([]);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -20,32 +24,45 @@ export default function ProfileScreen({ navigation }: any) {
     const fetchData = async () => {
       try {
         setLoading(true);
-        // ดึงข้อมูล 2 อย่างพร้อมกัน
-        const [profileRes, servicesRes] = await Promise.all([
-          fetch(`${process.env.EXPO_PUBLIC_BASE_API_URL}/api/service-workers/${user.id}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-          fetch(`${process.env.EXPO_PUBLIC_BASE_API_URL}/api/service`) // ดึงบริการทั้งหมดในระบบ
+
+        const [
+          profileRes,
+          servicesRes,
+          workRes,
+          reviewRes,
+        ] = await Promise.all([
+          fetch(
+            `${process.env.EXPO_PUBLIC_BASE_API_URL}/api/service-workers/${user.id}`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          ),
+          fetch(`${process.env.EXPO_PUBLIC_BASE_API_URL}/api/service`),
+          fetch(
+            `${process.env.EXPO_PUBLIC_BASE_API_URL}/api/service-workers/${user.id}/work-history/`
+          ),
+          fetch(
+            `http://192.168.1.59:3001/api/service-workers/${user.id}/work-history/review`
+          ),
         ]);
 
         const profileData = await profileRes.json();
         const allServicesData = await servicesRes.json();
+        const workData = await workRes.json();
+        const reviewData = await reviewRes.json();
 
         setProfile(profileData);
+        setWorkHistory(workData || []);
+        setReviews(reviewData || []);
 
-        // สร้าง Array ของชื่อบริการที่ User มีอยู่ในปัจจุบัน
-        const currentServiceNames = profileData.service_and_worker.map(
-          (item: any) => item.services?.name
-        );
-        
-        // สร้างก้อนข้อมูลที่สมบูรณ์
-        const initialFormData = {
+        const currentServiceNames =
+          profileData.service_and_worker.map(
+            (item: any) => item.services?.name
+          );
+
+        setForm({
           ...profileData.service_worker_detail,
-          all_services: allServicesData.data || [], 
-          selected_services: currentServiceNames, 
-        };
-        setForm(initialFormData);
-
+          all_services: allServicesData.data || [],
+          selected_services: currentServiceNames,
+        });
       } catch (error) {
         console.error("Fetch error:", error);
       } finally {
@@ -56,64 +73,89 @@ export default function ProfileScreen({ navigation }: any) {
     fetchData();
   }, [user?.id]);
 
-  // แก้ไขฟังก์ชัน handleSave ให้รับ parameter finalImageUrl
+  // =========================
+  // 📊 Stats
+  // =========================
+  const totalJobs = workHistory.length;
+
+  const completedJobs = workHistory.filter(
+    (item) => item.status === "done"
+  ).length;
+
+  const successRate =
+    totalJobs === 0
+      ? "0%"
+      : `${Math.round((completedJobs / totalJobs) * 100)}%`;
+
+  const avgRating =
+    reviews.length === 0
+      ? "0.0"
+      : (
+          reviews.reduce((sum, r) => sum + r.rate, 0) / reviews.length
+        ).toFixed(1);
+
+  const latestReview = reviews.length > 0 ? reviews[0] : null;
+
+  // =========================
+  // 💾 Save
+  // =========================
   const handleSave = async (finalImageUrl?: string | null) => {
-      try {
-        // เตรียมข้อมูลที่จะส่งไป API
-        const body = {
-          name: form.name,
-          tel: form.tel,
-          image_url: finalImageUrl !== undefined ? finalImageUrl : form.image_url,
-          car_registration: form.car_registration,
-          services: form.selected_services, 
-        };
+    try {
+      const body = {
+        name: form.name,
+        tel: form.tel,
+        image_url:
+          finalImageUrl !== undefined ? finalImageUrl : form.image_url,
+        car_registration: form.car_registration,
+        services: form.selected_services,
+      };
 
-        const response = await fetch(
-          `${process.env.EXPO_PUBLIC_BASE_API_URL}/api/service-workers/${user?.id}`,
-          {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify(body),
-          }
-        );
+      const response = await fetch(
+        `${process.env.EXPO_PUBLIC_BASE_API_URL}/api/service-workers/${user?.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(body),
+        }
+      );
 
-        if (!response.ok) throw new Error("Update failed");
+      if (!response.ok) throw new Error("Update failed");
 
-        // อัปเดตข้อมูลในหน้า View ให้เป็นปัจจุบัน
-        setProfile((prev: any) => ({
-          ...prev,
-          service_worker_detail: { ...prev.service_worker_detail, ...body },
-          // อัปเดตข้อมูลความสัมพันธ์ใน Profile เพื่อให้หน้า View แสดงผลถูกต้อง
-          service_and_worker: form.selected_services.map((name: string) => ({ services: { name } }))
-        }));
-        
-        setIsEdit(false);
-        Toast.show({ type: 'success', text1: 'บันทึกโปรไฟล์สำเร็จ' });
-      } catch (error) {
-        Alert.alert("เกิดข้อผิดพลาด", "ไม่สามารถบันทึกข้อมูลได้");
-      }
-    };
-  
+      setProfile((prev: any) => ({
+        ...prev,
+        service_worker_detail: { ...prev.service_worker_detail, ...body },
+        service_and_worker: form.selected_services.map((name: string) => ({
+          services: { name },
+        })),
+      }));
+
+      setIsEdit(false);
+      Toast.show({ type: "success", text1: "บันทึกโปรไฟล์สำเร็จ" });
+    } catch {
+      Alert.alert("เกิดข้อผิดพลาด", "ไม่สามารถบันทึกข้อมูลได้");
+    }
+  };
+
   const handleCancel = () => {
     if (!profile || !form.all_services) return;
-    
-    const currentServiceNames = profile?.service_and_worker?.map(
-      (item: any) => item.services?.name
-    ) || []; 
+
+    const currentServiceNames =
+      profile.service_and_worker?.map(
+        (item: any) => item.services?.name
+      ) || [];
 
     setForm({
       ...profile.service_worker_detail,
-      all_services: form.all_services, // คงค่าบริการทั้งหมดไว้ ไม่เช่นนั้นหน้า Edit จะหมุนค้าง
-      selected_services: currentServiceNames, // กลับไปใช้ค่าเดิมก่อนแก้ไข
+      all_services: form.all_services,
+      selected_services: currentServiceNames,
     });
 
     setIsEdit(false);
   };
 
-  
   if (loading) {
     return (
       <View style={styles.center}>
@@ -126,7 +168,6 @@ export default function ProfileScreen({ navigation }: any) {
 
   return (
     <View style={styles.container}>
-      {/* Header background */}
       <View style={styles.headerBackground} />
 
       <ScrollView
@@ -136,8 +177,14 @@ export default function ProfileScreen({ navigation }: any) {
         {!isEdit ? (
           <ProfileView
             profile={profile}
+            stats={{
+              totalJobs,
+              successRate,
+              avgRating,
+              latestReview,
+              reviews, // ⭐ สำคัญ
+            }}
             onEdit={() => setIsEdit(true)}
-            onSetting={() => navigation.navigate("setting")}
           />
         ) : (
           <ProfileEdit
