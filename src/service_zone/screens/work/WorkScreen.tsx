@@ -66,7 +66,7 @@ function AnimatedDots() {
         toValue: 4,
         duration: 1000,
         useNativeDriver: true,
-      })
+      }),
     ).start();
 
     return () => anim.removeListener(id);
@@ -320,7 +320,7 @@ export default function WorkScreen() {
         </View>
       );
     },
-    [tab, finishingJobId]
+    [tab, finishingJobId],
   );
 
   return (
@@ -359,164 +359,191 @@ export default function WorkScreen() {
   );
 }
 
-/* ================== STYLES ================== */
 const s = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F4F6F8",
-    padding: 16,
+    backgroundColor: "#F8FAFC",
+    paddingHorizontal: 20,
   },
   tabs: {
     flexDirection: "row",
-    marginBottom: 16,
-    marginTop: 20,
-    gap: 5,
+    marginBottom: 20,
+    marginTop: 50, // ✅ ขยับ Tab ลงมาจากขอบบนมากขึ้น (จากเดิม 20)
+    gap: 8,
+    backgroundColor: "#F1F5F9",
+    padding: 4,
+    borderRadius: 30,
   },
   tabBtn: {
-    paddingVertical: 14,
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: "#D1D5DB",
+    paddingVertical: 12,
+    borderRadius: 26,
     alignItems: "center",
-    // ลบการกำหนด width/flex ตายตัวออก เพราะเราใช้ inline style ใน component แทน
+    justifyContent: "center",
   },
   tabActive: {
-    borderColor: "#2563EB",
+    backgroundColor: "#FFFFFF",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   tabInner: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    width: "100%", // ให้เนื้อหาอยู่ตรงกลางเสมอ
   },
   tabText: {
-    fontSize: 14,
-    color: "#9CA3AF",
+    fontSize: 13,
+    color: "#64748B",
     fontWeight: "600",
-    textAlign: "center",
   },
   tabTextActive: {
-    color: "#2563EB",
+    color: "#2563EB", // ✅ ปรับสี Text ให้เข้ากับธีมเขียว
+    fontWeight: "700",
   },
   tabCheck: {
-    marginLeft: 6,
+    marginLeft: 4,
     fontSize: 14,
-    fontWeight: "900",
-    color: "#22C55E",
+    color: "#10B981",
   },
   dotsWrapper: {
-    position: "relative",
-    marginLeft: 6,
-    overflow: "hidden",
+    marginLeft: 4,
   },
   dots: {
     fontSize: 16,
-    fontWeight: "700",
+    fontWeight: "800",
     color: "#2563EB",
-    lineHeight: 18,
   },
-  dotsGhost: {
-    opacity: 0,
-  },
-  dotsActive: {
-    position: "absolute",
-    left: 0,
-    top: 0,
-  },
+  dotsGhost: { opacity: 0 },
+  dotsActive: { position: "absolute", left: 0, top: 0 },
+
+  /* CARD DESIGN */
   card: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 16,
-    padding: 16,
+    borderRadius: 24,
+    padding: 24,
     marginBottom: 16,
-    elevation: 3,
+    shadowColor: "#475569",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.08,
+    shadowRadius: 15,
+    elevation: 5,
+    borderWidth: 1,
+    borderColor: "#F1F5F9",
+    alignItems: "center", // ✅ จัดเนื้อหาใน Card ให้อยู่ตรงกลางทั้งหมด
   },
   headerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 8,
+    alignItems: "center", // ✅ จัด Profile และชื่อให้อยู่ตรงกลาง
+    marginBottom: 16,
+    width: '100%',
   },
   avatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    marginRight: 12,
+    width: 70, // ✅ ปรับขนาดให้ใหญ่ขึ้นเล็กน้อยเพื่อให้ดูเป็นจุดเด่น
+    height: 70,
+    borderRadius: 35, // ✅ ปรับเป็นวงกลมเป๊ะๆ
+    marginBottom: 12,
+    backgroundColor: "#E2E8F0",
+    borderWidth: 3,
+    borderColor: "#F8FAFC",
   },
   name: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "700",
+    color: "#1E293B",
+    textAlign: "center", // ✅ ชื่ออยู่ตรงกลาง
+    marginBottom: 4,
   },
   type: {
-    fontSize: 13,
-    color: "#6B7280",
+    fontSize: 14,
+    color: "#2563EB", // ✅ ใช้สีเขียวให้เข้ากับปุ่ม
+    fontWeight: "600",
+    textAlign: "center",
   },
   info: {
-    fontSize: 13,
-    marginTop: 4,
+    fontSize: 14,
+    color: "#64748B",
+    marginBottom: 4,
+    fontWeight: "500",
+    textAlign: "center", // ✅ ข้อมูลวันเวลาอยู่ตรงกลาง
   },
   actionRow: {
     flexDirection: "row",
-    marginTop: 12,
+    marginTop: 20,
     gap: 12,
+    width: '100%',
   },
   grayBtn: {
     flex: 1,
-    paddingVertical: 10,
-    borderRadius: 20,
-    backgroundColor: "#E5E7EB",
+    paddingVertical: 14,
+    borderRadius: 16,
+    backgroundColor: "#F1F5F9",
     alignItems: "center",
   },
   grayText: {
     fontWeight: "600",
-    color: "#6B7280",
+    color: "#94A3B8",
   },
-  blueBtn: {
+  blueBtn: { // 🟢 ปุ่ม "รับงาน" (ตอนนี้เปลี่ยนเป็นสีเขียวตามสั่ง)
     flex: 1,
-    paddingVertical: 10,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: "#2563EB",
+    paddingVertical: 14,
+    borderRadius: 16,
+    backgroundColor: "#10B981", 
     alignItems: "center",
+    shadowColor: "#10B981",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
   },
   blueText: {
     fontWeight: "700",
-    color: "#2563EB",
+    color: "#FFFFFF",
   },
-  greenBtn: {
-    marginTop: 12,
-    paddingVertical: 12,
-    borderRadius: 20,
-    backgroundColor: "#22C55E",
+  greenBtn: { // 🟢 ปุ่ม "เสร็จงาน"
+    marginTop: 20,
+    width: '100%',
+    paddingVertical: 14,
+    borderRadius: 16,
+    backgroundColor: "#10B981",
     alignItems: "center",
+    shadowColor: "#10B981",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
   },
   doneBtnInner: {
-    height: 22,
+    height: 24,
     justifyContent: "center",
     alignItems: "center",
   },
   greenText: {
     fontWeight: "700",
     color: "#FFFFFF",
+    fontSize: 16,
   },
   checkmark: {
     fontSize: 20,
-    fontWeight: "900",
     color: "#FFFFFF",
   },
   empty: {
     textAlign: "center",
-    marginTop: 40,
-    color: "#9CA3AF",
+    marginTop: 80,
+    color: "#94A3B8",
+    fontSize: 16,
   },
   doneBadge: {
-    marginTop: 8,
-    padding: 8,
+    marginTop: 15,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
     backgroundColor: "#F0FDF4",
-    borderRadius: 8,
-    alignSelf: 'flex-start',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#DCFCE7",
   },
   doneTextInfo: {
-    color: "#166534",
+    color: "#10B981",
     fontSize: 12,
-    fontWeight: "600",
+    fontWeight: "700",
+    textAlign: "center",
   },
 });
