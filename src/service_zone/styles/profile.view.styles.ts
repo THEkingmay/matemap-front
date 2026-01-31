@@ -161,6 +161,8 @@ export const styles = StyleSheet.create({
     shadowColor: "#000",
     shadowOpacity: 0.1,
     elevation: 3,
+    zIndex: 2
+
   },
   editFloatingBtn: { backgroundColor: "#4F46E5" },
   settingBtn: { backgroundColor: "#F1F5F9", marginRight: 10 },
@@ -169,6 +171,7 @@ export const styles = StyleSheet.create({
     marginBottom: 16, 
     alignItems: "center",     // เพิ่มส่วนนี้
     justifyContent: "center",  // เพิ่มส่วนนี้
+    zIndex: 0
   },
   statusBadge: {
     position: "absolute",

@@ -48,9 +48,7 @@ export default function ProfileEdit({
     model = carModel,
     detail = carDetail
   ) => {
-    const carRegistrationString = [plate, model, detail]
-      .filter(Boolean)
-      .join(" | ");
+    const carRegistrationString = `${plate} | ${model} | ${detail}`;
 
     setForm((prev: any) => ({
       ...prev,
@@ -165,7 +163,10 @@ export default function ProfileEdit({
   // -------------------- Sync car_registration --------------------
   useEffect(() => {
     if (form?.car_registration) {
+      // split ด้วย " | " และ map เพื่อลบช่องว่างหัวท้าย
       const parts = form.car_registration.split("|").map((p: string) => p.trim());
+      
+      // กำหนดค่าตามตำแหน่งอาเรย์ที่แน่นอน (ตำแหน่ง 0, 1, 2)
       const p = parts[0] || "";
       const m = parts[1] || "";
       const d = parts[2] || "";
@@ -232,15 +233,15 @@ export default function ProfileEdit({
       {/* Input อื่นๆ */}
       <View style={styles.infoCard}>
         <Text style={styles.formSectionTitle}>ข้อมูลส่วนตัว</Text>
-        <EditInput label="ชื่อผู้ใช้งาน" value={form?.name || ""} onChangeText={(val: string) => setForm((p: any) => ({ ...p, name: val }))} />
-        <EditInput label="เบอร์โทรศัพท์" value={form?.tel || ""} keyboardType="phone-pad" onChangeText={(val: string) => setForm((p: any) => ({ ...p, tel: val }))} />
+        <EditInput label="ชื่อผู้ใช้งาน" required value={form?.name || ""} placeholder="เช่น สมชาย ใจดี (ชื่อ-นามสกุล)" onChangeText={(val: string) => setForm((p: any) => ({ ...p, name: val }))} />
+        <EditInput label="เบอร์โทรศัพท์" required value={form?.tel || ""} keyboardType="phone-pad" placeholder="เช่น 08xxxxxxxx (10 หลัก)" maxLength={10} onChangeText={(val: string) => setForm((p: any) => ({ ...p, tel: val }))} />
       </View>
 
       <View style={styles.infoCard}>
         <Text style={styles.formSectionTitle}>ข้อมูลรถ</Text>
-        <EditInput label="เลขทะเบียนรถ" value={carPlate} onChangeText={(v: string) => { setCarPlate(v); updateCarRegistration(v, carModel, carDetail); }} />
-        <EditInput label="รุ่นรถ" value={carModel} onChangeText={(v: string) => { setCarModel(v); updateCarRegistration(carPlate, v, carDetail); }} />
-        <EditInput label="รายละเอียดรถ" value={carDetail} onChangeText={(v: string) => { setCarDetail(v); updateCarRegistration(carPlate, carModel, v); }} />
+        <EditInput label="เลขทะเบียนรถ" value={carPlate} placeholder="เช่น 1กข 1234 กรุงเทพฯ" onChangeText={(v: string) => { setCarPlate(v); updateCarRegistration(v, carModel, carDetail); }}  />
+        <EditInput label="รุ่นรถ" value={carModel} placeholder="เช่น Isuzu D-Max สีบรอนซ์เงิน" onChangeText={(v: string) => { setCarModel(v); updateCarRegistration(carPlate, v, carDetail); }} />
+        <EditInput label="รายละเอียดรถ" value={carDetail} placeholder="เช่น รถกระบะตอนเดียว, มีคอกเหล็ก" onChangeText={(v: string) => { setCarDetail(v); updateCarRegistration(carPlate, carModel, v); }} />
       </View>
 
       <View style={styles.infoCard}>
@@ -270,9 +271,16 @@ export default function ProfileEdit({
   );
 }
 
-const EditInput = ({ label, ...props }: any) => (
+const EditInput = ({ label, required, ...props }: any) => (
   <View style={styles.inputWrapper}>
-    <Text style={styles.inputLabel}>{label}</Text>
-    <TextInput {...props} style={styles.textInputField} placeholderTextColor="#CBD5E1" />
+    <View style={{ flexDirection: 'row' }}>
+      <Text style={styles.inputLabel}>{label}</Text>
+      {required && <Text style={{ color: '#EF4444', marginLeft: 4 }}>*</Text>}
+    </View>
+    <TextInput 
+      {...props} 
+      style={styles.textInputField} 
+      placeholderTextColor="#CBD5E1" 
+    />
   </View>
 );
