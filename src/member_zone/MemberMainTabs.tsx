@@ -4,16 +4,17 @@ import { View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import HomeScreen from "./screens/HomeScreen";
 import ProfileScreen from "./screens/ProfileMember/ProfileScreen";
 import CreatePost from "./screens/Posts/CreatePost";
 
 import SubscriptionProvider from "../SubscriptionProvider";
 import { MainColor } from "../../constant/theme";
 import ChatStack from "./screens/Chats/ChatStack";
+import HomeStack from "./screens/Home/HomeStack";
+
 
 export type MemberTabsParamsList = {
-  home: undefined;
+  main_home: undefined;
   create: undefined;
   chat: undefined;
   profile: undefined;
@@ -27,7 +28,7 @@ export default function MemberMainTabs() {
   return (
     <SubscriptionProvider>
       <Tabs.Navigator
-        initialRouteName="home"
+        initialRouteName="main_home"
         screenOptions={({ route }) => ({
           headerShown: false,
           tabBarShowLabel: false,
@@ -68,7 +69,7 @@ export default function MemberMainTabs() {
             /* ---------- ICON MAPPING ---------- */
             let iconName: keyof typeof Ionicons.glyphMap;
 
-            if (route.name === "home") {
+            if (route.name === "main_home") {
               iconName = focused ? "home" : "home-outline";
             } else if (route.name === "chat") {
               iconName = focused ? "chatbubble" : "chatbubble-outline";
@@ -80,7 +81,7 @@ export default function MemberMainTabs() {
           },
         })}
       >
-        <Tabs.Screen name="home" component={HomeScreen} />
+        <Tabs.Screen name="main_home" component={HomeStack} />
         <Tabs.Screen name="chat" component={ChatStack} />
         <Tabs.Screen name="create" component={CreatePost} />
         <Tabs.Screen name="profile" component={ProfileScreen} />
