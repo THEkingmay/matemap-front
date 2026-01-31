@@ -266,10 +266,12 @@ export default function ProfileEdit({
           label="เบอร์โทรศัพท์"
           value={form?.tel}
           keyboardType="phone-pad"
-          onChangeText={(val: string) =>
-            setForm({ ...form, tel: val })
-          }
-        />
+          onChangeText={(val: string) =>{
+            if(val.length <= 10) {
+              setForm({ ...form, tel: val });
+            }
+          }}
+          />
       </View>
 
       {/* ---------- Car Info ---------- */}
