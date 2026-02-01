@@ -119,8 +119,8 @@ export default function ServiceMainTabs() {
         }}
       >
 
-        <Tabs.Screen name="chat_stack" component={ChatStack} />
         <Tabs.Screen name="work" component={WorkScreen} />
+        <Tabs.Screen name="chat_stack" component={ChatStack} />
         <Tabs.Screen name="schedule" component={ScheduleScreen} />
         <Tabs.Screen name="profile" component={ProfileStack} />
       </Tabs.Navigator>
