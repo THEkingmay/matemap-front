@@ -3,15 +3,14 @@ import React from 'react';
 import { View, Text } from 'react-native';
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { getFocusedRouteNameFromRoute } from '@react-navigation/native'; 
 import { activeColor, FONT, MainColor } from '../../constant/theme';
 import SubscriptionProvider from '../SubscriptionProvider';
 
-// Import Stack
-import ChatStack from './screens/chat/ChatStack'; 
+import ChatScreen from './screens/chat/ChatScreen';
 import ScheduleScreen from './screens/schedule/ScheduleScreen';
 import WorkScreen from './screens/work/WorkScreen';
 import ProfileStack from './screens/profile/ProfileStack';
+
 
 export type ServiceTabsParamsList = {
   chat: undefined;
@@ -24,10 +23,22 @@ const TAB_ICONS: Record<
   string,
   { active: keyof typeof Ionicons.glyphMap; inactive: keyof typeof Ionicons.glyphMap }
 > = {
-  chat: { active: 'chatbubble', inactive: 'chatbubble-outline' },
-  work: { active: 'time', inactive: 'time-outline' },
-  schedule: { active: 'calendar', inactive: 'calendar-outline' },
-  profile: { active: 'person', inactive: 'person-outline' },
+  chat: {
+    active: 'chatbubble',
+    inactive: 'chatbubble-outline',
+  },
+  work: {
+    active: 'time',
+    inactive: 'time-outline',
+  },
+  schedule: {
+    active: 'calendar',
+    inactive: 'calendar-outline',
+  },
+  profile: {
+    active: 'person',
+    inactive: 'person-outline',
+  },
 };
 
 const TAB_LABELS: Record<string, string> = {
@@ -38,17 +49,6 @@ const TAB_LABELS: Record<string, string> = {
 };
 
 const Tabs = createBottomTabNavigator<ServiceTabsParamsList>();
-
-// ✅ แก้ไขจุดนี้: เช็คชื่อหน้าให้ตรงกับ ChatStack.tsx
-const getTabBarVisibility = (route: any) => {
-  const routeName = getFocusedRouteNameFromRoute(route);
-  
-  // ใน ChatStack.tsx ของคุณ หน้าห้องแชทคือ 'ChatIdScreen'
-  if (routeName === 'ChatIdScreen') {
-    return 'none';
-  }
-  return 'flex';
-};
 
 export default function ServiceMainTabs() {
   const insets = useSafeAreaInsets();
@@ -62,7 +62,6 @@ export default function ServiceMainTabs() {
           tabBarActiveTintColor: activeColor,
           tabBarInactiveTintColor: '#fff',
           tabBarStyle: {
-            display: getTabBarVisibility(route), // เรียกใช้งานฟังก์ชันเช็คการซ่อน
             position: 'absolute',
             bottom: insets.bottom,
             paddingTop: 10,
@@ -109,7 +108,8 @@ export default function ServiceMainTabs() {
           },
         })}
       >
-        <Tabs.Screen name="chat" component={ChatStack} />
+       
+        <Tabs.Screen name="chat" component={ChatScreen} />
         <Tabs.Screen name="work" component={WorkScreen} />
         <Tabs.Screen name="schedule" component={ScheduleScreen} />
         <Tabs.Screen name="profile" component={ProfileStack} />
