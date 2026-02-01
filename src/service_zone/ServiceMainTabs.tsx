@@ -5,15 +5,16 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { activeColor, FONT, MainColor } from '../../constant/theme';
 import SubscriptionProvider from '../SubscriptionProvider';
+import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
 
-import ChatScreen from './screens/chat/ChatScreen';
+import ChatStack from './screens/chat/ChatStack';
 import ScheduleScreen from './screens/schedule/ScheduleScreen';
 import WorkScreen from './screens/work/WorkScreen';
 import ProfileStack from './screens/profile/ProfileStack';
 
 
 export type ServiceTabsParamsList = {
-  chat: undefined;
+  chat_stack: undefined;
   work: undefined;
   schedule: undefined;
   profile: undefined;
@@ -23,7 +24,7 @@ const TAB_ICONS: Record<
   string,
   { active: keyof typeof Ionicons.glyphMap; inactive: keyof typeof Ionicons.glyphMap }
 > = {
-  chat: {
+  chat_stack: {
     active: 'chatbubble',
     inactive: 'chatbubble-outline',
   },
@@ -42,7 +43,7 @@ const TAB_ICONS: Record<
 };
 
 const TAB_LABELS: Record<string, string> = {
-  chat: 'แชท',
+  chat_stack: 'แชท',
   work: 'งาน',
   schedule: 'ตาราง',
   profile: 'โปรไฟล์',
@@ -56,60 +57,69 @@ export default function ServiceMainTabs() {
   return (
     <SubscriptionProvider>
       <Tabs.Navigator
-        screenOptions={({ route }) => ({
-          headerShown: false,
-          tabBarShowLabel: false,
-          tabBarActiveTintColor: activeColor,
-          tabBarInactiveTintColor: '#fff',
-          tabBarStyle: {
-            position: 'absolute',
-            bottom: insets.bottom,
-            paddingTop: 10,
-            paddingInline: 6,
-            backgroundColor: MainColor,
-            height: 65,
-            elevation: 5,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 5 },
-            shadowOpacity: 0.15,
-            shadowRadius: 3.5,
-            borderTopWidth: 0,
-          },
-          tabBarIcon: ({ focused, color }) => {
-            const icon =
-              TAB_ICONS[route.name]?.[focused ? 'active' : 'inactive'] ??
-              'alert-circle';
+          screenOptions={({ route }) => {
+            const routeName = getFocusedRouteNameFromRoute(route) ?? '';
 
-            return (
-              <View
-                style={{
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  height: '100%',
-                  width: '100%',
-                }}
-              >
-                <Ionicons name={icon} size={28} color={color} />
-                <Text
-                  numberOfLines={1}
-                  ellipsizeMode="tail"
+            const isHideTab =
+              route.name === 'chat_stack' && routeName === 'chat_select';
+
+            return {
+              headerShown: false,
+              tabBarShowLabel: false,
+              tabBarActiveTintColor: activeColor,
+              tabBarInactiveTintColor: '#fff',
+              tabBarStyle: {
+                position: 'absolute',
+                bottom: insets.bottom,
+                paddingTop: 10,
+                paddingInline: 6,
+                backgroundColor: MainColor,
+                height: 65,
+                elevation: 5,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 5 },
+                shadowOpacity: 0.15,
+                shadowRadius: 3.5,
+                borderTopWidth: 0,
+
+                // ⭐ จุดสำคัญ
+                display: isHideTab ? 'none' : 'flex',
+              },
+
+              tabBarIcon: ({ focused, color }) => {
+                const icon =
+                  TAB_ICONS[route.name]?.[focused ? 'active' : 'inactive'] ??
+                  'alert-circle';
+
+              return (
+                <View
                   style={{
-                    fontSize: 9,
-                    marginTop: 2,
-                    color,
-                    fontFamily: FONT.REGULAR,
-                    textAlign: 'center',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    height: '100%',
+                    width: '100%',
                   }}
                 >
-                  {TAB_LABELS[route.name]}
-                </Text>
-              </View>
-            );
-          },
-        })}
+                  <Ionicons name={icon} size={28} color={color} />
+                  <Text
+                    numberOfLines={1}
+                    style={{
+                      fontSize: 9,
+                      marginTop: 2,
+                      color,
+                      fontFamily: FONT.REGULAR,
+                    }}
+                  >
+                    {TAB_LABELS[route.name]}
+                  </Text>
+                </View>
+              );
+            },
+          };
+        }}
       >
-       
-        <Tabs.Screen name="chat" component={ChatScreen} />
+
+        <Tabs.Screen name="chat_stack" component={ChatStack} />
         <Tabs.Screen name="work" component={WorkScreen} />
         <Tabs.Screen name="schedule" component={ScheduleScreen} />
         <Tabs.Screen name="profile" component={ProfileStack} />
