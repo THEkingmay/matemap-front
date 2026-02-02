@@ -39,7 +39,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify({ email, password }),
       });
       const data = await res.json();
-      console.log("DATA from login " , data)
+      // console.log("DATA from login " , data)
       if (!res.ok) {
         throw new Error(data.message || "Login failed");
       }
