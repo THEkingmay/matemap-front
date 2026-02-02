@@ -9,7 +9,7 @@ import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
 
 import ChatStack from './screens/chat/ChatStack';
 import ScheduleScreen from './screens/schedule/ScheduleScreen';
-import WorkScreen from './screens/work/WorkScreen';
+import WorkStack from './screens/work/WorkStack';
 import ProfileStack from './screens/profile/ProfileStack';
 
 
@@ -119,7 +119,7 @@ export default function ServiceMainTabs() {
         }}
       >
 
-        <Tabs.Screen name="work" component={WorkScreen} />
+        <Tabs.Screen name="work" component={WorkStack} />
         <Tabs.Screen name="chat_stack" component={ChatStack} />
         <Tabs.Screen name="schedule" component={ScheduleScreen} />
         <Tabs.Screen name="profile" component={ProfileStack} />
