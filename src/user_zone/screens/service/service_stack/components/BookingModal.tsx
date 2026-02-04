@@ -8,13 +8,13 @@ import {
     TextInput,
     Platform,
     KeyboardAvoidingView,
+    StyleSheet
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { FONT, MainColor } from "../../../../../../constant/theme"; // ตรวจสอบ Path นี้ด้วยนะคะ
+import { FONT, MainColor } from "../../../../../../constant/theme";
+import styles from "./Style"; // ตรวจสอบว่า styles เดิมของคุณรองรับ class ใหม่ๆ หรือไม่ (โรสเพิ่ม styles local ไว้ท้ายไฟล์ให้นะคะ)
 
-import styles from "./Style";
-
-import DateTimePicker, { DateType, useDefaultStyles } from 'react-native-ui-datepicker';
+import { Calendar, LocaleConfig } from "react-native-calendars";
 import dayjs from 'dayjs';
 import 'dayjs/locale/th';
 import Toast from "react-native-toast-message";
@@ -22,7 +22,17 @@ import apiClient from "../../../../../../constant/axios";
 import { useAuth } from "../../../../../AuthProvider";
 import { isAxiosError } from "axios";
 
-export type BookingForm ={
+// --- Config Calendar ---
+LocaleConfig.locales['th'] = {
+    monthNames: ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'],
+    monthNamesShort: ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'],
+    dayNames: ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'],
+    dayNamesShort: ['อา.', 'จ.', 'อ.', 'พ.', 'พฤ.', 'ศ.', 'ส.'],
+    today: 'วันนี้'
+};
+LocaleConfig.defaultLocale = 'th';
+
+export type BookingForm = {
     customer_id: string;
     provider_id: string;
     service_type_id: string | undefined;
@@ -45,6 +55,106 @@ interface Time {
     minute: number
 }
 
+// --- Component เลือกเวลาแบบ Scroll (Pure JS) ---
+const TimeSelector = ({ label, value, onChange }: { label: string, value: Time, onChange: (t: Time) => void }) => {
+    const [isExpanded, setIsExpanded] = useState(false);
+
+    const hours = Array.from({ length: 24 }, (_, i) => i);
+    // เลือกนาทีทีละ 5 เพื่อความรวดเร็ว (หรือจะเอาทีละ 1 ก็แก้ตรงนี้เป็น length: 60)
+    const minutes = Array.from({ length: 60 }, (_, i) => i); 
+
+    const formatNum = (num: number) => num.toString().padStart(2, '0');
+
+    return (
+        <View style={{ flex: 1, marginHorizontal: 4 }}>
+            <Text style={{ fontSize: 14, color: '#666', marginBottom: 6, fontFamily: FONT.REGULAR }}>{label}</Text>
+            
+            <TouchableOpacity 
+                onPress={() => setIsExpanded(!isExpanded)}
+                style={{
+                    backgroundColor: '#f9f9f9',
+                    borderWidth: 1,
+                    borderColor: isExpanded ? MainColor : '#eee',
+                    borderRadius: 8,
+                    padding: 12,
+                    alignItems: 'center',
+                    flexDirection: 'row',
+                    justifyContent: 'space-between'
+                }}
+            >
+                <Text style={{ fontSize: 16, fontFamily: FONT.BOLD, color: '#333' }}>
+                    {formatNum(value.hour)} : {formatNum(value.minute)}
+                </Text>
+                <Ionicons name={isExpanded ? "chevron-up" : "chevron-down"} size={16} color="#666" />
+            </TouchableOpacity>
+
+            {isExpanded && (
+                <View style={{
+                    flexDirection: 'row',
+                    height: 150,
+                    marginTop: 8,
+                    borderWidth: 1,
+                    borderColor: '#eee',
+                    borderRadius: 8,
+                    overflow: 'hidden',
+                    backgroundColor: '#fff'
+                }}>
+                    {/* Hour Column */}
+                    <View style={{ flex: 1, borderRightWidth: 1, borderRightColor: '#eee' }}>
+                         <Text style={{ textAlign: 'center', padding: 4, backgroundColor: '#f0f0f0', fontSize: 12 }}>ชม.</Text>
+                        <ScrollView nestedScrollEnabled showsVerticalScrollIndicator={false}>
+                            {hours.map((h) => (
+                                <TouchableOpacity
+                                    key={h}
+                                    style={{
+                                        paddingVertical: 10,
+                                        alignItems: 'center',
+                                        backgroundColor: value.hour === h ? MainColor : 'transparent'
+                                    }}
+                                    onPress={() => onChange({ ...value, hour: h })}
+                                >
+                                    <Text style={{ 
+                                        color: value.hour === h ? 'white' : '#333',
+                                        fontFamily: value.hour === h ? FONT.BOLD : FONT.REGULAR 
+                                    }}>
+                                        {formatNum(h)}
+                                    </Text>
+                                </TouchableOpacity>
+                            ))}
+                        </ScrollView>
+                    </View>
+
+                    {/* Minute Column */}
+                    <View style={{ flex: 1 }}>
+                        <Text style={{ textAlign: 'center', padding: 4, backgroundColor: '#f0f0f0', fontSize: 12 }}>นาที</Text>
+                        <ScrollView nestedScrollEnabled showsVerticalScrollIndicator={false}>
+                            {minutes.map((m) => (
+                                <TouchableOpacity
+                                    key={m}
+                                    style={{
+                                        paddingVertical: 10,
+                                        alignItems: 'center',
+                                        backgroundColor: value.minute === m ? MainColor : 'transparent'
+                                    }}
+                                    onPress={() => onChange({ ...value, minute: m })}
+                                >
+                                    <Text style={{ 
+                                        color: value.minute === m ? 'white' : '#333',
+                                        fontFamily: value.minute === m ? FONT.BOLD : FONT.REGULAR 
+                                    }}>
+                                        {formatNum(m)}
+                                    </Text>
+                                </TouchableOpacity>
+                            ))}
+                        </ScrollView>
+                    </View>
+                </View>
+            )}
+        </View>
+    );
+};
+
+// --- Main Component ---
 export function BookingModal({
     modalVisible,
     handleCloseModal,
@@ -53,19 +163,20 @@ export function BookingModal({
     provider_id,
     onSuccess,
 }: Props) {
-    const defaultStyles = useDefaultStyles();
-    const {token , user} = useAuth()
+    const { token, user } = useAuth()
 
-    const [selectedDate, setSelectedDate] = useState<DateType>(()=>{
+    const [selectedDate, setSelectedDate] = useState<Date>(() => {
         const date = new Date()
-        date.setHours(0, 0, 0, 0); // ตั้งค่าเวลาเป็น 00:00:00.000
+        date.setHours(0, 0, 0, 0);
         return date;
     });
-    const [startTime, setStartTime] = useState<Time>({ hour: 0, minute: 0 })
-    const [endTime, setEndTime] = useState<Time>({ hour: 23, minute: 59 })
-    const [isDateFormat, setDateFormat] = useState<boolean>(false)
 
-    const [isFormatData , setIsFormatData] = useState<boolean>(true)
+    const [startTime, setStartTime] = useState<Time>({ hour: 9, minute: 0 })
+    const [endTime, setEndTime] = useState<Time>({ hour: 10, minute: 0 })
+    
+    const [isDateFormat, setDateFormat] = useState<boolean>(false)
+    const [isFormatData, setIsFormatData] = useState<boolean>(true)
+    const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
 
     const [formData, setFormData] = useState<BookingForm>({
         customer_id: customer_id,
@@ -75,103 +186,42 @@ export function BookingModal({
         destination_location: "",
         detail: "",
     });
-    const resetForm = () => {
-        setStartTime({ hour: 0, minute: 0 })
-        setEndTime({ hour: 23, minute: 59 })
-        setSelectedDate(new Date())
-        setFormData({
-            customer_id: customer_id,
-            provider_id: provider_id,
-            service_type_id: selectedService?.id,
-            start_location: "",
-            destination_location: "",
-            detail: "",
-        })
-    }
 
-
-    const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
-
-    const renderTimeInputGroup = (label: string, type: 'start' | 'end', timeState: Time) => (
-        <View style={styles.timeBlock}>
-            <Text style={styles.timeLabel}>{label}</Text>
-            <View style={styles.timeInputContainer}>
-                {/* ช่องชั่วโมง */}
-                <View style={styles.timeInputWrapper}>
-                    <Text style={styles.unitLabel}>ชม.</Text>
-                    <TextInput
-                        style={styles.timeInput}
-                        keyboardType='numeric'
-                        maxLength={2}
-                        placeholder="00"
-                        selectTextOnFocus
-                        value={timeState.hour.toString()}
-                        onChangeText={(text) => type == 'end' ? setEndTime(p => ({ ...p, hour: Number(text) })) : setStartTime(p => ({ ...p, hour: Number(text) }))}
-                    />
-                </View>
-
-                <Text style={styles.timeSeparator}>:</Text>
-
-                {/* ช่องนาที */}
-                <View style={styles.timeInputWrapper}>
-                    <Text style={styles.unitLabel}>น.</Text>
-                    <TextInput
-                        style={styles.timeInput}
-                        keyboardType="number-pad"
-                        maxLength={2}
-                        placeholder="00"
-                        value={timeState.minute.toString()}
-                        onChangeText={(text) => type == 'end' ? setEndTime(p => ({ ...p, minute: Number(text) })) : setStartTime(p => ({ ...p, minute: Number(text) }))}
-                        selectTextOnFocus
-                    />
-                </View>
-            </View>
-        </View>
-    );
-    // Reset form when modal opens or service changes
+    // Reset form when modal opens
     useEffect(() => {
         if (modalVisible) {
-            setFormData(prev => ({
-                ...prev,
-                service_type_id: selectedService?.id
-            }));
+            setFormData(prev => ({ ...prev, service_type_id: selectedService?.id }));
+            
+            // Reset Time to default or current time logic
+            const now = new Date();
+            setStartTime({ hour: now.getHours(), minute: 0 }); // ปัดเศษนาที
+            setEndTime({ hour: now.getHours() + 1, minute: 0 });
         }
     }, [modalVisible, selectedService]);
 
     const handleChange = (name: keyof BookingForm, value: string) => {
-        setFormData((prev) => ({
-            ...prev,
-            [name]: value,
-        }));
+        setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
-    // สำหรับจัดการ format เรื่องเวลา
+    // Validation Logic
     useEffect(() => {
-        if(formData.destination_location) setIsFormatData(true)
-        
-        // เชคเวลาชัวโมง นาทีว่าเกินมั้ย
-        if (startTime.hour > 23) setStartTime(p => ({ ...p, hour: 23 }))
-        if (endTime.hour > 23) setEndTime(p => ({ ...p, hour: 23 }))
-
-        if (startTime.minute > 59) setStartTime(p => ({ ...p, minute: 59 }))
-        if (endTime.minute > 59) setEndTime(p => ({ ...p, minute: 59 }))
+        if (formData.destination_location) setIsFormatData(true)
 
         const dateObj = dayjs(selectedDate)
         const startDate = dateObj.hour(startTime.hour).minute(startTime.minute)
         const endDate = dateObj.hour(endTime.hour).minute(endTime.minute)
 
-        if (endDate < startDate) {
+        if (endDate.isBefore(startDate) || endDate.isSame(startDate)) {
             setDateFormat(false)
             return
         }
         setDateFormat(true)
-    }, [selectedDate, endTime, startTime , formData.destination_location])
+    }, [selectedDate, endTime, startTime, formData.destination_location])
 
     const handleSubmit = async () => {
         if (!formData.destination_location.trim()) {
             setIsFormatData(false)
-
-            return; // หยุดการทำงานถ้าข้อมูลไม่ครบ
+            return;
         }
         setIsFormatData(true)
 
@@ -186,55 +236,25 @@ export function BookingModal({
                 start_date: dateObj.hour(startTime.hour).minute(startTime.minute).toISOString(),
                 end_date: dateObj.hour(endTime.hour).minute(endTime.minute).toISOString()
             }
-            
-            await apiClient.post(`/api/service-history/user/${user?.id}` , reqBody, {
-                headers : {
-                    'Authorization' : `Bearer ${token}`
-                }
+
+            await apiClient.post(`/api/service-history/user/${user?.id}`, reqBody, {
+                headers: { 'Authorization': `Bearer ${token}` }
             })
 
-            Toast.show({
-                type: "success",
-                text1: 'จองสำเร็จรอการตอบกลับจากผู้ให้บริการ'
-            })
-            resetForm()
-            onSuccess()
+            Toast.show({ type: "success", text1: 'จองสำเร็จ รอการตอบกลับจากผู้ให้บริการ' })
+            onSuccess() // ควรปิด modal ในนี้ หรือเรียก handleCloseModal()
+            handleCloseModal() // ปิด modal หลังจากสำเร็จ
         } catch (err) {
-            handleCloseModal();
-
-            let message = "เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ"; // ข้อความ Default กันเหนียว
-
+            let message = "เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ";
             if (isAxiosError(err)) {
-                // กรณี Server ตอบกลับมา (เช่น 400 Bad Request, 500 Internal Server Error)
-                if (err.response) {
-                    // *สำคัญ* ตรงนี้ต้องดูว่า Backend ของคุณส่ง key ชื่ออะไรมา 
-                    // ส่วนใหญ่จะเป็น .message, .msg, หรือ .error
-                    message = err.response.data.message || err.response.data.error || "เกิดข้อผิดพลาดจากเซิร์ฟเวอร์";
-                    
-                    // Debug ดูโครงสร้างจริง
-                    console.log("Server Error Data:", err.response.data); 
-                } else if (err.request) {
-                    // กรณีส่ง Request ไปแล้ว แต่ไม่ได้รับ Response (เน็ตหลุด, Server ล่ม)
-                    message = "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้";
-                } else {
-                    // กรณี Error จากการตั้งค่า Request
-                    message = err.message;
-                }
+                message = err.response?.data?.message || err.message;
             } else if (err instanceof Error) {
-                // กรณี Error อื่นๆ ที่ไม่ใช่ Axios (เช่น Code พังใน frontend)
                 message = err.message;
             }
-
-            Toast.show({
-                type: "error",
-                text1: 'เกิดข้อผิดพลาด',
-                text2 : message
-            });
+            Toast.show({ type: "error", text1: 'เกิดข้อผิดพลาด', text2: message });
         } finally {
             setIsSubmitting(false);
         }
-
-        // console.log(reqBody)
     }
 
     return (
@@ -243,11 +263,10 @@ export function BookingModal({
             transparent={true}
             visible={modalVisible}
             onRequestClose={handleCloseModal}
-        >   
-            <KeyboardAvoidingView style={styles.keyboardView} behavior={Platform.OS === "ios" ? "padding" : "height"}
-            >
+        >
+            <KeyboardAvoidingView style={styles.keyboardView} behavior={Platform.OS === "ios" ? "padding" : "height"}>
                 <View style={styles.modalContent}>
-                    {/* --- Header --- */}
+                    {/* Header */}
                     <View style={styles.modalHeader}>
                         <Text style={styles.modalTitle}>รายละเอียดการจอง</Text>
                         <TouchableOpacity onPress={handleCloseModal} style={styles.closeButton}>
@@ -256,8 +275,8 @@ export function BookingModal({
                     </View>
 
                     <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-
-                        {/* --- Service Info Card --- */}
+                        
+                        {/* Service Card */}
                         <View style={styles.serviceCard}>
                             <View style={styles.iconContainer}>
                                 <Ionicons name="briefcase" size={20} color={MainColor} />
@@ -267,12 +286,10 @@ export function BookingModal({
                                 <Text style={styles.serviceName}>{selectedService?.name || "ไม่ได้เลือกบริการ"}</Text>
                             </View>
                         </View>
-
+                        
                         <View style={styles.divider} />
 
-                        {/* --- Form Inputs --- */}
-
-                        {/* Start Location */}
+                        {/* Location Inputs */}
                         <View style={styles.inputGroup}>
                             <Text style={styles.label}>สถานที่เริ่มต้น <Text style={styles.required}>*</Text></Text>
                             <View style={styles.inputContainer}>
@@ -280,14 +297,12 @@ export function BookingModal({
                                 <TextInput
                                     style={styles.input}
                                     placeholder="ระบุจุดรับ..."
-                                    placeholderTextColor="#aaa"
                                     value={formData.start_location}
                                     onChangeText={(text) => handleChange("start_location", text)}
                                 />
                             </View>
                         </View>
 
-                        {/* Destination */}
                         <View style={styles.inputGroup}>
                             <Text style={styles.label}>สถานที่ปลายทาง <Text style={styles.required}>*</Text></Text>
                             <View style={styles.inputContainer}>
@@ -295,80 +310,76 @@ export function BookingModal({
                                 <TextInput
                                     style={styles.input}
                                     placeholder="ระบุจุดหมาย..."
-                                    placeholderTextColor="#aaa"
                                     value={formData.destination_location}
                                     onChangeText={(text) => handleChange("destination_location", text)}
                                 />
                             </View>
                         </View>
 
+                        {/* Date & Time Section */}
                         <View style={styles.inputGroup}>
                             <Text style={styles.label}>วันและเวลา <Text style={styles.required}>*</Text></Text>
-                            <DateTimePicker
-                                mode="single"
-                                date={selectedDate}
-                                onChange={({ date }) => setSelectedDate(date)}
-                                styles={defaultStyles}
+                            
+                            {/* Calendar */}
+                            <Calendar
+                                current={dayjs(selectedDate).format('YYYY-MM-DD')}
+                                onDayPress={(day) => {
+                                    const newDate = new Date(day.dateString);
+                                    newDate.setHours(0, 0, 0, 0);
+                                    setSelectedDate(newDate);
+                                }}
+                                markingType={'custom'}
+                                markedDates={{
+                                    [dayjs(selectedDate).format('YYYY-MM-DD')]: {
+                                        customStyles: {
+                                            container: { backgroundColor: MainColor, elevation: 2 },
+                                            text: { color: 'white', fontWeight: 'bold' }
+                                        }
+                                    }
+                                }}
+                                theme={{
+                                    todayTextColor: MainColor,
+                                    arrowColor: MainColor,
+                                    textDayFontFamily: FONT.REGULAR,
+                                    textMonthFontFamily: FONT.BOLD,
+                                }}
+                                style={{ borderWidth: 1, borderColor: '#eee', borderRadius: 10, marginBottom: 15 }}
                             />
-                            {!isDateFormat && (
-                                <View style={{ padding: 2, backgroundColor: '#fc9393', marginBottom: 5, borderRadius: 10, alignItems: 'center' }}>
-                                    <Text style={{ fontFamily: FONT.REGULAR, fontSize: 16 }}>* กรุณาเลือกวันและเวลาให้ถูกต้อง</Text>
+
+                            {/* New Time Selector Row */}
+                            {selectedDate && (
+                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 }}>
+                                    <TimeSelector label="เวลาเริ่ม" value={startTime} onChange={setStartTime} />
+                                    <TimeSelector label="เวลาสิ้นสุด" value={endTime} onChange={setEndTime} />
                                 </View>
                             )}
-                            {selectedDate && (
-                                <View style={styles.timeSectionContainer}>
-                                    {renderTimeInputGroup("เวลาเริ่มต้น", 'start', startTime)}
-                                    {renderTimeInputGroup("เวลาสิ้นสุด", 'end', endTime)}
+
+                            {!isDateFormat && (
+                                <View style={{ padding: 8, backgroundColor: '#fc9393', borderRadius: 8, alignItems: 'center' }}>
+                                    <Text style={{ fontFamily: FONT.REGULAR, fontSize: 13, color: '#c62828' }}>
+                                        <Ionicons name="alert-circle" size={14} /> เวลาสิ้นสุดต้องหลังเวลาเริ่ม
+                                    </Text>
                                 </View>
                             )}
                         </View>
 
-                        {/* Details (TextArea) */}
+                        {/* Detail Input */}
                         <View style={styles.inputGroup}>
                             <Text style={styles.label}>รายละเอียดเพิ่มเติม</Text>
                             <TextInput
                                 style={[styles.input, styles.textArea]}
-                                placeholder="เช่น เบอร์ติดต่อสำรอง, จุดสังเกต..."
-                                placeholderTextColor="#aaa"
+                                placeholder="เช่น เบอร์ติดต่อสำรอง..."
                                 multiline={true}
-                                numberOfLines={4}
+                                numberOfLines={3}
                                 value={formData.detail}
                                 onChangeText={(text) => handleChange("detail", text)}
                             />
                         </View>
-
                     </ScrollView>
 
-                    {!isFormatData && (
-                        <View style={{
-                            backgroundColor: '#FFEBEE', // พื้นหลังแดงอ่อน นุ่มนวล
-                            borderWidth: 1,
-                            borderColor: '#FFCDD2',     // เส้นขอบสีแดงจาง
-                            borderRadius: 8,            // มุมมน
-                            paddingVertical: 10,
-                            paddingHorizontal: 12,
-                            marginBottom: 15,           // เว้นระยะห่างจากปุ่ม
-                            flexDirection: 'row',       // จัดไอคอนกับข้อความให้อยู่แถวเดียวกัน
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: 8                      // ระยะห่างระหว่างไอคอนกับข้อความ
-                        }}>
-                            <Ionicons name="alert-circle" size={20} color="#C62828" />
-                            <Text style={{
-                                color: '#C62828',       // ตัวหนังสือสีแดงเข้ม อ่านง่าย
-                                fontSize: 14,
-                                fontFamily: FONT.REGULAR
-                            }}>
-                                กรุณากรอกสถานที่ปลายทาง
-                            </Text>
-                    
-                        </View>
-                    )}
+                    {/* Footer Buttons */}
                     <View style={styles.modalFooter}>
-                        <TouchableOpacity
-                            style={[styles.modalButton, styles.cancelButton]}
-                            onPress={handleCloseModal}
-                        >
+                        <TouchableOpacity style={[styles.modalButton, styles.cancelButton]} onPress={handleCloseModal}>
                             <Text style={styles.cancelButtonText}>ยกเลิก</Text>
                         </TouchableOpacity>
 
@@ -377,13 +388,13 @@ export function BookingModal({
                             onPress={handleSubmit}
                             disabled={!isDateFormat || isSubmitting}
                         >
-                            <Text style={styles.confirmButtonText}>{!isDateFormat ? 'กรุณาแก้ไขก่อน' : (isSubmitting ? 'กำลังจอง...' : 'ยืนยันการจอง')}</Text>
+                            <Text style={styles.confirmButtonText}>
+                                {!isDateFormat ? 'เวลาไม่ถูกต้อง' : (isSubmitting ? 'กำลังจอง...' : 'ยืนยันการจอง')}
+                            </Text>
                         </TouchableOpacity>
                     </View>
                 </View>
             </KeyboardAvoidingView>
         </Modal>
-        
     );
 }
-

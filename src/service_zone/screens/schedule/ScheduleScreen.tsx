@@ -1,408 +1,218 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Modal,
-  TextInput,
-} from "react-native";
-import Ionicons from "@expo/vector-icons/Ionicons";
+import React, { useState, useEffect, useMemo } from "react";
+import { View, Text, StyleSheet, FlatList, TouchableOpacity,RefreshControl } from "react-native";
+import { Calendar, LocaleConfig } from "react-native-calendars"; // Pure JS
+import { format, isSameDay, parseISO } from "date-fns";
+import { th } from "date-fns/locale";
+import Toast from "react-native-toast-message";
+import { MainColor, BGColor } from "../../../../constant/theme";
+import apiClient from "../../../../constant/axios";
+import { useAuth } from "../../../AuthProvider";
+import ErrandModal from "./components/ErrandModal";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-/* ================= CONSTANT ================= */
-const DAYS_HEADER = ["S", "M", "T", "W", "T", "F", "S"];
-const DAYS_FULL = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-
-const MONTHS = [
-  "January","February","March","April","May","June",
-  "July","August","September","October","November","December",
-];
-
-type DayInfo = {
-  status: "available" | "unavailable";
-  note?: string;
-  bookingBy?: string;
+// Config ภาษาไทย
+LocaleConfig.locales['th'] = {
+  monthNames: ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'],
+  monthNamesShort: ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'],
+  dayNames: ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'],
+  dayNamesShort: ['อา.', 'จ.', 'อ.', 'พ.', 'พฤ.', 'ศ.', 'ส.'],
+  today: 'วันนี้'
 };
+LocaleConfig.defaultLocale = 'th';
 
-/* ================= SCREEN ================= */
+// Types
+interface HistoryType {
+  id: number;
+  services: { name: string } | null;
+  start_location?: string;
+  destination_location: string;
+  detail?: string;
+  status: 'accepted' | 'rejected' | 'pending' | 'done';
+}
+interface ScheduleType {
+  id: number;
+  start_date: string;
+  end_date: string;
+  type: "booked" | 'errand';
+  service_history: null | HistoryType;
+}
+
 export default function ScheduleScreen() {
-  const today = new Date();
+  const { user, token } = useAuth();
+  const [schedules, setSchedules] = useState<ScheduleType[]>([]);
+  const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [refreshing, setRefreshing] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [editingItem, setEditingItem] = useState<{ id: number, start: string, end: string } | null>(null);
 
-  const [month, setMonth] = useState(today.getMonth());
-  const [year, setYear] = useState(2026);
-
-  const [tab, setTab] = useState<"view" | "manage">("view");
-
-  const [data, setData] = useState<Record<number, DayInfo>>({
-    17: { status: "unavailable", note: "มีลูกค้าจองแล้ว" },
-    21: { status: "unavailable", note: "งานย้ายหอ", bookingBy: "Pun Pun" },
-    22: { status: "available", note: "ว่างทั้งวัน" },
-  });
-
-  const [selectedDay, setSelectedDay] = useState<number | null>(22);
-  const [tempStatus, setTempStatus] =
-    useState<DayInfo["status"]>("available");
-  const [tempNote, setTempNote] = useState("");
-  const [tempBy, setTempBy] = useState("");
-  const [showModal, setShowModal] = useState(false);
-
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-  const getWeekday = (day: number) =>
-    DAYS_FULL[new Date(year, month, day).getDay()];
-
-  const openDay = (day: number) => {
-    const existing = data[day];
-    setSelectedDay(day);
-    setTempStatus(existing?.status ?? "available");
-    setTempNote(existing?.note ?? "");
-    setTempBy(existing?.bookingBy ?? "");
-    setShowModal(true);
-  };
-
-  const saveDay = () => {
-    if (!selectedDay) return;
-
-    setData((prev) => ({
-      ...prev,
-      [selectedDay]: {
-        status: tempStatus,
-        note: tempNote,
-        bookingBy: tempBy,
-      },
-    }));
-
-    setShowModal(false);
-  };
-
-  const changeMonth = (dir: "prev" | "next") => {
-    if (dir === "prev") {
-      if (month === 0) {
-        setMonth(11);
-        setYear((y) => y - 1);
-      } else setMonth(month - 1);
-    } else {
-      if (month === 11) {
-        setMonth(0);
-        setYear((y) => y + 1);
-      } else setMonth(month + 1);
+  const fetchSchedules = async () => {
+    try {
+      setRefreshing(true);
+      const res = await apiClient.get('/api/schedule', {
+        headers: { 'Authorization': `Bearer ${token}` },
+        params: { userId: user?.id }
+      });
+      setSchedules(res.data);
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setRefreshing(false);
     }
   };
 
+  useEffect(() => {
+    fetchSchedules();
+  }, [user]);
+
+  // จุดสีบนปฏิทิน
+  const markedDates = useMemo(() => {
+    const marks: any = {};
+    schedules.forEach(s => {
+      const dateKey = format(parseISO(s.start_date), 'yyyy-MM-dd');
+      if (!marks[dateKey]) marks[dateKey] = { dots: [] };
+
+      const isBooked = s.type === 'booked';
+      const key = isBooked ? 'booked' : 'errand';
+      const color = isBooked ? MainColor : '#FFAB00'; // Booked=สีธีม, Errand=สีส้ม
+
+      // ป้องกัน dot ซ้ำในวันเดียวกัน
+      if (!marks[dateKey].dots.find((d: any) => d.key === key)) {
+         marks[dateKey].dots.push({ key, color });
+      }
+    });
+    // เพิ่ม highlight วันที่เลือก
+    marks[selectedDate] = { ...marks[selectedDate], selected: true, selectedColor: MainColor };
+    return marks;
+  }, [schedules, selectedDate]);
+
+  // กรองงานของวันที่เลือก
+  const dailyList = useMemo(() => {
+    return schedules.filter(s => 
+      isSameDay(parseISO(s.start_date), parseISO(selectedDate))
+    ).sort((a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime());
+  }, [schedules, selectedDate]);
+
+  const handleEdit = (item: ScheduleType) => {
+    if (item.type === 'booked') {
+      Toast.show({ type: 'info', text1: 'งานลูกค้าจอง', text2: 'ไม่สามารถแก้ไขได้ที่นี่' });
+      return;
+    }
+    setEditingItem({ id: item.id, start: item.start_date, end: item.end_date });
+    setModalVisible(true);
+  };
+
   return (
-    <ScrollView style={s.container} showsVerticalScrollIndicator={false}>
-      {/* ===== TABS ===== */}
-      <View style={s.tabs}>
-        <TabButton
-          title="ตารางงาน"
-          icon="calendar-outline"
-          active={tab === "view"}
-          onPress={() => setTab("view")}
-        />
-        <TabButton
-          title="จัดการตารางงาน"
-          icon="create-outline"
-          active={tab === "manage"}
-          onPress={() => setTab("manage")}
+    <SafeAreaView style={styles.container}>
+      {/* Calendar Section */}
+      <View style={styles.calendarCard}>
+        <Calendar
+          current={selectedDate}
+          onDayPress={(day: any) => setSelectedDate(day.dateString)}
+          markingType={'multi-dot'}
+          markedDates={markedDates}
+          theme={{
+            selectedDayBackgroundColor: MainColor,
+            todayTextColor: MainColor,
+            arrowColor: MainColor,
+            textDayFontWeight: '500',
+            textMonthFontWeight: 'bold',
+          }}
         />
       </View>
 
-      {/* ===== CALENDAR ===== */}
-      <View style={s.card}>
-        {/* Header */}
-        <View style={s.header}>
-          <View>
-            <Text style={s.select}>Select date</Text>
-            {selectedDay && (
-              <Text style={s.bigDate}>
-                {getWeekday(selectedDay)}, {MONTHS[month].slice(0, 3)}{" "}
-                {selectedDay}
-              </Text>
-            )}
-          </View>
-          <Ionicons name="calendar" size={20} />
-        </View>
-
-        <View style={s.divider} />
-
-        {/* Month / Year */}
-        <View style={s.monthRow}>
-          <TouchableOpacity onPress={() => changeMonth("prev")}>
-            <Ionicons name="chevron-back" size={18} />
-          </TouchableOpacity>
-
-          <Text style={s.monthText}>
-            {MONTHS[month]} {year}
+      {/* List Section */}
+      <View style={styles.listSection}>
+        <View style={styles.headerRow}>
+          <Text style={styles.headerDate}>
+            {format(parseISO(selectedDate), 'd MMMM yyyy', { locale: th })}
           </Text>
-
-          <TouchableOpacity onPress={() => changeMonth("next")}>
-            <Ionicons name="chevron-forward" size={18} />
+          <TouchableOpacity 
+            style={styles.addBtn}
+            onPress={() => {
+              setEditingItem(null);
+              setModalVisible(true);
+            }}
+          >
+            <Text style={styles.addBtnText}>+ เพิ่มเวลาส่วนตัว</Text>
           </TouchableOpacity>
         </View>
 
-        {/* Day header */}
-        <View style={s.daysHeader}>
-          {DAYS_HEADER.map((d, i) => (
-            <Text key={i} style={s.dayHeader}>{d}</Text>
-          ))}
-        </View>
-
-        {/* Dates */}
-        <View style={s.grid}>
-          {Array.from({ length: daysInMonth }, (_, i) => {
-            const day = i + 1;
-            const info = data[day];
-
-            const canPress =
-              tab === "manage" ||
-              info?.status === "available" ||
-              info?.status === "unavailable";
-
+        <FlatList
+          data={dailyList}
+          keyExtractor={item => item.id.toString()}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={fetchSchedules} />}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>วันนี้ว่าง ไม่มีตารางงาน</Text>
+            </View>
+          }
+          renderItem={({ item }) => {
+            const isBooked = item.type === 'booked';
             return (
-              <TouchableOpacity
-                key={day}
-                activeOpacity={canPress ? 0.7 : 1}
-                style={[
-                  s.dayCell,
-                  info?.status === "available" && s.available,
-                  info?.status === "unavailable" && s.unavailable,
-                ]}
-                onPress={() => {
-                  if (canPress) openDay(day);
-                }}
+              <TouchableOpacity 
+                style={[styles.card, { borderLeftColor: isBooked ? MainColor : '#FFAB00' }]}
+                onPress={() => handleEdit(item)}
+                activeOpacity={0.8}
               >
-                <Text
-                  style={[
-                    s.dayText,
-                    info && { color: "#FFFFFF", fontWeight: "700" },
-                  ]}
-                >
-                  {day}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-      </View>
-
-      {/* ===== MODAL ===== */}
-      <Modal transparent visible={showModal} animationType="slide">
-        <View style={s.overlay}>
-          <View style={s.modal}>
-            {selectedDay && (
-              <>
-                <Text style={s.modalSelect}>Select date</Text>
-                <Text style={s.modalBig}>
-                  {getWeekday(selectedDay)}, {MONTHS[month]} {selectedDay} {year}
-                </Text>
-              </>
-            )}
-
-            {tab === "view" && (
-              <>
-                <InfoRow
-                  label="สถานะ"
-                  value={tempStatus === "available" ? "ว่าง" : "ไม่ว่าง"}
-                />
-                {tempBy !== "" && <InfoRow label="ผู้จอง" value={tempBy} />}
-                {tempNote !== "" && <InfoRow label="รายละเอียด" value={tempNote} />}
-              </>
-            )}
-
-            {tab === "manage" && (
-              <>
-                <View style={s.statusRow}>
-                  <StatusBtn
-                    label="ว่าง"
-                    active={tempStatus === "available"}
-                    color="#2E7D32"
-                    onPress={() => setTempStatus("available")}
-                  />
-                  <StatusBtn
-                    label="ไม่ว่าง"
-                    active={tempStatus === "unavailable"}
-                    color="#C62828"
-                    onPress={() => setTempStatus("unavailable")}
-                  />
+                {/* Time */}
+                <View style={styles.timeBox}>
+                  <Text style={styles.timeStart}>{format(parseISO(item.start_date), 'HH:mm')}</Text>
+                  <Text style={styles.timeEnd}>{format(parseISO(item.end_date), 'HH:mm')}</Text>
                 </View>
 
-                <TextInput
-                  placeholder="ชื่อผู้จอง"
-                  value={tempBy}
-                  onChangeText={setTempBy}
-                  style={s.input}
-                />
-
-                <TextInput
-                  placeholder="รายละเอียด"
-                  value={tempNote}
-                  onChangeText={setTempNote}
-                  style={s.input}
-                  multiline
-                />
-              </>
-            )}
-
-            <View style={s.actionRow}>
-              <TouchableOpacity onPress={() => setShowModal(false)}>
-                <Text style={s.cancel}>ปิด</Text>
+                {/* Info */}
+                <View style={styles.infoBox}>
+                  <View style={[styles.badge, { backgroundColor: isBooked ? MainColor : '#FFAB00' }]}>
+                    <Text style={styles.badgeText}>{isBooked ? 'งานจอง (Booked)' : 'ธุระส่วนตัว (Errand)'}</Text>
+                  </View>
+                  
+                  {isBooked ? (
+                    <>
+                      <Text style={styles.title}>{item.service_history?.services?.name || 'Unknown Service'}</Text>
+                      <Text style={styles.subTitle}>📍 {item.service_history?.destination_location}</Text>
+                    </>
+                  ) : (
+                    <Text style={styles.title}>ไม่ว่าง (ส่วนตัว)</Text>
+                  )}
+                </View>
               </TouchableOpacity>
-              {tab === "manage" && (
-                <TouchableOpacity onPress={saveDay}>
-                  <Text style={s.save}>บันทึก</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          </View>
-        </View>
-      </Modal>
-    </ScrollView>
+            );
+          }}
+        />
+      </View>
+
+      <ErrandModal 
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        onSuccess={fetchSchedules}
+        initialDate={parseISO(selectedDate)}
+        editingItem={editingItem}
+      />
+    </SafeAreaView>
   );
 }
 
-/* ================= COMPONENTS ================= */
-function TabButton({ title, icon, active, onPress }: any) {
-  return (
-    <TouchableOpacity
-      onPress={onPress}
-      style={[s.tabBtn, active && s.tabActive]}
-    >
-      <Ionicons name={icon} size={16} color={active ? "#2563EB" : "#6B7280"} />
-      <Text style={[s.tabText, active && s.tabTextActive]}>{title}</Text>
-    </TouchableOpacity>
-  );
-}
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: BGColor },
+  calendarCard: { backgroundColor: 'white', borderBottomLeftRadius: 20, borderBottomRightRadius: 20, paddingBottom: 10, elevation: 4 },
+  
+  listSection: { flex: 1, padding: 20 , paddingBottom : 100},
+  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 },
+  headerDate: { fontSize: 18, fontWeight: 'bold', color: '#333' },
+  addBtn: { backgroundColor: '#eee', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20 },
+  addBtnText: { color: MainColor, fontSize: 12, fontWeight: 'bold' },
 
-function StatusBtn({ label, active, color, onPress }: any) {
-  return (
-    <TouchableOpacity
-      onPress={onPress}
-      style={[s.statusBtn, active && { backgroundColor: color }]}
-    >
-      <Text style={[s.statusText, active && { color: "#fff" }]}>{label}</Text>
-    </TouchableOpacity>
-  );
-}
+  card: { flexDirection: 'row', backgroundColor: 'white', marginBottom: 12, borderRadius: 10, padding: 15, borderLeftWidth: 5, elevation: 2 },
+  timeBox: { marginRight: 15, alignItems: 'center', justifyContent: 'center', minWidth: 50 },
+  timeStart: { fontSize: 16, fontWeight: 'bold', color: '#333' },
+  timeEnd: { fontSize: 12, color: '#888' },
 
-function InfoRow({ label, value }: any) {
-  return (
-    <View style={{ marginBottom: 8 }}>
-      <Text style={{ fontSize: 12, color: "#6B7280" }}>{label}</Text>
-      <Text style={{ fontSize: 15, fontWeight: "600" }}>{value}</Text>
-    </View>
-  );
-}
+  infoBox: { flex: 1, justifyContent: 'center' },
+  badge: { alignSelf: 'flex-start', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, marginBottom: 4 },
+  badgeText: { color: 'white', fontSize: 10, fontWeight: 'bold' },
+  title: { fontSize: 16, fontWeight: '600', color: '#333' },
+  subTitle: { fontSize: 13, color: '#666', marginTop: 2 },
 
-/* ================= STYLES ================= */
-const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#FFFFFF", padding: 16 },
-
-  tabs: {
-    flexDirection: "row",
-    borderRadius: 16,
-    padding: 4,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
-  },
-
-  tabBtn: {
-    flex: 1,
-    flexDirection: "row",
-    gap: 6,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 8,
-    borderRadius: 12,
-  },
-
-  tabActive: { backgroundColor: "#EEF2FF" },
-
-  tabText: { fontSize: 13, fontWeight: "600", color: "#6B7280" },
-  tabTextActive: { color: "#2563EB" },
-
-  card: {
-    backgroundColor: "#e0d8e8e7",
-    borderRadius: 20,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
-  },
-
-  header: { flexDirection: "row", justifyContent: "space-between" },
-  select: { fontSize: 12, color: "#6B7280" },
-  bigDate: { fontSize: 30, fontWeight: "700" },
-
-  divider: { height: 1, backgroundColor: "#E5E7EB", marginVertical: 8 },
-
-  monthRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-
-  monthText: { fontSize: 14, fontWeight: "500" },
-
-  daysHeader: { flexDirection: "row", justifyContent: "space-between" },
-  dayHeader: { width: "14%", textAlign: "center", fontSize: 12 },
-
-  grid: { flexDirection: "row", flexWrap: "wrap", marginTop: 8 },
-
-  dayCell: {
-    width: "14%",
-    aspectRatio: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 18,
-    marginVertical: 4,
-    
-  },
-
-  available: { backgroundColor: "#2E7D32" },
-  unavailable: { backgroundColor: "#C62828" },
-
-  dayText: { fontSize: 14 },
-
-  overlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.4)",
-    justifyContent: "flex-end",
-  },
-
-  modal: {
-    backgroundColor: "#FFFFFF",
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: 16,
-  },
-
-  modalSelect: { fontSize: 12, color: "#6B7280" },
-  modalBig: { fontSize: 24, fontWeight: "700", marginBottom: 12 },
-
-  statusRow: { flexDirection: "row", gap: 12, marginBottom: 12 },
-
-  statusBtn: {
-    flex: 1,
-    paddingVertical: 10,
-    borderRadius: 12,
-    backgroundColor: "#E5E7EB",
-    alignItems: "center",
-  },
-
-  statusText: { fontSize: 14, fontWeight: "600" },
-
-  input: {
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
-  },
-
-  actionRow: { flexDirection: "row", justifyContent: "space-between" },
-
-  cancel: { fontSize: 14, color: "#6B7280" },
-  save: { fontSize: 14, fontWeight: "700", color: "#2563EB" },
+  emptyContainer: { alignItems: 'center', marginTop: 40 },
+  emptyText: { color: '#bbb' }
 });
