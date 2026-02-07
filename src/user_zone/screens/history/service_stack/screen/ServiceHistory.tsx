@@ -51,7 +51,7 @@ export default function ServiceHistory({ route }: props) {
     const [selectedStatus, setSelectedStatus] = useState<string>('all');
 
     const filteredHistory = useMemo(() => {
-        return serviceHistory.filter(item => {
+        return serviceHistory?.filter(item => {
             if (selectedStatus === 'all') return true;
             return item.status === selectedStatus;
         });
