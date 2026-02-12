@@ -8,7 +8,7 @@ import Toast from 'react-native-toast-message';
 import { BGColor, FONT, MainColor } from '../../../../../constant/theme';
 
 // Import รูปภาพ Default
-const DEFAULT_PROFILE = require('../../../../../assets/no-profile.png');
+const DEFAULT_PROFILE = require('../../../../../assets/noprofile.png');
 
 type props = NativeStackScreenProps<ChatStackParamsList, 'chat'>;
 

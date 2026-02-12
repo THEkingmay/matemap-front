@@ -145,7 +145,7 @@ export default function ContractScreen({navigation} : Props) {
           {item.image_url ? (
             <Image source={{ uri: item.image_url }} style={styles.image} resizeMode="cover" />
           ) : (
-            <Image source={require('../../../../../../assets/no-profile.png')} style={styles.image} resizeMode="cover" />
+            <Image source={require('../../../../../../assets/noprofile.png')} style={styles.image} resizeMode="cover" />
           )}
 
           <View style={styles.content}>

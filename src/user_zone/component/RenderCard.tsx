@@ -14,7 +14,7 @@ export default function RenderCardContent(card: UserCard | null){
   const displayName = card.name || 'ไม่ระบุชื่อ';
   const avatarSource = card.image_url
     ? { uri: card.image_url } 
-    : require('../../../assets/no-profile.png');
+    : require('../../../assets/noprofile.png');
 
   return (
     <View style={styles.cardContainer}>

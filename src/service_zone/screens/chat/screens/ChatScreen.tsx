@@ -17,7 +17,7 @@ import { useAuth } from '../../../../AuthProvider';
 import Toast from 'react-native-toast-message';
 import { BGColor, FONT, MainColor } from '../../../../../constant/theme';
 
-const DEFAULT_PROFILE = require('../../../../../assets/no-profile.png');
+const DEFAULT_PROFILE = require('../../../../../assets/noprofile.png');
 
 type Props = NativeStackScreenProps<ChatStackParamsList, 'chat'>;
 
