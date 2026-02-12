@@ -13,7 +13,8 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.punhameemai.matemap"
     },
     "android": {
       "adaptiveIcon": {
@@ -35,6 +36,12 @@
       "eas": {
         "projectId": "7e7d0fd6-6248-46bb-891b-25eeb029344b"
       }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/7e7d0fd6-6248-46bb-891b-25eeb029344b"
     }
   }
 }
