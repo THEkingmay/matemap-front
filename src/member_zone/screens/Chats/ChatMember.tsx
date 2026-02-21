@@ -10,7 +10,6 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { ChatStackParamsList } from "./ChatStack";
 import { useFocusEffect } from "@react-navigation/native";
 import { ActivityIndicator } from "react-native";
-
 type Props = NativeStackScreenProps<ChatStackParamsList, "chat_list">;
 
 export default function ChatScreen({ navigation }: Props) {
